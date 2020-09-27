@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!-- internally used names -->
     <string name="notification_channel_connection_status">Verbindungsstatus</string>
     <string name="notification_channel_hotlist">Neue Nachrichten</string>
@@ -405,18 +405,20 @@
     <string name="error_client_certificate_mismatch">Der Server fragt nach einem Client-Zertifikat,
         aber das was wir haben, passt nicht. Gesucht: %1$s Zertifikat ausgestellt von: %2$s</string>
     <string name="pref_ssh_authentication_method">Authentifizierungsmethode</string>
-    <string name="exceptions_ssh_failed_to_authenticate_with_password">Fehler bei Authentifizierung mit gewähltem Kennwort</string>
-    <string name="exceptions_ssh_failed_to_authenticate_with_key">Authentifizierung mit Schlüssel fehlgeschlagen</string>
-    <string name="exceptions_ssh_hostname_not_present_in_known_hosts">Hostname %s ist in bekannten Hosts nicht vorhanden</string>
-    <string name="exceptions_ssh_hostkey_not_verified">Hostname %1$s ist bekannt, konnte aber nicht verifiziert werden. Wähle Algorithmus: %2$s; SHA256 Host Schlüssel Fingerabdruck: %3$s</string>
-    <string name="pref_ssh_key_stored_inside_security_hardware_yes">Der %s Schlüssel wurde in der Sicherheitshardware gespeichert</string>
-    <string name="pref_ssh_key_stored_inside_security_hardware_no">Der %s Schlüssel wurde im Software-Schlüsselspeicher gespeichert</string>
-    <string name="pref_ssh_key_stored_inside_security_hardware_cant_tell">%s Schlüssel wurde im Schlüsselspeicher gespeichert</string>
-    <string name="pref_ssh_key_stored_outside_key_store">%1$s Schlüssel wurde in der App gespeichert.\n\nDer Schlüssel konnte nicht im Schlüsselspeicher gespeichert werden: %2$s</string>
+    <string name="exceptions_ssh_failed_to_authenticate_with_password">        Fehler bei Authentifizierung mit gewähltem Kennwort</string>
+    <string name="exceptions_ssh_failed_to_authenticate_with_key">        Authentifizierung mit Schlüssel fehlgeschlagen</string>
+    <string name="exceptions_ssh_hostname_not_present_in_known_hosts">        Hostname %s ist in bekannten Hosts nicht vorhanden</string>
+    <string name="exceptions_ssh_hostkey_not_verified">Hostname %1$s ist bekannt, konnte aber nicht
+        verifiziert werden. Wähle Algorithmus: %2$s; SHA256 Host Schlüssel Fingerabdruck: %3$s</string>
+    <string name="pref_ssh_key_stored_inside_security_hardware_yes">        Der %s Schlüssel wurde in der Sicherheitshardware gespeichert</string>
+    <string name="pref_ssh_key_stored_inside_security_hardware_no">        Der %s Schlüssel wurde im Software-Schlüsselspeicher gespeichert</string>
+    <string name="pref_ssh_key_stored_inside_security_hardware_cant_tell">        %s Schlüssel wurde im Schlüsselspeicher gespeichert</string>
+    <string name="pref_ssh_key_stored_outside_key_store">        %1$s Schlüssel wurde in der App gespeichert.\n\nDer Schlüssel konnte nicht im
+        Schlüsselspeicher gespeichert werden: %2$s</string>
     <string name="pref_ssh_key_forgotten">Schlüssel vergessen</string>
-    <string name="pref_ssl_certificate_stored_inside_security_hardware_yes">Das Zertifikat wurde in einer Sicherheitshardware gespeichert</string>
-    <string name="pref_ssl_certificate_stored_inside_security_hardware_no">Das Zertifikat wurde im Software-Schlüsselspeicher gespeichert</string>
-    <string name="pref_ssl_certificate_stored_inside_security_hardware_cant_tell">Das Zertifikat wurde im Schlüsselspeicher gespeichert</string>
+    <string name="pref_ssl_certificate_stored_inside_security_hardware_yes">        Das Zertifikat wurde in einer Sicherheitshardware gespeichert</string>
+    <string name="pref_ssl_certificate_stored_inside_security_hardware_no">        Das Zertifikat wurde im Software-Schlüsselspeicher gespeichert</string>
+    <string name="pref_ssl_certificate_stored_inside_security_hardware_cant_tell">        Das Zertifikat wurde im Schlüsselspeicher gespeichert</string>
     <string name="pref_ssl_certificate_forgotten">Zertifikat vergessen</string>
     <string name="pref_known_hosts_set">Bekannte Hosts festgelegt</string>
     <string name="pref_known_hosts_cleared">Bekannte Hosts gelöscht</string>
