@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!-- internally used names -->
     <string name="notification_channel_connection_status">Статус соединения</string>
     <string name="notification_channel_hotlist">Новое сообщение</string>
