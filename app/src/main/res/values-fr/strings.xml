@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!-- internally used names -->
     <string name="notification_channel_connection_status">État de la connexion</string>
     <string name="notification_channel_hotlist">Notables</string>
