@@ -76,8 +76,6 @@
     <string name="pref_error_relay_host_not_set">Relay-Host ist nicht angelegt</string>
     <string name="pref_error_relay_password_not_set">Kein Relay-Passwort angelegt</string>
     <string name="pref_error_ssh_host_not_set">SSH-Host ist nicht angelegt</string>
-    <string name="pref_error_no_ssh_key_file">SSH private key is not set</string>
-    <string name="pref_error_no_ssh_password">SSH password is not set</string>
     <string name="pref_error_no_ssh_known_hosts">Bekannte SSH-Hosts sind nicht angelegt</string>
     <string name="pref_connection_group">Verbindung</string>
     <!-- connection type -->
@@ -105,10 +103,6 @@
     <string name="pref_ssh_host">SSH-Host</string>
     <string name="pref_ssh_user">SSH-Username</string>
     <string name="pref_ssh_port">SSH-Port</string>
-    <string-array name="pref_ssh_authentication_method_names">
-        <item>Password</item>
-        <item>Key</item>
-    </string-array>
     <string name="pref_ssh_password">SSH-Passwort</string>
     <string name="pref_ssh_keyfile">Privater Schlüssel</string>
     <string name="pref_ssh_keyfile_summary">Ed25519, ECDSA, RSA, DSA Schlüssel</string>
@@ -366,7 +360,6 @@
         <b>SHA-256 Fingerprint:</b><br>
         %5$s
     ]]></string>
-    <string name="dialog_button_accept_selected">Accept selected</string>
     <string name="dialog_button_reject">Ablehnen</string>
     <string name="dialog_button_pin_selected">Pin ausgewählt</string>
     <string name="dialog_button_back_to_safety">Sicherheit geht vor</string>
@@ -404,21 +397,4 @@
         aber keines ist festgelegt. Gesucht: %1$s Zertifikat ausgestellt von: %2$s</string>
     <string name="error_client_certificate_mismatch">Der Server fragt nach einem Client-Zertifikat,
         aber das was wir haben, passt nicht. Gesucht: %1$s Zertifikat ausgestellt von: %2$s</string>
-    <string name="pref_ssh_authentication_method">Authentication method</string>
-    <string name="exceptions_ssh_failed_to_authenticate_with_password">        Failed to authenticate with password</string>
-    <string name="exceptions_ssh_failed_to_authenticate_with_key">        Failed to authenticate with key</string>
-    <string name="exceptions_ssh_hostname_not_present_in_known_hosts">        Hostname %s is not present in known hosts</string>
-    <string name="exceptions_ssh_hostkey_not_verified">Hostname %1$s is known, but could not be
-        verified. Chosen algorithm: %2$s; SHA256 host key fingerprint: %3$s</string>
-    <string name="pref_ssh_key_stored_inside_security_hardware_yes">        %s key was stored inside security hardware</string>
-    <string name="pref_ssh_key_stored_inside_security_hardware_no">        %s key was stored inside software key store</string>
-    <string name="pref_ssh_key_stored_inside_security_hardware_cant_tell">        %s key was stored inside key store</string>
-    <string name="pref_ssh_key_stored_outside_key_store">        %1$s key was stored inside the app.\n\nThe key couldn’t be stored in the key store: %2$s</string>
-    <string name="pref_ssh_key_forgotten">Key forgotten</string>
-    <string name="pref_ssl_certificate_stored_inside_security_hardware_yes">        Certificate was stored inside security hardware</string>
-    <string name="pref_ssl_certificate_stored_inside_security_hardware_no">        Certificate was stored inside software key store</string>
-    <string name="pref_ssl_certificate_stored_inside_security_hardware_cant_tell">        Certificate was stored inside key store</string>
-    <string name="pref_ssl_certificate_forgotten">Certificate forgotten</string>
-    <string name="pref_known_hosts_set">Known hosts set</string>
-    <string name="pref_known_hosts_cleared">Known hosts cleared</string>
 </resources>
