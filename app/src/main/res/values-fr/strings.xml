@@ -15,6 +15,7 @@
     <string name="stop_connecting">Arrêter de se connecter</string>
     <string name="menu_hotlist">Messages notables</string>
     <string name="menu_nicklist">Pseudos</string>
+    <string name="tabkey">Tab</string>
     <string name="open_drawer">Ouvrir le tiroir</string>
     <string name="close_drawer">Fermer le tiroir</string>
     <string name="more_button">Récupérer plus de lignes</string>
@@ -45,6 +46,10 @@
     </plurals>
     <!-- “Me” in the “Me: my message” part of NotificationCompat.MessagingStyle -->
     <string name="me">Moi</string>
+    <plurals name="messages">
+        <item quantity="one">%d message</item>
+        <item quantity="other">%d messages</item>
+    </plurals>
     <plurals name="in_buffers">
         <item quantity="one"> dans %d tampon</item>
         <item quantity="other"> dans %d tampons</item>
@@ -205,6 +210,7 @@
     <string name="pref_volumebtn_size">Taille du texte via le volume</string>
     <string name="pref_volumebtn_size_summary">Si coché, les boutons du volume audio changent la taille du texte lorsque Weechat est au premier plan</string>
     <!-- notifications -->
+    <string name="pref_notif_group">Notifications</string>
     <string name="pref_notification_enable">Activer les notifications</string>
     <string name="pref_notification_enable_summary">Notifier des messages notables comme les messages privés ou les “highlights”</string>
     <string name="pref_notification_sound">Son de notification</string>
@@ -297,6 +303,7 @@
     <string name="pref_timestamp_invalid">Format de date/heure invalide</string>
     <string name="pref_number_invalid">Nombre invalide</string>
     <string name="pref_hostname_invalid">Pas d’espace dans le nom d’hôte</string>
+    <string name="menu_debug">Débug</string>
     <string name="menu_sync_hotlist">Sync. les notables</string>
     <string name="menu_die">Quitter</string>
     <string name="menu_save">Enregistrer</string>
@@ -344,8 +351,15 @@
     <string name="pref_ssl_certificate_forgotten">Certificat supprimé</string>
     <string name="pref_known_hosts_set">Hôtes connus sauvegardés</string>
     <string name="pref_known_hosts_cleared">Hôtes connus effacés</string>
+    <string name="pref_clear_known_hosts_confirmation">Effacer les hôtes connus ?</string>
+    <string name="pref_clear_known_hosts_cancel">Annuler</string>
+    <string name="pref_clear_known_hosts_clear">Effacer tout</string>
     <string name="pref_clear_known_hosts_cleared">Hôtes connus effacés</string>
     <string name="pref_clear_known_hosts_entries_0">Aucune entrée</string>
+    <plurals name="pref_clear_known_hosts_entries">
+        <item quantity="one">%s élément</item>
+        <item quantity="other">%s éléments</item>
+    </plurals>
     <string name="dialog_ssh_server_unknown_title">Serveur inconnu</string>
     <string name="dialog_ssh_server_unknown_text"><![CDATA[        Serveur <b>%1$s</b> non reconnu.
         <br>
@@ -353,6 +367,14 @@
         <br><b>%3$s</b>]]></string>
     <string name="dialog_ssh_server_unknown_button_positive">Accepter la clé serveur</string>
     <string name="dialog_ssh_server_unknown_button_negative">Rejeter</string>
-    <string name="dialog_ssh_server_unknown_unknown_key_type">Inconnue</string>
+    <string name="dialog_ssh_server_unknown_unknown_key_type">Inconnu</string>
     <string name="dialog_ssh_server_not_verified_title">Serveur non vérifié</string>
+    <string name="dialog_ssh_server_not_verified_text"><![CDATA[        <b>⚠ Attention :</b> activité malicieuse possible !
+        <br>
+        <br>Le serveur <b>%1$s</b> est reconnu mais sa clé ne correspond pas à cette que nous connaissons.
+        <br>
+        <br>Empreinte SHA256 de la clé %2$s :
+        <br><b>%3$s</b>
+        <br>
+        <br>Si vous voulez continuer, effacez les hôtes connus dans les préférences.]]></string>
 </resources>
