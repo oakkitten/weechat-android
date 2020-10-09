@@ -13,7 +13,9 @@
     <string name="connect">Verbinden</string>
     <string name="disconnect">Verbindung trennen</string>
     <string name="stop_connecting">Verbindungsaufbau beenden</string>
+    <string name="menu_hotlist">Hotlist</string>
     <string name="menu_nicklist">Benutzernamen</string>
+    <string name="tabkey">Tab</string>
     <string name="open_drawer">Schublade öffnen</string>
     <string name="close_drawer">Schublade schließen</string>
     <string name="more_button">Weitere Zeilen anfordern</string>
@@ -124,6 +126,7 @@
     <string name="pref_file_set">einstellen</string>
     <string name="pref_file_not_set">nicht einstellen</string>
     <!-- relay type -->
+    <string name="pref_relay_group">Relay</string>
     <string name="pref_relay_host">Relay-Host</string>
     <string name="pref_relay_port">Relay-Port</string>
     <string name="pref_relay_password">Relay-Passwort</string>
@@ -245,6 +248,7 @@
     <string name="pref_notification_enable_summary">Benachrichtigt über aktuelle Nachrichten, wie
         private Nachrichten oder Highlights</string>
     <string name="pref_notification_sound">Benachrichtigungston</string>
+    <string name="pref_notification_vibrate">Vibration</string>
     <string name="pref_notification_light">Benachrichtigungslicht</string>
     <!-- ringtone -->
     <string name="pref_ringtone_none">Keine</string>
@@ -297,6 +301,7 @@
     </plurals>
     <string name="pref_media_preview_advanced_group">Erweitere Einstellungen</string>
     <string name="pref_media_preview_maximum_body_size">Größenbeschränkung für Download</string>
+    <string name="pref_media_preview_maximum_body_size_summary">%s MB</string>
     <string name="pref_image_disk_cache_size">Disk Cache</string>
     <string name="pref_image_disk_cache_size_summary">%s MB; wird bei einem Neustart wirksam</string>
     <string name="pref_media_preview_success_cooldown">Erfolgreicher Rückgriff auf Bilder</string>
@@ -338,6 +343,7 @@
     <string name="pref_timestamp_invalid">Ungültiges Format für Zeitstempel</string>
     <string name="pref_number_invalid">Ungültige Nummer</string>
     <string name="pref_hostname_invalid">Keine Leerzeichen im Hostnamen erlaubt</string>
+    <string name="menu_debug">Debug</string>
     <string name="menu_sync_hotlist">Sync Hotlist</string>
     <string name="menu_die">Sterbe</string>
     <string name="menu_save">Sichern</string>
@@ -416,4 +422,27 @@
     <string name="pref_ssl_certificate_forgotten">Zertifikat vergessen</string>
     <string name="pref_known_hosts_set">Bekannte Hosts festgelegt</string>
     <string name="pref_known_hosts_cleared">Bekannte Hosts gelöscht</string>
+    <string name="pref_clear_known_hosts_confirmation">Bekannte Hosts löschen?</string>
+    <string name="pref_clear_known_hosts_cancel">Abbrechen</string>
+    <string name="pref_clear_known_hosts_clear">Löschen</string>
+    <string name="pref_clear_known_hosts_cleared">Bekannte Hosts gelöscht</string>
+    <string name="pref_clear_known_hosts_entries_0">Keine Einträge</string>
+    <string name="dialog_ssh_server_unknown_title">Server unbekannt</string>
+    <string name="dialog_ssh_server_unknown_text"><![CDATA[        Server unter <b>%1$s</b> wurde nie angetroffen.
+        <br>
+        <br>%2$s Schlüssel SHA256 Fingerabdruck:
+        <br><b>%3$s</b>]]></string>
+    <string name="dialog_ssh_server_unknown_button_positive">Server-Schlüssel akzeptieren</string>
+    <string name="dialog_ssh_server_unknown_button_negative">Ablehnen</string>
+    <string name="dialog_ssh_server_unknown_unknown_key_type">Unbekannt</string>
+    <string name="dialog_ssh_server_not_verified_title">Server hat Schlüssel geändert</string>
+    <string name="dialog_ssh_server_not_verified_text"><![CDATA[        <b>⚠ Warnung:</b> Es ist möglich, dass jemand versucht, diese Verbindung zu nutzen!
+        <br>
+        <br>Server unter <b>%1$s</b> ist bekannt, aber sein Schlüssel entspricht nicht dem Schlüssel, den Sie zuvor akzeptiert haben.
+        <br>
+        <br>%2$s Schlüssel SHA256 Fingerabdruck:
+        <br><b>%3$s</b>
+        <br>
+        <br>Wenn Sie fortfahren möchten, bitte bekannte Hosts in den Einstellungen löschen.]]></string>
+    <string name="pref_ssh_clear_known_hosts">Bekannte Hosts löschen</string>
 </resources>
