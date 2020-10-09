@@ -361,20 +361,7 @@
         <item quantity="other">%s éléments</item>
     </plurals>
     <string name="dialog_ssh_server_unknown_title">Serveur inconnu</string>
-    <string name="dialog_ssh_server_unknown_text"><![CDATA[        Serveur <b>%1$s</b> non reconnu.
-        <br>
-        <br>Empreinte SHA256 de la clé %2$s :
-        <br><b>%3$s</b>]]></string>
     <string name="dialog_ssh_server_unknown_button_positive">Accepter la clé serveur</string>
     <string name="dialog_ssh_server_unknown_button_negative">Rejeter</string>
     <string name="dialog_ssh_server_unknown_unknown_key_type">Inconnu</string>
-    <string name="dialog_ssh_server_not_verified_title">Serveur non vérifié</string>
-    <string name="dialog_ssh_server_not_verified_text"><![CDATA[        <b>⚠ Attention :</b> activité malicieuse possible !
-        <br>
-        <br>Le serveur <b>%1$s</b> est reconnu mais sa clé ne correspond pas à cette que nous connaissons.
-        <br>
-        <br>Empreinte SHA256 de la clé %2$s :
-        <br><b>%3$s</b>
-        <br>
-        <br>Si vous voulez continuer, effacez les hôtes connus dans les préférences.]]></string>
 </resources>
