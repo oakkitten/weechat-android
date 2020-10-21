@@ -6,13 +6,11 @@ import com.ubergeek42.cats.Kitty
 import com.ubergeek42.cats.Root
 import okhttp3.HttpUrl.Companion.toHttpUrl
 
-
-private typealias T = TextPreference
-private typealias F = FloatPreference
-private typealias E<T> = EnumPreference<T>
-private typealias S<T> = StringRetrievingPreference<T>
-
-private typealias EV = EnumPreference.Values
+import com.ubergeek42.WeechatAndroid.preferences.TextPreference as T
+import com.ubergeek42.WeechatAndroid.preferences.EnumPreference as E
+import com.ubergeek42.WeechatAndroid.preferences.NotQuiteAPreference as Q
+import com.ubergeek42.WeechatAndroid.preferences.StringRetrievingPreference as S
+import com.ubergeek42.WeechatAndroid.preferences.EnumPreference.Values as EV
 
 
 object UploadPreferences {
@@ -39,9 +37,9 @@ object UploadPreferences {
                                           }
     }
 
-    private val help = NotAPreference("upload_help")
+    private val help = Q("upload_help")
 
-    private val advancedGroup = NotAPreference("upload_advanced_group")
+    private val advancedGroup = Q("upload_advanced_group")
 
     private val additionalHeaders = object : S<RequestModifier?>("upload_additional_headers", "") {
         override fun convert(v: String) = RequestModifier.additionalHeaders(v)

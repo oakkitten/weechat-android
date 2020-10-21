@@ -27,16 +27,12 @@ abstract class Preference<A, R>(
         preferences[key] = this
     }
 
-    @Throws(Exception::class)
-    protected abstract fun retrieve(): R
-
-    @Throws(Exception::class)
-    protected abstract fun convert(v: R): A
+    @Throws(Exception::class) protected abstract fun retrieve(): R
+    @Throws(Exception::class) protected abstract fun convert(v: R): A
 
     private val validators = mutableListOf<Validator<R>>()
 
-    @Throws(Exception::class)
-    fun validate(o: Any?): A {
+    @Throws(Exception::class) fun validate(o: Any?): A {
         val v = storageClass.cast(o) as R
         if (v != default) validators.forEach { it.validate(v) }
         return convert(v)
@@ -47,12 +43,12 @@ abstract class Preference<A, R>(
         return this
     }
 
-    fun invalidate() {
+    open fun invalidate() {
         _isSet = false
     }
 
     private var _isSet = false
-    private var _field: A? = null
+    private var _field: A = null as A
 
     var value: A
         private set(v) {
@@ -69,7 +65,7 @@ abstract class Preference<A, R>(
                 }
                 _isSet = true
             }
-            return _field as A
+            return _field
         }
 
 
@@ -97,7 +93,7 @@ abstract class Preference<A, R>(
     companion object {
         @Root private val kitty = Kitty.make()
 
-        val preferences = mutableMapOf<String, Preference<*, *>>()
+        val preferences = mutableMapOf<String, AnyPreference>()
 
         @Throws(Exception::class)
         fun validate(key: String, value: Any) {

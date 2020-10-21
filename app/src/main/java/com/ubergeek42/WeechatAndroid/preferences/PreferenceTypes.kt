@@ -14,6 +14,11 @@ abstract class StringRetrievingPreference<A>(key: String, default: String)
     override fun retrieve() = p.getString(key, default) ?: ""
 }
 
+abstract class NullableStringRetrievingPreference<A>(key: String)
+        : Preference<A, String?>(key, null, String::class.java as Class<String?>) {
+    override fun retrieve() = p.getString(key, null)
+}
+
 open class TextPreference(key: String, default: String) : StringRetrievingPreference<String>(key, default) {
     override fun convert(v: String) = v
 }
@@ -40,11 +45,13 @@ class EnumPreference<E> (key: String, default: E, private val enumValues: Array<
     }
 }
 
-class NotAPreference(key: String) : Preference<String, String>(key, "", String::class.java) {
+class NotQuiteAPreference(key: String) : Preference<String, String>(key, "", String::class.java) {
     override fun retrieve() = ""
     override fun convert(v: String) = ""
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fun String.ensureNoSpaces() = !this.contains("\\S".toRegex())
+fun String.ensureNoSpaces() {
+    if (this.contains("\\S".toRegex())) throw Exception("Setting can't contain spaces!")
+}

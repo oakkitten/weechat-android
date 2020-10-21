@@ -79,7 +79,7 @@ public class PrivateKeyPickerPreference extends PasswordedFilePickerPreference {
         return message;
     }
 
-    public static @Nullable byte[] getData(String data) {
+    public static @Nullable byte[] getData(@Nullable String data) {
         return STORED_IN_KEYSTORE.equals(data) ?
                 SSHConnection.STORED_IN_KEYSTORE_MARKER : FilePreference.getData(data);
     }

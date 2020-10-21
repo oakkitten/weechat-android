@@ -192,8 +192,8 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
             kotlinPath = destinationDir.toString()
             classPath = classpath.asPath
         }
+        dependsOn("fetchAspectjToolsBecauseIHaveNoIdeaHowToGetBuildScriptClassPath")
     }
-    dependsOn("fetchAspectjToolsBecauseIHaveNoIdeaHowToGetBuildScriptClassPath")
 }
 
 tasks.withType<JavaCompile> {

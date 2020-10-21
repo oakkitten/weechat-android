@@ -58,7 +58,7 @@ public class FilePreference extends DialogPreference implements DialogFragmentGe
     }
 
     // a helper method that gets the original bytes from the strings
-    public static @Nullable byte[] getData(String data) {
+    public static @Nullable byte[] getData(@Nullable String data) {
         try {
             return Base64.decode(data.getBytes(), Base64.NO_WRAP);
         } catch (IllegalArgumentException | NullPointerException ignored) {
