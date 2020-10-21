@@ -40,6 +40,11 @@ class EnumPreference<E> (key: String, default: E, private val enumValues: Array<
     }
 }
 
+class NotAPreference(key: String) : Preference<String, String>(key, "", String::class.java) {
+    override fun retrieve() = ""
+    override fun convert(v: String) = ""
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fun String.ensureNoSpaces() = !this.contains("\\S".toRegex())

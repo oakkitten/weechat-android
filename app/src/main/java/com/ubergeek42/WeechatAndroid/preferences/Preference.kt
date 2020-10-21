@@ -72,6 +72,28 @@ abstract class Preference<A, R>(
             return _field as A
         }
 
+
+    var hideUnlessCheck: Check = { true }
+
+    fun hideUnless(check: Check): Preference<A, R> {
+        hideUnlessCheck = check
+        return this
+    }
+
+    val notHidden get() = hideUnlessCheck()
+
+
+    var disableUnlessCheck: Check = { true }
+
+    fun disableUnless(check: Check): Preference<A, R> {
+        disableUnlessCheck = check
+        return this
+    }
+
+    val notDisabled get() = disableUnlessCheck()
+
+
+
     companion object {
         @Root private val kitty = Kitty.make()
 
@@ -89,21 +111,35 @@ abstract class Preference<A, R>(
             p.registerOnSharedPreferenceChangeListener { _: SharedPreferences, key: String ->
                 val preference = preferences[key]
                 if (preference == null) {
-                    kitty.warn("preference unknown: %s", key)
+                    kitty.wtf("preference unknown: %s", key)
                 } else {
                     preference.invalidate()
                     kitty.info("preference %s has been changed to %s", key, preference.value)
-                    kitty.info("triggers %s %s", triggers, triggers.getValue(preference))
                     triggers.getValue(preference).forEach { it() }
                 }
             }
         }
 
-        private val triggers = mutableMapOf<Preference<*, *>,
+        @JvmStatic fun getByKey(key: String) = preferences[key]
+
+        private val triggers = mutableMapOf<AnyPreference,
                                             MutableList<() -> Unit>>()
 
-        fun whenChanged(vararg preferences: Preference<*, *>, trigger: (() -> Unit)) {
+        fun whenChanged(vararg preferences: AnyPreference, trigger: (() -> Unit)) {
             preferences.forEach { triggers.getOrPut(it, ::mutableListOf).add(trigger) }
         }
     }
+}
+
+
+private typealias AnyPreference = Preference<*, *>
+private typealias Check = () -> Boolean
+
+
+fun Iterable<AnyPreference>.disableUnless(check: Check) {
+    forEach { it.disableUnless(check) }
+}
+
+fun Iterable<AnyPreference>.hideUnless(check: Check) {
+    forEach { it.hideUnless(check) }
 }

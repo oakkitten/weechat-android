@@ -216,6 +216,24 @@ public class PreferencesActivity extends AppCompatActivity implements Preference
         }
 
         @Override public boolean onPreferenceChange(Preference preference, Object o) {
+
+            Weechat.runOnMainThread(() -> {
+                int count = getPreferenceScreen().getPreferenceCount();
+                for (int i = 0; i < count; i++) {
+                    Preference p = getPreferenceScreen().getPreference(i);
+                    String key = p.getKey();
+                    try {
+                        boolean enabled = com.ubergeek42.WeechatAndroid.preferences.Preference.getByKey(key).getNotDisabled();
+                        boolean visible = com.ubergeek42.WeechatAndroid.preferences.Preference.getByKey(key).getNotHidden();
+
+                        p.setEnabled(enabled);
+                        p.setVisible(visible);
+                    } catch (NullPointerException e) {
+                        System.out.println("not found " + key);
+                    }
+                }
+            });
+
             String key = preference.getKey();
             boolean valid = true;
             int errorResource = -1;

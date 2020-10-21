@@ -26,7 +26,7 @@ object UploadPreferences {
 
     val accept = E("upload_accept", Accept.TextOnly, Accept.values())
 
-    val uri = T("upload_uri", "").addValidator { it.ensureNoSpaces() }
+    val uploadUri = T("upload_uri", "").addValidator { it.ensureNoSpaces() }
                                  .addValidator { it.toHttpUrl() }
 
     val formFieldName = T("upload_form_field_name", "file")
@@ -38,6 +38,10 @@ object UploadPreferences {
                                               HttpUriGetter.fromRegex(v)
                                           }
     }
+
+    private val help = NotAPreference("upload_help")
+
+    private val advancedGroup = NotAPreference("upload_advanced_group")
 
     private val additionalHeaders = object : S<RequestModifier?>("upload_additional_headers", "") {
         override fun convert(v: String) = RequestModifier.additionalHeaders(v)
@@ -63,6 +67,16 @@ object UploadPreferences {
     var requestModifiers = emptyList<RequestModifier>()
 
     init {
+        listOf(uploadUri, formFieldName, httpUriGetter, help, advancedGroup, additionalHeaders,
+               authentication, basicAuthenticationUser, basicAuthenticationPassword,
+               rememberUploadsFor).disableUnless {
+            accept.value != Accept.TextOnly
+        }
+
+        listOf(basicAuthenticationUser, basicAuthenticationPassword).disableUnless {
+            authentication.value == Authentication.Basic
+        }
+
         whenChanged(additionalHeaders, authentication,
                     basicAuthenticationUser, basicAuthenticationPassword) {
             requestModifiers = sequence {
