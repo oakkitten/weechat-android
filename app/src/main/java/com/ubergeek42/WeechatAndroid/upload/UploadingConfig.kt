@@ -99,7 +99,7 @@ private enum class ShareActivityAliases(val alias: String) {
     EVERYTHING("ShareActivityEverything"),
 }
 
-private fun enableDisableComponent(name: String, enabled: Boolean) {
+fun enableDisableComponent(name: String, enabled: Boolean) {
     val manager = applicationContext.packageManager
     val componentName = ComponentName(BuildConfig.APPLICATION_ID, "com.ubergeek42.WeechatAndroid.$name")
     val enabledDisabled = if (enabled)
@@ -107,4 +107,4 @@ private fun enableDisableComponent(name: String, enabled: Boolean) {
     manager.setComponentEnabledSetting(componentName, enabledDisabled, PackageManager.DONT_KILL_APP)
 }
 
-private val String.hours_to_ms get() = (this.toFloat() * 60 * 60 * 1000).toInt()
+val String.hours_to_ms get() = (this.toFloat() * 60 * 60 * 1000).toInt()

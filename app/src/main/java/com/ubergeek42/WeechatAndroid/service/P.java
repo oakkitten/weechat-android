@@ -28,6 +28,7 @@ import androidx.preference.ThemeManager;
 import com.ubergeek42.WeechatAndroid.R;
 import com.ubergeek42.WeechatAndroid.Weechat;
 import com.ubergeek42.WeechatAndroid.media.Config;
+import com.ubergeek42.WeechatAndroid.preferences.Preference;
 import com.ubergeek42.WeechatAndroid.relay.Buffer;
 import com.ubergeek42.WeechatAndroid.relay.BufferList;
 import com.ubergeek42.WeechatAndroid.upload.UploadingConfigKt;
@@ -72,6 +73,7 @@ public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
         if (instance != null) return;
         instance = new P();
         P.context = context;
+        Preference.register();
         p = PreferenceManager.getDefaultSharedPreferences(context);
         new MigratePreferences(context).migrate();
         loadUIPreferences();
