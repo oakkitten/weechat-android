@@ -24,7 +24,7 @@ object UploadPreferences {
 
     val accept = E("upload_accept", Accept.TextOnly, Accept.values())
 
-    val uploadUri = T("upload_uri", "").addValidator { it.ensureNoSpaces() }
+    val uploadUri = T("upload_uri", "").addValidator(::ensureNoSpaces)
                                        .addValidator { it.toHttpUrl() }
 
     val formFieldName = T("upload_form_field_name", "file")
@@ -69,7 +69,7 @@ object UploadPreferences {
             accept.value != Accept.TextOnly
         }
 
-        listOf(basicAuthenticationUser, basicAuthenticationPassword).disableUnless {
+        listOf(basicAuthenticationUser, basicAuthenticationPassword).hideUnless {
             authentication.value == Authentication.Basic
         }
 

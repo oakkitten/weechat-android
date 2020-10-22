@@ -27,7 +27,7 @@ class Toaster(
         }
     }
 
-    fun show(message: String, vararg args: Any) {
+    fun show(message: String, vararg args: Any?) {
         show(String.format(message, *args))
     }
 
@@ -35,7 +35,7 @@ class Toaster(
         show(context.resources.getString(id))
     }
 
-    fun show(@StringRes id: Int, vararg args: Any) {
+    fun show(@StringRes id: Int, vararg args: Any?) {
         show(context.resources.getString(id, *args))
     }
 

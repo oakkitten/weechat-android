@@ -13,7 +13,7 @@ import com.ubergeek42.WeechatAndroid.preferences.PersistedNullableStringPreferen
 object SshPreferences {
 
     val host = T("ssh_host", "").addValidator(::ensureNoSpaces)
-    val port = I("ssh_port", "22")
+    val port = I("ssh_port", "22").addValidator(::validPort)
     val user = T("ssh_user", "")
 
     enum class AuthenticationMethod(override val value: String) : EV {
@@ -24,10 +24,14 @@ object SshPreferences {
     val authenticationMethod = E("ssh_authentication_method",
                                  AuthenticationMethod.Password, AuthenticationMethod.values())
 
-    val password = T("ssh_password", "")
+    val password = T("ssh_password", "").hideUnless {
+        authenticationMethod.value == AuthenticationMethod.Password
+    }
 
     val serializedKey = object : N<ByteArray?>("ssh_key_file") {
         override fun convert(value: String?) = PrivateKeyPickerPreference.getData(value)
+    }.hideUnless {
+        authenticationMethod.value == AuthenticationMethod.Key
     }
 
     // not present in preferences

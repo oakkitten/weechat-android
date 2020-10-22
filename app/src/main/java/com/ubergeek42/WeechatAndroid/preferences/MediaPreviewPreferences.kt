@@ -61,8 +61,8 @@ object MediaPreviewPreferences {
     val thumbnailMaxHeight = I("media_preview_thumbnail_max_height", "160")
 
     init {
-        setOf(insecureRequests, help, advancedGroup).disableUnless {
-            enabledWhen.value != When.Never && enabledForContext.value.isEmpty()
+        setOf(insecureRequests, help, strategies, advancedGroup).disableUnless {
+            enabledWhen.value != When.Never && enabledForContext.value.isNotEmpty()
         }
     }
 }

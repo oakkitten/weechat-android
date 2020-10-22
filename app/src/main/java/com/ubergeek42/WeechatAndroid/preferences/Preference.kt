@@ -31,15 +31,15 @@ abstract class Preference<A, P>(
     @Throws(Exception::class) protected abstract fun convert(value: P): A
     @Throws(Exception::class) protected abstract fun validatePersistedType(value: Any?): P
 
-    private val validators = mutableListOf<Validator<P>>()
+    private val validators = mutableListOf<Validator<A>>()
 
     @Throws(Exception::class) fun validate(o: Any?): A {
-        val value = validatePersistedType(o)
-        if (value != default) validators.forEach { it.validate(value) }
-        return convert(value)
+        val value = convert(validatePersistedType(o))
+        validators.forEach { it.validate(value) }
+        return value
     }
 
-    fun addValidator(validator: Validator<P>): Preference<A, P> {
+    fun addValidator(validator: Validator<A>): Preference<A, P> {
         validators.add(validator)
         return this
     }
@@ -108,12 +108,12 @@ abstract class Preference<A, P>(
                 } else {
                     preference.invalidate()
                     kitty.info("preference %s has been changed to %s", key, preference.value)
-                    triggers.getValue(preference).forEach { it() }
+                    triggers[preference]?.forEach { it() }
                 }
             }
         }
 
-        @JvmStatic fun getByKey(key: String) = preferences[key]
+        @JvmStatic fun getByKey(key: String?) = preferences[key]
 
         private val triggers = mutableMapOf<AnyPreference,
                                             MutableList<() -> Unit>>()

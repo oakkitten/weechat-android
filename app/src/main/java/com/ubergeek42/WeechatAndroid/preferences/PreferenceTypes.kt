@@ -38,7 +38,7 @@ open class FloatPreference(key: String, default: String) : PersistedStringPrefer
 class EnumPreference<E> (key: String, default: E, enumValues: Array<E>)
         : PersistedStringPreference<E>(key, default.value)
         where E: Enum<E>, E : EnumPreference.Values {
-    private val enumValues: Map<String, E> = enumValues.associateBy { it.name }
+    private val enumValues: Map<String, E> = enumValues.associateBy { it.value }
 
     override fun convert(value: String) = enumValues.getValue(value)
 
@@ -51,7 +51,7 @@ class EnumPreference<E> (key: String, default: E, enumValues: Array<E>)
 class EnumSetPreference<E> (key: String, default: Set<E>, enumValues: Array<E>)
         : Preference<Set<E>, Set<String>>(key, default.map { it.value }.toSet())
         where E: Enum<E>, E : EnumPreference.Values {
-    private val enumValues: Map<String, E> = enumValues.associateBy { it.name }
+    private val enumValues: Map<String, E> = enumValues.associateBy { it.value }
 
     override fun retrieve() = p.getStringSet(key, default)!! as Set<String>
     override fun validatePersistedType(value: Any?): Set<String> = cast(value)
@@ -69,19 +69,23 @@ class NotQuiteAPreference(key: String) : Preference<Unit, Unit>(key, Unit) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-class MegabytesPreference(key: String, default: String) : IntPreference(key, default) {
+class MegabytesPreference(key: String, default: String) : FloatPreference(key, default) {
     val bytes get() = value * 1000 * 1000
 }
 
-class HoursPreference(key: String, default: String) : IntPreference(key, default) {
+class HoursPreference(key: String, default: String) : FloatPreference(key, default) {
     val milliseconds get() = value * 60 * 60 * 1000
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+private val reSpaces = "\\s".toRegex()
 fun ensureNoSpaces(string: String) {
-    if (string.contains("\\S".toRegex())) throw Exception("Setting can't contain spaces!")
+    if (string.contains(reSpaces)) throw Exception("Preference can’t contain spaces")
+}
+
+fun validPort(port: Int) {
+    if (port !in 0..65535) throw Exception("Port outside valid range")
 }
 
 @Suppress("USELESS_CAST")
