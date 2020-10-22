@@ -5,17 +5,15 @@ import com.ubergeek42.weechat.relay.connection.SSHServerKeyVerifier
 import com.ubergeek42.WeechatAndroid.preferences.TextPreference as T
 import com.ubergeek42.WeechatAndroid.preferences.EnumPreference as E
 import com.ubergeek42.WeechatAndroid.preferences.NotQuiteAPreference as Q
-import com.ubergeek42.WeechatAndroid.preferences.StringRetrievingPreference as S
+import com.ubergeek42.WeechatAndroid.preferences.PersistedStringPreference as S
 import com.ubergeek42.WeechatAndroid.preferences.EnumPreference.Values as EV
 import com.ubergeek42.WeechatAndroid.preferences.IntPreference as I
-import com.ubergeek42.WeechatAndroid.preferences.NullableStringRetrievingPreference as N
+import com.ubergeek42.WeechatAndroid.preferences.PersistedNullableStringPreference as N
 
 object SshPreferences {
 
-    val host = T("ssh_host", "").addValidator { it.ensureNoSpaces() }
-
+    val host = T("ssh_host", "").addValidator(::ensureNoSpaces)
     val port = I("ssh_port", "22")
-
     val user = T("ssh_user", "")
 
     enum class AuthenticationMethod(override val value: String) : EV {
@@ -29,14 +27,14 @@ object SshPreferences {
     val password = T("ssh_password", "")
 
     val serializedKey = object : N<ByteArray?>("ssh_key_file") {
-        override fun convert(v: String?) = PrivateKeyPickerPreference.getData(v)
+        override fun convert(value: String?) = PrivateKeyPickerPreference.getData(value)
     }
 
     // not present in preferences
     val serverKeyVerifier = object : S<SSHServerKeyVerifier>("ssh_server_key_verifier", "") {
-        override fun convert(v: String): SSHServerKeyVerifier {
-            return if (v.isNotEmpty()) {
-                SSHServerKeyVerifier.decodeFromString(v)
+        override fun convert(value: String): SSHServerKeyVerifier {
+            return if (value.isNotEmpty()) {
+                SSHServerKeyVerifier.decodeFromString(value)
             } else {
                 SSHServerKeyVerifier()
             }.also {

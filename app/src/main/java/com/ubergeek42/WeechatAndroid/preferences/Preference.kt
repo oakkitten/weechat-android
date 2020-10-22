@@ -15,63 +15,60 @@ fun interface Validator<R> {
 }
 
 
-abstract class Preference<A, R>(
+abstract class Preference<A, P>(
     val key: String,
-    val default: R,
-    private val storageClass: Class<R>
+    val default: P
 ) {
     @Root private val kitty = Kitty.make()
 
     init {
         kitty.setPrefix(key)
+        @Suppress("LeakingThis")
         preferences[key] = this
     }
 
-    @Throws(Exception::class) protected abstract fun retrieve(): R
-    @Throws(Exception::class) protected abstract fun convert(v: R): A
+    @Throws(Exception::class) protected abstract fun retrieve(): P
+    @Throws(Exception::class) protected abstract fun convert(value: P): A
+    @Throws(Exception::class) protected abstract fun validatePersistedType(value: Any?): P
 
-    private val validators = mutableListOf<Validator<R>>()
+    private val validators = mutableListOf<Validator<P>>()
 
     @Throws(Exception::class) fun validate(o: Any?): A {
-        val v = storageClass.cast(o) as R
-        if (v != default) validators.forEach { it.validate(v) }
-        return convert(v)
+        val value = validatePersistedType(o)
+        if (value != default) validators.forEach { it.validate(value) }
+        return convert(value)
     }
 
-    fun addValidator(validator: Validator<R>): Preference<A, R> {
+    fun addValidator(validator: Validator<P>): Preference<A, P> {
         validators.add(validator)
         return this
     }
 
     open fun invalidate() {
-        _isSet = false
+        isValueSet = false
     }
 
-    private var _isSet = false
-    private var _field: A = null as A
+    private var isValueSet = false
 
-    var value: A
-        private set(v) {
-            _field = v
-        }
-
+    @Suppress("UNCHECKED_CAST")
+    var value: A = Unit as A
+        private set
         get() {
-            if (!_isSet) {
-                _field = try {
-                    validate(retrieve())
-                } catch (e: Exception) {
-                    kitty.wtf("error while validating or converting value", e)
-                    convert(default)
-                }
-                _isSet = true
+            if (!isValueSet) {
+                field = try {
+                                validate(retrieve())
+                            } catch (e: Exception) {
+                                kitty.wtf("error while validating or converting value", e)
+                                convert(default)
+                            }
+                isValueSet = true
             }
-            return _field
+            return field
         }
-
 
     var hideUnlessCheck: Check = { true }
 
-    fun hideUnless(check: Check): Preference<A, R> {
+    fun hideUnless(check: Check): Preference<A, P> {
         hideUnlessCheck = check
         return this
     }
@@ -81,7 +78,7 @@ abstract class Preference<A, R>(
 
     var disableUnlessCheck: Check = { true }
 
-    fun disableUnless(check: Check): Preference<A, R> {
+    fun disableUnless(check: Check): Preference<A, P> {
         disableUnlessCheck = check
         return this
     }

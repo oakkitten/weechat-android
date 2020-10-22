@@ -9,7 +9,7 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import com.ubergeek42.WeechatAndroid.preferences.TextPreference as T
 import com.ubergeek42.WeechatAndroid.preferences.EnumPreference as E
 import com.ubergeek42.WeechatAndroid.preferences.NotQuiteAPreference as Q
-import com.ubergeek42.WeechatAndroid.preferences.StringRetrievingPreference as S
+import com.ubergeek42.WeechatAndroid.preferences.PersistedStringPreference as S
 import com.ubergeek42.WeechatAndroid.preferences.EnumPreference.Values as EV
 
 
@@ -25,15 +25,15 @@ object UploadPreferences {
     val accept = E("upload_accept", Accept.TextOnly, Accept.values())
 
     val uploadUri = T("upload_uri", "").addValidator { it.ensureNoSpaces() }
-                                 .addValidator { it.toHttpUrl() }
+                                       .addValidator { it.toHttpUrl() }
 
     val formFieldName = T("upload_form_field_name", "file")
 
     val httpUriGetter = object : S<HttpUriGetter>("upload_regex", "^https://\\S+") {
-        override fun convert(v: String) = if (v.isEmpty()) {
+        override fun convert(value: String) = if (value.isEmpty()) {
                                               HttpUriGetter.simple
                                           } else {
-                                              HttpUriGetter.fromRegex(v)
+                                              HttpUriGetter.fromRegex(value)
                                           }
     }
 
@@ -42,7 +42,7 @@ object UploadPreferences {
     private val advancedGroup = Q("upload_advanced_group")
 
     private val additionalHeaders = object : S<RequestModifier?>("upload_additional_headers", "") {
-        override fun convert(v: String) = RequestModifier.additionalHeaders(v)
+        override fun convert(value: String) = RequestModifier.additionalHeaders(value)
     }
 
     enum class Authentication(override val value: String) : EV {
@@ -56,9 +56,7 @@ object UploadPreferences {
 
     private val basicAuthenticationPassword = T("upload_authentication_basic_password", "")
 
-    val rememberUploadsFor = object : S<Int>("upload_remember_uploads_for", "24") {
-        override fun convert(v: String) = v.hours_to_ms
-    }
+    val rememberUploadsFor = HoursPreference("upload_remember_uploads_for", "24")
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

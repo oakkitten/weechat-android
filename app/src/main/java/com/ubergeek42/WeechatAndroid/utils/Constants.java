@@ -22,7 +22,7 @@ public class Constants {
     final static public String PREF_SSL_GROUP = "ssl_group";
     final static public String PREF_SSL_PIN_REQUIRED = "ssl_pin_required"; final static public boolean PREF_SSL_PIN_REQUIRED_D = false;
     final static public String PREF_SSL_CLEAR_CERTS = "ssl_clear_certs";
-    final static public String PREF_SSL_CLIENT_CERTIFICATE = "ssl_client_certificate"; final static public boolean PREF_SSL_CLIENT_CERTIFICATE_D = false;
+    final static public String PREF_SSL_CLIENT_CERTIFICATE = "ssl_client_certificate"; final static public String PREF_SSL_CLIENT_CERTIFICATE_D = null;
 
     // websocket
     final static public String PREF_WS_PATH = "ws_path"; final public static String PREF_WS_PATH_D = "weechat";
