@@ -14,12 +14,15 @@ import com.ubergeek42.WeechatAndroid.preferences.EnumPreference.Values as EV
 
 
 object UploadPreferences {
-    @Root private val kitty = Kitty.make()
-
     enum class Accept(override val value: String) : EV {
         TextOnly("text_only"),
         TextAndMedia("text_and_media"),
         Everything("everything"),
+    }
+
+    enum class Authentication(override val value: String) : EV {
+        None("none"),
+        Basic("basic"),
     }
 
     val accept = E("upload_accept", Accept.TextOnly, Accept.values())
@@ -45,15 +48,9 @@ object UploadPreferences {
         override fun convert(value: String) = RequestModifier.additionalHeaders(value)
     }
 
-    enum class Authentication(override val value: String) : EV {
-        None("none"),
-        Basic("basic"),
-    }
-
     private val authentication = E("upload_authentication", Authentication.None, Authentication.values())
 
     private val basicAuthenticationUser = T("upload_authentication_basic_user", "")
-
     private val basicAuthenticationPassword = T("upload_authentication_basic_password", "")
 
     val rememberUploadsFor = HoursPreference("upload_remember_uploads_for", "24")

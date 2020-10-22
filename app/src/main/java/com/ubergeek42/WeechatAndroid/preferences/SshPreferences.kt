@@ -11,18 +11,17 @@ import com.ubergeek42.WeechatAndroid.preferences.IntPreference as I
 import com.ubergeek42.WeechatAndroid.preferences.PersistedNullableStringPreference as N
 
 object SshPreferences {
-
-    val host = T("ssh_host", "").addValidator(::ensureNoSpaces)
-    val port = I("ssh_port", "22").addValidator(::validPort)
-    val user = T("ssh_user", "")
-
     enum class AuthenticationMethod(override val value: String) : EV {
         Password("password"),
         Key("key"),
     }
 
-    val authenticationMethod = E("ssh_authentication_method",
-                                 AuthenticationMethod.Password, AuthenticationMethod.values())
+    val host = T("ssh_host", "").addValidator(::ensureNoSpaces)
+    val port = I("ssh_port", "22").addValidator(::validPort)
+    val user = T("ssh_user", "")
+
+    val authenticationMethod = E("ssh_authentication_method", AuthenticationMethod.Password,
+                                                              AuthenticationMethod.values())
 
     val password = T("ssh_password", "").hideUnless {
         authenticationMethod.value == AuthenticationMethod.Password
@@ -34,7 +33,8 @@ object SshPreferences {
         authenticationMethod.value == AuthenticationMethod.Key
     }
 
-    // not present in preferences
+    // not present in user visible preferences
+    // but resettable using the preference below
     val serverKeyVerifier = object : S<SSHServerKeyVerifier>("ssh_server_key_verifier", "") {
         override fun convert(value: String): SSHServerKeyVerifier {
             return if (value.isNotEmpty()) {
@@ -43,7 +43,7 @@ object SshPreferences {
                 SSHServerKeyVerifier()
             }.also {
                 it.listener = SSHServerKeyVerifier.Listener {
-                    p.edit().putString(key, it.encodeToString()).apply()
+                    sharedPreferences.edit().putString(key, it.encodeToString()).apply()
                 }
             }
         }

@@ -19,8 +19,6 @@ object MediaPreviewPreferences {
         Always("always"),
     }
 
-    val enabledWhen = E("media_preview_enabled_for_network", When.Never, When.values())
-
     enum class Context(override val value: String) : EV {
         Chat("chat"),
         Paste("paste"),
@@ -35,28 +33,34 @@ object MediaPreviewPreferences {
         }
     }
 
-    val enabledForContext = ES("media_preview_enabled_for_location", Context.default, Context.values())
-            .disableUnless { enabledWhen.value != When.Never }
-
     enum class InsecureRequests(override val value: String) : EV {
         Allow("optional"),
         RewriteAsHttps("rewrite"),
         Disallow("required"),
     }
 
-    val insecureRequests = E("media_preview_secure_request", InsecureRequests.RewriteAsHttps, InsecureRequests.values())
+    val enabledWhen = E("media_preview_enabled_for_network", When.Never, When.values())
+
+    val enabledForContext = ES("media_preview_enabled_for_location", Context.default, Context.values())
+            .disableUnless { enabledWhen.value != When.Never }
+
+    val insecureRequests = E("media_preview_secure_request", InsecureRequests.RewriteAsHttps,
+                                                             InsecureRequests.values())
 
     val help = Q("media_preview_help")
 
-    val strategies = T("media_preview_strategies", context.resources.getString(R.string.pref__media_preview__strategies_default))
+    val strategies = T("media_preview_strategies", context.resources.getString(
+            R.string.pref__media_preview__strategies_default))
             .addValidator(Config::parseConfig)
 
     val advancedGroup = Q("media_preview_advanced_group")
 
     val maximumBodySize = MegabytesPreference("media_preview_maximum_body_size", "10")
     val diskCacheSize = MegabytesPreference("image_disk_cache_size", "250")
+
     val successCooldown = HoursPreference("media_preview_success_cooldown", "24")
 
+    val thumbnailWidth = I("media_preview_thumbnail_width", "80")
     val thumbnailMinHeight = I("media_preview_thumbnail_min_height", "40")
     val thumbnailMaxHeight = I("media_preview_thumbnail_max_height", "160")
 

@@ -13,7 +13,7 @@ object ThemePreferences {
     }
 
     val theme = E("theme", Theme.System, Theme.values())
-    val themeSwitch = B("theme_switch", false) .disableUnless { theme.value != Theme.System }
+    val themeSwitch = B("theme_switch", false).disableUnless { theme.value != Theme.System }
     val colorSchemeDay = T("color_scheme_day", "squirrely-light-theme.properties")
     val colorSchemeNight = T("color_scheme_night", "squirrely-dark-theme.properties")
     val dimDownNonHumanLines = B("dim_down", true)

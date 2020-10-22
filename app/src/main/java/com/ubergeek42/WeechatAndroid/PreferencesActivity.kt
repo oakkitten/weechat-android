@@ -13,7 +13,6 @@ import androidx.fragment.app.DialogFragment
 import androidx.preference.*
 import androidx.preference.DialogPreference.TargetFragment
 import com.ubergeek42.WeechatAndroid.preferences.Pref
-import com.ubergeek42.WeechatAndroid.preferences.Preference.Companion.getByKey
 import com.ubergeek42.WeechatAndroid.upload.main
 import com.ubergeek42.WeechatAndroid.utils.Toaster.Companion.ErrorToast
 
@@ -171,7 +170,7 @@ class PreferencesActivity : AppCompatActivity(),
 
         private fun enableDisablePreferences() {
             preferenceScreen.forEveryPreference { pref ->
-                getByKey(pref.key)?.let {
+                Pref.getByKey(pref.key)?.let {
                     pref.isEnabled = it.notDisabled
                     pref.isVisible = it.notHidden
                 }

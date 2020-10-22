@@ -1,17 +1,16 @@
 package com.ubergeek42.WeechatAndroid.preferences
 
-import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
 import com.ubergeek42.WeechatAndroid.upload.applicationContext
 import com.ubergeek42.cats.Kitty
 import com.ubergeek42.cats.Root
 
 val context = applicationContext
-val p = PreferenceManager.getDefaultSharedPreferences(context)!!
+val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)!!
 
 
-fun interface Validator<R> {
-    @Throws(Exception::class) fun validate(v: R)
+fun interface Validator<P> {
+    @Throws(Exception::class) fun validate(v: P)
 }
 
 
@@ -86,37 +85,10 @@ abstract class Preference<A, P>(
     val notDisabled get() = disableUnlessCheck()
 
 
-
     companion object {
-        @Root private val kitty = Kitty.make()
-
         val preferences = mutableMapOf<String, AnyPreference>()
 
-        @Throws(Exception::class)
-        fun validate(key: String, value: Any) {
-            val preference = preferences[key]!!
-            preference.validate(value)
-        }
-
-        @JvmStatic fun register() {
-            UploadPreferences
-
-            p.registerOnSharedPreferenceChangeListener { _: SharedPreferences, key: String ->
-                val preference = preferences[key]
-                if (preference == null) {
-                    kitty.wtf("preference unknown: %s", key)
-                } else {
-                    preference.invalidate()
-                    kitty.info("preference %s has been changed to %s", key, preference.value)
-                    triggers[preference]?.forEach { it() }
-                }
-            }
-        }
-
-        @JvmStatic fun getByKey(key: String?) = preferences[key]
-
-        private val triggers = mutableMapOf<AnyPreference,
-                                            MutableList<() -> Unit>>()
+        val triggers = mutableMapOf<AnyPreference, MutableList<() -> Unit>>()
 
         fun whenChanged(vararg preferences: AnyPreference, trigger: (() -> Unit)) {
             preferences.forEach { triggers.getOrPut(it, ::mutableListOf).add(trigger) }
