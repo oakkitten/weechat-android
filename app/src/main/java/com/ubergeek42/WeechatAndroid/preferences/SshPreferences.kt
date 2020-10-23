@@ -53,5 +53,7 @@ object SshPreferences {
         }
     }
 
-    val clearKnownHosts = Q("ssh_clear_known_host")
+    val clearKnownHosts = Q("ssh_clear_known_host").disableUnless {
+        serverKeyVerifier.value.numberOfRecords > 0
+    }
 }

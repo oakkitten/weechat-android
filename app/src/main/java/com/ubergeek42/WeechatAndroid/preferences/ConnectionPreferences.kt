@@ -2,6 +2,7 @@
 
 package com.ubergeek42.WeechatAndroid.preferences
 
+import com.ubergeek42.WeechatAndroid.service.SSLHandler
 import com.ubergeek42.WeechatAndroid.preferences.TextPreference as T
 import com.ubergeek42.WeechatAndroid.preferences.BooleanPreference as B
 import com.ubergeek42.WeechatAndroid.preferences.EnumPreference as E
@@ -17,7 +18,9 @@ object WebSocketPreferences {
 
 object SslPreferences {
     @JvmField val pinRequired = B("ssl_pin_required", false)
-    @JvmField val clearCerts = Q("ssl_clear_certs")
+    @JvmField val clearCerts = Q("ssl_clear_certs").disableUnless {
+        SSLHandler.getInstance(context).userCertificateCount > 0
+    }
     @JvmField val clientCertificate = Q("ssl_client_certificate")
 }
 

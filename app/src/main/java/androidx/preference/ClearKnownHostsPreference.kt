@@ -13,7 +13,6 @@ class ClearKnownHostsPreference(context: Context, attrs: AttributeSet) : ClearPr
 
     override fun update() {
         val entries = Pref.connection.ssh.serverKeyVerifier.value.numberOfRecords
-        isEnabled = entries > 0
 
         summary = if (entries == 0) context.getString(R.string.pref__ClearKnownHostsPreference__0_entries) else
                 context.resources.getQuantityString(R.plurals.pref__ClearKnownHostsPreference__n_entries, entries, entries)
