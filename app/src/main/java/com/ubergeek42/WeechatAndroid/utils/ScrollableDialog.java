@@ -16,6 +16,7 @@ import androidx.fragment.app.DialogFragment;
 
 import com.ubergeek42.WeechatAndroid.R;
 import com.ubergeek42.WeechatAndroid.WeechatActivity;
+import com.ubergeek42.WeechatAndroid.preferences.Pref;
 import com.ubergeek42.WeechatAndroid.service.P;
 import com.ubergeek42.weechat.relay.connection.Identity;
 import com.ubergeek42.weechat.relay.connection.Server;
@@ -88,7 +89,7 @@ public class ScrollableDialog extends DialogFragment {
                 R.string.dialog__ssh__server_unknown__button_reject_key, null
         );
         dialog.positiveButtonListener = (v, i) -> {
-            P.sshServerKeyVerifier.addServerHostKey(server, identity);
+            Pref.connection.ssh.serverKeyVerifier.getValue().addServerHostKey(server, identity);
             ((WeechatActivity) dialog.requireActivity()).connect();
         };
         return dialog;

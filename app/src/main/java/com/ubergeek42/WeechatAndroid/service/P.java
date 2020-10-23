@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.graphics.Typeface;
-import android.os.Build;
 import android.preference.PreferenceManager;
 import android.text.TextPaint;
 import android.text.TextUtils;
@@ -21,14 +20,15 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.WorkerThread;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.preference.PrivateKeyPickerPreference;
 import androidx.preference.ThemeManager;
 
 import com.ubergeek42.WeechatAndroid.R;
 import com.ubergeek42.WeechatAndroid.Weechat;
 import com.ubergeek42.WeechatAndroid.media.Config;
+import com.ubergeek42.WeechatAndroid.preferences.ConnectionPreferences;
+import com.ubergeek42.WeechatAndroid.preferences.LookAndFeelPreferences;
 import com.ubergeek42.WeechatAndroid.preferences.Pref;
+import com.ubergeek42.WeechatAndroid.preferences.SshPreferences;
 import com.ubergeek42.WeechatAndroid.relay.Buffer;
 import com.ubergeek42.WeechatAndroid.relay.BufferList;
 import com.ubergeek42.WeechatAndroid.upload.UploadingConfigKt;
@@ -42,7 +42,6 @@ import com.ubergeek42.cats.Root;
 import com.ubergeek42.weechat.Color;
 import com.ubergeek42.weechat.ColorScheme;
 import com.ubergeek42.weechat.relay.connection.SSHConnection;
-import com.ubergeek42.weechat.relay.connection.SSHServerKeyVerifier;
 
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -55,9 +54,11 @@ import java.util.LinkedList;
 
 import javax.net.ssl.SSLSocketFactory;
 
+import static com.ubergeek42.WeechatAndroid.preferences.ThemePreferences.applyThemePreference;
 import static com.ubergeek42.WeechatAndroid.utils.Constants.*;
 
 
+@SuppressWarnings("AccessStaticViaInstance")
 public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
     final private static @Root Kitty kitty = Kitty.make();
 
@@ -159,58 +160,42 @@ public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
 
     @MainThread private static void loadUIPreferences() {
         // buffer list preferences
-        sortBuffers = p.getBoolean(PREF_SORT_BUFFERS, PREF_SORT_BUFFERS_D);
-        filterBuffers = p.getBoolean(PREF_FILTER_NONHUMAN_BUFFERS, PREF_FILTER_NONHUMAN_BUFFERS_D);
-        hideHiddenBuffers = p.getBoolean(PREF_HIDE_HIDDEN_BUFFERS, PREF_HIDE_HIDDEN_BUFFERS_D);
-        optimizeTraffic = p.getBoolean(PREF_OPTIMIZE_TRAFFIC, PREF_OPTIMIZE_TRAFFIC_D);  // okay this is out of sync with onChanged stuff—used for the bell icon
+        sortBuffers = Pref.bufferList.sortByHot.getValue();
+        filterBuffers = Pref.bufferList.filterNonHuman.getValue();
+        hideHiddenBuffers = Pref.bufferList.hideHidden.getValue();
+        optimizeTraffic = Pref.connection.onlySyncOpenBuffers.getValue();  // okay this is out of sync with onChanged stuff—used for the bell icon
 
         // buffer-wide preferences
-        filterLines = p.getBoolean(PREF_FILTER_LINES, PREF_FILTER_LINES_D);
-        autoHideActionbar = p.getBoolean(PREF_AUTO_HIDE_ACTIONBAR, PREF_AUTO_HIDE_ACTIONBAR_D);
-        maxWidth = Integer.parseInt(getString(PREF_MAX_WIDTH, PREF_MAX_WIDTH_D));
-        encloseNick = p.getBoolean(PREF_ENCLOSE_NICK, PREF_ENCLOSE_NICK_D);
-        dimDownNonHumanLines = p.getBoolean(PREF_DIM_DOWN, PREF_DIM_DOWN_D);
+        filterLines = Pref.lookNFeel.filterLines.getValue();
+        autoHideActionbar = Pref.lookNFeel.autoHideToolbar.getValue();
+        maxWidth = Pref.lookNFeel.maxPrefixWidth.getValue();
+        encloseNick = Pref.lookNFeel.encloseNick.getValue();
+        dimDownNonHumanLines = Pref.theme.dimDownNonHumanLines.getValue();
         setTimestampFormat();
         setAlignment();
 
         // theme
         applyThemePreference();
-        themeSwitchEnabled = p.getBoolean(PREF_THEME_SWITCH, PREF_THEME_SWITCH_D);
+        themeSwitchEnabled = Pref.theme.themeSwitch.getValue();
 
         // notifications
-        notificationEnable = p.getBoolean(PREF_NOTIFICATION_ENABLE, PREF_NOTIFICATION_ENABLE_D);
-        notificationSound = p.getString(PREF_NOTIFICATION_SOUND, PREF_NOTIFICATION_SOUND_D);
-        notificationTicker = p.getBoolean(PREF_NOTIFICATION_TICKER, PREF_NOTIFICATION_TICKER_D);
-        notificationLight = p.getBoolean(PREF_NOTIFICATION_LIGHT, PREF_NOTIFICATION_LIGHT_D);
-        notificationVibrate = p.getBoolean(PREF_NOTIFICATION_VIBRATE, PREF_NOTIFICATION_VIBRATE_D);
+        notificationEnable = Pref.notifications.enable.getValue();
+        notificationSound = Pref.notifications.sound.getValue();
+        notificationTicker = Pref.notifications.ticker.getValue();
+        notificationLight = Pref.notifications.light.getValue();
+        notificationVibrate = Pref.notifications.vibrate.getValue();
 
         // buffer fragment
-        showSend = p.getBoolean(PREF_SHOW_SEND, PREF_SHOW_SEND_D);
-        showTab = p.getBoolean(PREF_SHOW_TAB, PREF_SHOW_TAB_D);
-        hotlistSync = p.getBoolean(PREF_HOTLIST_SYNC, PREF_HOTLIST_SYNC_D);
-        volumeBtnSize = p.getBoolean(PREF_VOLUME_BTN_SIZE, PREF_VOLUME_BTN_SIZE_D);
+        showSend = Pref.buttons.showSend.getValue();
+        showTab = Pref.buttons.showTab.getValue();
+        hotlistSync = Pref.connection.syncBufferReadStatus.getValue();
+        volumeBtnSize = Pref.buttons.volumeButtonsChangeTextSize.getValue();
 
         // buffer list filter
-        showBufferFilter = p.getBoolean(PREF_SHOW_BUFFER_FILTER, PREF_SHOW_BUFFER_FILTER_D);
+        showBufferFilter = Pref.bufferList.showFilter.getValue();
     }
 
-    // a brief recap on how themes work here
-    // * first, we set night mode here for the whole application. applyThemePreference() does't know
-    //   about activities. at this point we can't tell the effective theme, as activities can have
-    //   their own local settings. this call will recreate activities, if necessary.
-    // * after an activity is created, applyThemeAfterActivityCreation() is called. that's when we
-    //   know the actual theme that is going to be used. this theme will be used during the whole
-    //   lifecycle of the activity; if changed—by the user or the system—the activity is recreated.
-    // * color scheme can be changed without changing the theme. so we call it on activity creation
-    //   an on preference change.
-    private static void applyThemePreference() {
-        String theme = p.getString(PREF_THEME, PREF_THEME_D);
-        int flag = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q ?
-                AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY : AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
-        if       (PREF_THEME_DARK.equals(theme)) flag = AppCompatDelegate.MODE_NIGHT_YES;
-        else if (PREF_THEME_LIGHT.equals(theme)) flag = AppCompatDelegate.MODE_NIGHT_NO;
-        AppCompatDelegate.setDefaultNightMode(flag);
-    }
+
 
     public static void applyThemeAfterActivityCreation(AppCompatActivity activity) {
         darkThemeActive = ThemeFix.isNightModeEnabledForActivity(activity);
@@ -229,13 +214,12 @@ public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
     public static String host;
     static String wsPath;
     static String pass;
-    static String connectionType;
+    static ConnectionPreferences.Type connectionType;
     static String sshHost;
     static String sshUser;
     static SSHConnection.AuthenticationMethod sshAuthenticationMethod;
     static String sshPassword;
     static byte[] sshSerializedKey;
-    static public SSHServerKeyVerifier sshServerKeyVerifier;
     static public int port;
     static int sshPort;
     static SSLSocketFactory sslSocketFactory;
@@ -250,68 +234,44 @@ public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
     static boolean connectionSurelyPossibleWithCurrentPreferences;
 
     @MainThread public static void loadConnectionPreferences() {
-        host = p.getString(PREF_HOST, PREF_HOST_D);
-        pass = p.getString(PREF_PASSWORD, PREF_PASSWORD_D);
-        port = Integer.parseInt(getString(PREF_PORT, PREF_PORT_D));
-        wsPath = p.getString(PREF_WS_PATH, PREF_WS_PATH_D);
-        pinRequired = p.getBoolean(PREF_SSL_PIN_REQUIRED, PREF_SSL_PIN_REQUIRED_D);
+        host = Pref.connection.relay.host.getValue();
+        pass = Pref.connection.relay.password.getValue();
+        port = Pref.connection.relay.port.getValue();
+        wsPath = Pref.connection.webSocket.path.getValue();;
+        pinRequired = Pref.connection.ssl.pinRequired.getValue();
 
-        connectionType = p.getString(PREF_CONNECTION_TYPE, PREF_CONNECTION_TYPE_D);
-        sshHost = p.getString(PREF_SSH_HOST, PREF_SSH_HOST_D);
-        sshPort = Integer.valueOf(getString(PREF_SSH_PORT, PREF_SSH_PORT_D));
-        sshUser = p.getString(PREF_SSH_USER, PREF_SSH_USER_D);
-        sshAuthenticationMethod = PREF_SSH_AUTHENTICATION_METHOD_KEY.equals(
-                p.getString(PREF_SSH_AUTHENTICATION_METHOD, PREF_SSH_AUTHENTICATION_METHOD_D)) ?
-                        SSHConnection.AuthenticationMethod.KEY : SSHConnection.AuthenticationMethod.PASSWORD;
-        sshPassword = p.getString(PREF_SSH_PASSWORD, PREF_SSH_PASSWORD_D);
-        sshSerializedKey = PrivateKeyPickerPreference.getData(p.getString(PREF_SSH_KEY_FILE, PREF_SSH_KEY_FILE_D));
+        connectionType = Pref.connection.type.getValue();
+        sshHost = Pref.connection.ssh.host.getValue();
+        sshPort = Pref.connection.ssh.port.getValue();
+        sshUser = Pref.connection.ssh.user.getValue();
+        sshAuthenticationMethod =
+                Pref.connection.ssh.authenticationMethod.getValue() == SshPreferences.AuthenticationMethod.Key ?
+                SSHConnection.AuthenticationMethod.KEY : SSHConnection.AuthenticationMethod.PASSWORD;
+        sshPassword = Pref.connection.ssh.password.getValue();
+        sshSerializedKey = Pref.connection.ssh.serializedKey.getValue();
 
-        loadServerKeyVerifier();
+        lineIncrement = Pref.connection.numberOfLinesToLoad.getValue();
+        reconnect = Pref.connection.reconnectOnConnectionLoss.getValue();
+        optimizeTraffic = Pref.connection.onlySyncOpenBuffers.getValue();
 
-        lineIncrement = Integer.parseInt(getString(PREF_LINE_INCREMENT, PREF_LINE_INCREMENT_D));
-        reconnect = p.getBoolean(PREF_RECONNECT, PREF_RECONNECT_D);
-        optimizeTraffic = p.getBoolean(PREF_OPTIMIZE_TRAFFIC, PREF_OPTIMIZE_TRAFFIC_D);
+        pingEnabled = Pref.connection.ping.enabled.getValue();
+        pingIdleTime = Pref.connection.ping.idleTime.getMilliseconds();
+        pingTimeout = Pref.connection.ping.timeout.getMilliseconds();
 
-        pingEnabled = p.getBoolean(PREF_PING_ENABLED, PREF_PING_ENABLED_D);
-        pingIdleTime = Integer.parseInt(getString(PREF_PING_IDLE, PREF_PING_IDLE_D)) * 1000;
-        pingTimeout = Integer.parseInt(getString(PREF_PING_TIMEOUT, PREF_PING_TIMEOUT_D)) * 1000;
-
-        if (Utils.isAnyOf(connectionType, PREF_TYPE_SSL, PREF_TYPE_WEBSOCKET_SSL)) {
+        if (connectionType.usesSsl) {
             sslSocketFactory = SSLHandler.getInstance(context).getSSLSocketFactory();
         } else {
             sslSocketFactory = null;
         }
 
-        printableHost = connectionType.equals(PREF_TYPE_SSH) ? sshHost + "/" + host : host;
+        printableHost = connectionType == ConnectionPreferences.Type.Ssh ? sshHost + "/" + host : host;
         connectionSurelyPossibleWithCurrentPreferences = false;     // and don't call me Shirley
-    }
-
-    public static void loadServerKeyVerifier() {
-        if (sshServerKeyVerifier != null)
-            return;
-
-        String data = p.getString(PREF_SSH_SERVER_KEY_VERIFIER, PREF_SSH_SERVER_KEY_VERIFIER_D);
-
-        if (data != null && !TextUtils.isEmpty(data)) {
-            try {
-                sshServerKeyVerifier = SSHServerKeyVerifier.decodeFromString(data);
-            } catch (Exception e) {
-                kitty.warn("Error while decoding server key verifier", e);
-            }
-        }
-
-        if (sshServerKeyVerifier == null) sshServerKeyVerifier = new SSHServerKeyVerifier();
-
-        sshServerKeyVerifier.setListener(() -> {
-            String newData = sshServerKeyVerifier.encodeToString();
-            p.edit().putString(PREF_SSH_SERVER_KEY_VERIFIER, newData).apply();
-        });
     }
 
     @MainThread public static @StringRes int validateConnectionPreferences() {
         if (TextUtils.isEmpty(host)) return R.string.error__pref_validation__relay_host_not_set;
         if (TextUtils.isEmpty(pass)) return R.string.error__pref_validation__relay_password_not_set;
-        if (connectionType.equals(PREF_TYPE_SSH)) {
+        if (connectionType == ConnectionPreferences.Type.Ssh) {
             if (TextUtils.isEmpty(sshHost)) return R.string.error__pref_validation__ssh_host_not_set;
             if (sshAuthenticationMethod == SSHConnection.AuthenticationMethod.KEY) {
                 if (Utils.isEmpty(sshSerializedKey)) return R.string.error__pref_validation__ssh_key_not_set;
@@ -329,30 +289,30 @@ public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
     @MainThread @Override @CatD public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         switch (key) {
             // buffer list preferences
-            case PREF_SORT_BUFFERS: sortBuffers = p.getBoolean(key, PREF_SORT_BUFFERS_D); break;
-            case PREF_FILTER_NONHUMAN_BUFFERS: filterBuffers = p.getBoolean(key, PREF_FILTER_NONHUMAN_BUFFERS_D); break;
-            case PREF_HIDE_HIDDEN_BUFFERS: hideHiddenBuffers = p.getBoolean(key, PREF_HIDE_HIDDEN_BUFFERS_D); break;
-            case PREF_AUTO_HIDE_ACTIONBAR: autoHideActionbar = p.getBoolean(key, PREF_AUTO_HIDE_ACTIONBAR_D); break;
+            case PREF_SORT_BUFFERS: sortBuffers = Pref.bufferList.sortByHot.getValue(); break;
+            case PREF_FILTER_NONHUMAN_BUFFERS: filterBuffers = Pref.bufferList.filterNonHuman.getValue(); break;
+            case PREF_HIDE_HIDDEN_BUFFERS: hideHiddenBuffers = Pref.bufferList.hideHidden.getValue(); break;
+            case PREF_AUTO_HIDE_ACTIONBAR: autoHideActionbar = Pref.lookNFeel.autoHideToolbar.getValue(); break;
 
             // buffer-wide preferences
             case PREF_FILTER_LINES:
-                filterLines = p.getBoolean(key, PREF_FILTER_LINES_D);
+                filterLines = Pref.lookNFeel.filterLines.getValue();
                 BufferList.onGlobalPreferencesChanged(true);
                 break;
             case PREF_MAX_WIDTH:
-                maxWidth = Integer.parseInt(getString(key, PREF_MAX_WIDTH_D));
+                maxWidth = Pref.lookNFeel.maxPrefixWidth.getValue();
                 BufferList.onGlobalPreferencesChanged(false);
                 break;
             case PREF_ENCLOSE_NICK:
-                encloseNick = p.getBoolean(key, PREF_ENCLOSE_NICK_D);
+                encloseNick = Pref.lookNFeel.encloseNick.getValue();
                 BufferList.onGlobalPreferencesChanged(false);
                 break;
             case PREF_DIM_DOWN:
-                dimDownNonHumanLines = p.getBoolean(key, PREF_DIM_DOWN_D);
+                dimDownNonHumanLines = Pref.theme.dimDownNonHumanLines.getValue();
                 BufferList.onGlobalPreferencesChanged(false);
                 break;
             case PREF_THEME_SWITCH:
-                themeSwitchEnabled = p.getBoolean(key, PREF_THEME_SWITCH_D);
+                themeSwitchEnabled = Pref.theme.themeSwitch.getValue();
                 break;
             case PREF_TIMESTAMP_FORMAT:
                 setTimestampFormat();
@@ -376,20 +336,20 @@ public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
                 break;
 
             // notifications
-            case PREF_NOTIFICATION_ENABLE: notificationEnable = p.getBoolean(key, PREF_NOTIFICATION_ENABLE_D); break;
-            case PREF_NOTIFICATION_SOUND: notificationSound = p.getString(key, PREF_NOTIFICATION_SOUND_D); break;
-            case PREF_NOTIFICATION_TICKER: notificationTicker = p.getBoolean(key, PREF_NOTIFICATION_TICKER_D); break;
-            case PREF_NOTIFICATION_LIGHT: notificationLight = p.getBoolean(key, PREF_NOTIFICATION_LIGHT_D); break;
-            case PREF_NOTIFICATION_VIBRATE: notificationVibrate = p.getBoolean(key, PREF_NOTIFICATION_VIBRATE_D); break;
+            case PREF_NOTIFICATION_ENABLE: notificationEnable = Pref.notifications.enable.getValue(); break;
+            case PREF_NOTIFICATION_SOUND: notificationSound = Pref.notifications.sound.getValue(); break;
+            case PREF_NOTIFICATION_TICKER: notificationTicker = Pref.notifications.ticker.getValue(); break;
+            case PREF_NOTIFICATION_LIGHT: notificationLight = Pref.notifications.light.getValue(); break;
+            case PREF_NOTIFICATION_VIBRATE: notificationVibrate = Pref.notifications.vibrate.getValue(); break;
 
             // buffer fragment
-            case PREF_SHOW_SEND: showSend = p.getBoolean(key, PREF_SHOW_SEND_D); break;
-            case PREF_SHOW_TAB: showTab = p.getBoolean(key, PREF_SHOW_TAB_D); break;
-            case PREF_HOTLIST_SYNC: hotlistSync = p.getBoolean(key, PREF_HOTLIST_SYNC_D); break;
-            case PREF_VOLUME_BTN_SIZE: volumeBtnSize = p.getBoolean(key, PREF_VOLUME_BTN_SIZE_D); break;
+            case PREF_SHOW_SEND: showSend = Pref.buttons.showSend.getValue(); break;
+            case PREF_SHOW_TAB: showTab = Pref.buttons.showTab.getValue(); break;
+            case PREF_HOTLIST_SYNC: hotlistSync = Pref.connection.syncBufferReadStatus.getValue(); break;
+            case PREF_VOLUME_BTN_SIZE: volumeBtnSize = Pref.buttons.volumeButtonsChangeTextSize.getValue(); break;
 
             // buffer list fragment
-            case PREF_SHOW_BUFFER_FILTER: showBufferFilter = p.getBoolean(key, PREF_SHOW_BUFFER_FILTER_D); break;
+            case PREF_SHOW_BUFFER_FILTER: showBufferFilter = Pref.bufferList.showFilter.getValue(); break;
 
             default:
                 Config.onSharedPreferenceChanged(p, key);
@@ -400,23 +360,23 @@ public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @MainThread private static void setTimestampFormat() {
-        String t = p.getString(PREF_TIMESTAMP_FORMAT, PREF_TIMESTAMP_FORMAT_D);
+        String t = Pref.lookNFeel.timestampFormat.getValue();
         dateFormat = (TextUtils.isEmpty(t)) ? null : DateTimeFormat.forPattern(t);
     }
 
     @MainThread private static void setAlignment() {
-        String alignment = getString(PREF_PREFIX_ALIGN, PREF_PREFIX_ALIGN_D);
+        LookAndFeelPreferences.Align alignment = Pref.lookNFeel.alignment.getValue();
         switch (alignment) {
-            case "right":     align = Color.ALIGN_RIGHT; break;
-            case "left":      align = Color.ALIGN_LEFT; break;
-            case "timestamp": align = Color.ALIGN_TIMESTAMP; break;
-            default:          align = Color.ALIGN_NONE; break;
+            case Right:     align = Color.ALIGN_RIGHT; break;
+            case Left:      align = Color.ALIGN_LEFT; break;
+            case Timestamp: align = Color.ALIGN_TIMESTAMP; break;
+            default:        align = Color.ALIGN_NONE; break;
         }
     }
 
     @MainThread private static void setTextSizeColorAndLetterWidth() {
-        textSize = Float.parseFloat(getString(PREF_TEXT_SIZE, PREF_TEXT_SIZE_D));
-        String bufferFont = p.getString(PREF_BUFFER_FONT, PREF_BUFFER_FONT_D);
+        textSize = Pref.lookNFeel.textSize.getValue();
+        String bufferFont = Pref.lookNFeel.bufferFont.getValue();
 
         Typeface typeface = Typeface.MONOSPACE;
         try {typeface = Typeface.createFromFile(bufferFont);} catch (Exception ignored) {}

@@ -3,7 +3,7 @@ package androidx.preference
 import android.content.Context
 import android.util.AttributeSet
 import com.ubergeek42.WeechatAndroid.R
-import com.ubergeek42.WeechatAndroid.service.P
+import com.ubergeek42.WeechatAndroid.preferences.Pref
 import com.ubergeek42.WeechatAndroid.utils.Toaster.Companion.SuccessToast
 
 class ClearKnownHostsPreference(context: Context, attrs: AttributeSet) : ClearPreference(context, attrs) {
@@ -12,16 +12,15 @@ class ClearKnownHostsPreference(context: Context, attrs: AttributeSet) : ClearPr
     override val positiveButton = R.string.pref__ClearKnownHostsPreference__button_clear
 
     override fun update() {
-        P.loadServerKeyVerifier()
-        val count = P.sshServerKeyVerifier.numberOfRecords
-        isEnabled = count > 0
+        val entries = Pref.connection.ssh.serverKeyVerifier.value.numberOfRecords
+        isEnabled = entries > 0
 
-        summary = if (count == 0) context.getString(R.string.pref__ClearKnownHostsPreference__0_entries) else
-                context.resources.getQuantityString(R.plurals.pref__ClearKnownHostsPreference__n_entries, count, count)
+        summary = if (entries == 0) context.getString(R.string.pref__ClearKnownHostsPreference__0_entries) else
+                context.resources.getQuantityString(R.plurals.pref__ClearKnownHostsPreference__n_entries, entries, entries)
     }
 
     override fun clear() {
-        P.sshServerKeyVerifier.clear()
+        Pref.connection.ssh.serverKeyVerifier.value.clear()
         SuccessToast.show(R.string.pref__ClearKnownHostsPreference__success_cleared)
     }
 }

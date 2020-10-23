@@ -11,59 +11,62 @@ import com.ubergeek42.WeechatAndroid.preferences.IntPreference as I
 
 
 object WebSocketPreferences {
-    val path = T("ws_path", "weechat")
+    @JvmField val path = T("ws_path", "weechat")
 }
 
 
 object SslPreferences {
-    val pinRequired = B("ssl_pin_required", false)
-    val clearCerts = Q("ssl_clear_certs")
-    val clientCertificate = Q("ssl_client_certificate")
+    @JvmField val pinRequired = B("ssl_pin_required", false)
+    @JvmField val clearCerts = Q("ssl_clear_certs")
+    @JvmField val clientCertificate = Q("ssl_client_certificate")
 }
 
 
 object RelayPreferences {
-    val host = T("host", "").addValidator(::ensureNoSpaces)
-    val port = I("port", "9001").addValidator(::validPort)
-    val password = T("password", "")
+    @JvmField val host = T("host", "").addValidator(::ensureNoSpaces)
+    @JvmField val port = I("port", "9001").addValidator(::validPort)
+    @JvmField val password = T("password", "")
 }
 
 
 object PingSettings {
-    val enabled = B("ping_enabled", true)
-    val idleTime = SecondsPreference("ping_idle", "300").disableUnless { enabled.value == true }
-    val timeout = SecondsPreference("ping_timeout", "30").disableUnless { enabled.value == true }
+    @JvmField val enabled = B("ping_enabled", true)
+    @JvmField val idleTime: SecondsPreference = SecondsPreference("ping_idle", "300").disableUnless { enabled.value == true }
+    @JvmField val timeout = SecondsPreference("ping_timeout", "30").disableUnless { enabled.value == true }
 }
 
 
 object ConnectionPreferences {
-    enum class Type(override val value: String) : EV {
+    enum class Type(
+        override val value: String,
+        @JvmField val usesSsl: Boolean = false
+    ) : EV {
         Plain("plain"),
-        Secure("ssl"),
+        Secure("ssl", usesSsl = true),
         Ssh("ssh"),
         Websocket("websocket"),
-        WebsocketSecure("websocket-ssl"),
+        WebsocketSecure("websocket-ssl", usesSsl = true),
     }
 
-    val type = E("connection_type", Type.Plain, Type.values())
+    @JvmField val type = E("connection_type", Type.Plain, Type.values())
 
-    val webSocket = WebSocketPreferences
+    @JvmField val webSocket = WebSocketPreferences
 
     val sslGroup = Q("ssl_group")
-    val ssl = SslPreferences
+    @JvmField val ssl = SslPreferences
 
     val sshGroup = Q("ssh_group")
-    val ssh = SshPreferences
+    @JvmField val ssh = SshPreferences
 
-    val relay = RelayPreferences
+    @JvmField val relay = RelayPreferences
 
-    val numberOfLinesToLoad = I("line_increment", "300")
-    val reconnectOnConnectionLoss = B("reconnect", true)
-    val connectOnBoot = B("boot_connect", false)
-    val onlySyncOpenBuffers = B("optimize_traffic", false)
-    val syncBufferReadStatus = B("hotlist_sync", false)
+    @JvmField val numberOfLinesToLoad = I("line_increment", "300")
+    @JvmField val reconnectOnConnectionLoss = B("reconnect", true)
+    @JvmField val connectOnBoot = B("boot_connect", false)
+    @JvmField val onlySyncOpenBuffers = B("optimize_traffic", false)
+    @JvmField val syncBufferReadStatus = B("hotlist_sync", false)
 
-    val ping = PingSettings
+    @JvmField val ping = PingSettings
 
     init {
         webSocket.path.hideUnless {

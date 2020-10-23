@@ -9,17 +9,17 @@ object Pref {
     @Root private val kitty = Kitty.make()
 
 
-    val connection = ConnectionPreferences
-    val bufferList = BufferListPreferences
-    val lookNFeel = LookAndFeelPreferences
-    val theme = ThemePreferences
-    val buttons = ButtonPreferences
+    @JvmField val connection = ConnectionPreferences
+    @JvmField val bufferList = BufferListPreferences
+    @JvmField val lookNFeel = LookAndFeelPreferences
+    @JvmField val theme = ThemePreferences
+    @JvmField val buttons = ButtonPreferences
 
     val notificationsGroup = Q("notif_group")
-    val notifications = NotificationPreferences
+    @JvmField val notifications = NotificationPreferences
 
-    val mediaPreview = MediaPreviewPreferences
-    val upload = UploadPreferences
+    @JvmField val mediaPreview = MediaPreviewPreferences
+    @JvmField val upload = UploadPreferences
 
 
     fun getByKey(key: String?) = Preference.preferences[key]
@@ -32,7 +32,7 @@ object Pref {
     }
 
     @JvmStatic fun register() {
-        sharedPreferences.registerOnSharedPreferenceChangeListener {
+        defaultSharedPreferences.registerOnSharedPreferenceChangeListener {
                 _: SharedPreferences, key: String ->
             val preference = Preference.preferences[key]
             if (preference == null) {

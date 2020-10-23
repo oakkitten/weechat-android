@@ -27,6 +27,7 @@ import androidx.annotation.WorkerThread;
 
 import com.ubergeek42.WeechatAndroid.R;
 import com.ubergeek42.WeechatAndroid.Weechat;
+import com.ubergeek42.WeechatAndroid.preferences.Pref;
 import com.ubergeek42.WeechatAndroid.relay.BufferList;
 import com.ubergeek42.WeechatAndroid.relay.Hotlist;
 import com.ubergeek42.WeechatAndroid.utils.Network;
@@ -214,11 +215,11 @@ public class RelayService extends Service implements IObserver {
         IConnection conn;
         try {
             switch (P.connectionType) {
-                case PREF_TYPE_SSH: conn = new SSHConnection(P.host, P.port, P.sshHost, P.sshPort, P.sshUser,
-                        P.sshAuthenticationMethod, P.sshPassword, P.sshSerializedKey, P.sshServerKeyVerifier); break;
-                case PREF_TYPE_SSL: conn = new SimpleConnection(P.host, P.port, P.sslSocketFactory, SSLHandler.getHostnameVerifier()); break;
-                case PREF_TYPE_WEBSOCKET: conn = new WebSocketConnection(P.host, P.port, P.wsPath, null, null); break;
-                case PREF_TYPE_WEBSOCKET_SSL: conn = new WebSocketConnection(P.host, P.port, P.wsPath, P.sslSocketFactory, SSLHandler.getHostnameVerifier()); break;
+                case Ssh: conn = new SSHConnection(P.host, P.port, P.sshHost, P.sshPort, P.sshUser,
+                        P.sshAuthenticationMethod, P.sshPassword, P.sshSerializedKey, Pref.connection.ssh.serverKeyVerifier.getValue()); break;
+                case Secure: conn = new SimpleConnection(P.host, P.port, P.sslSocketFactory, SSLHandler.getHostnameVerifier()); break;
+                case Websocket: conn = new WebSocketConnection(P.host, P.port, P.wsPath, null, null); break;
+                case WebsocketSecure: conn = new WebSocketConnection(P.host, P.port, P.wsPath, P.sslSocketFactory, SSLHandler.getHostnameVerifier()); break;
                 default: conn = new SimpleConnection(P.host, P.port, null, null); break;
             }
         } catch (Exception e) {

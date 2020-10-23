@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.ubergeek42.WeechatAndroid.R;
+import com.ubergeek42.WeechatAndroid.preferences.Pref;
 import com.ubergeek42.WeechatAndroid.service.P;
 import com.ubergeek42.cats.Kitty;
 import com.ubergeek42.cats.Root;
@@ -22,10 +23,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
-import static com.ubergeek42.WeechatAndroid.utils.Constants.PREF_COLOR_SCHEME_DAY;
-import static com.ubergeek42.WeechatAndroid.utils.Constants.PREF_COLOR_SCHEME_DAY_D;
-import static com.ubergeek42.WeechatAndroid.utils.Constants.PREF_COLOR_SCHEME_NIGHT;
-import static com.ubergeek42.WeechatAndroid.utils.Constants.PREF_COLOR_SCHEME_NIGHT_D;
 import static com.ubergeek42.WeechatAndroid.utils.Toaster.ErrorToast;
 
 public class ThemeManager {
@@ -42,9 +39,9 @@ public class ThemeManager {
     }
 
     public static void loadColorSchemeFromPreferences(@NonNull Context context) {
-        String path = android.preference.PreferenceManager.getDefaultSharedPreferences(context)
-                .getString(P.darkThemeActive ? PREF_COLOR_SCHEME_NIGHT : PREF_COLOR_SCHEME_DAY,
-                        P.darkThemeActive ? PREF_COLOR_SCHEME_NIGHT_D : PREF_COLOR_SCHEME_DAY_D);
+        String path = P.darkThemeActive ?
+                Pref.theme.colorSchemeDay.getValue() :
+                Pref.theme.colorSchemeNight.getValue();
         Properties p = loadColorScheme(path, context.getAssets());
         if (p == null)
             ErrorToast.show(R.string.pref__ThemeManager__error_loading_color_scheme, path);

@@ -57,6 +57,7 @@ import com.ubergeek42.WeechatAndroid.adapters.MainPagerAdapter;
 import com.ubergeek42.WeechatAndroid.adapters.NickListAdapter;
 import com.ubergeek42.WeechatAndroid.fragments.BufferFragment;
 import com.ubergeek42.WeechatAndroid.media.CachePersist;
+import com.ubergeek42.WeechatAndroid.preferences.Pref;
 import com.ubergeek42.WeechatAndroid.relay.Buffer;
 import com.ubergeek42.WeechatAndroid.relay.BufferList;
 import com.ubergeek42.WeechatAndroid.relay.Hotlist;
@@ -714,7 +715,7 @@ public class WeechatActivity extends AppCompatActivity implements
         uiPager.post(() -> {
             int pagerHeight = uiPager.getHeight();
             uiPager.setSystemGestureExclusionRects(
-                    PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PREF_USE_GESTURE_EXCLUSION_ZONE, PREF_USE_GESTURE_EXCLUSION_ZONE_D) ?
+                    Pref.bufferList.useGestureExclusionZone.getValue() ?
                             Collections.singletonList(new Rect(0, pagerHeight / 2, 200, pagerHeight)) :
                             Collections.emptyList());
         });

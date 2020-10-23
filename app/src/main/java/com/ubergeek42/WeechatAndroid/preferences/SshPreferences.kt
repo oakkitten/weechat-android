@@ -16,18 +16,18 @@ object SshPreferences {
         Key("key"),
     }
 
-    val host = T("ssh_host", "").addValidator(::ensureNoSpaces)
-    val port = I("ssh_port", "22").addValidator(::validPort)
-    val user = T("ssh_user", "")
+    @JvmField val host = T("ssh_host", "").addValidator(::ensureNoSpaces)
+    @JvmField val port = I("ssh_port", "22").addValidator(::validPort)
+    @JvmField val user = T("ssh_user", "")
 
-    val authenticationMethod = E("ssh_authentication_method", AuthenticationMethod.Password,
+    @JvmField val authenticationMethod = E("ssh_authentication_method", AuthenticationMethod.Password,
                                                               AuthenticationMethod.values())
 
-    val password = T("ssh_password", "").hideUnless {
+    @JvmField val password = T("ssh_password", "").hideUnless {
         authenticationMethod.value == AuthenticationMethod.Password
     }
 
-    val serializedKey = object : N<ByteArray?>("ssh_key_file") {
+    @JvmField val serializedKey = object : N<ByteArray?>("ssh_key_file") {
         override fun convert(value: String?) = PrivateKeyPickerPreference.getData(value)
     }.hideUnless {
         authenticationMethod.value == AuthenticationMethod.Key
@@ -35,7 +35,7 @@ object SshPreferences {
 
     // not present in user visible preferences
     // but resettable using the preference below
-    val serverKeyVerifier = object : S<SSHServerKeyVerifier>("ssh_server_key_verifier", "") {
+    @JvmField val serverKeyVerifier = object : S<SSHServerKeyVerifier>("ssh_server_key_verifier", "") {
         override fun convert(value: String): SSHServerKeyVerifier {
             return if (value.isNotEmpty()) {
                 SSHServerKeyVerifier.decodeFromString(value)

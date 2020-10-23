@@ -1,12 +1,13 @@
 package com.ubergeek42.WeechatAndroid.preferences
 
+import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
 import com.ubergeek42.WeechatAndroid.upload.applicationContext
 import com.ubergeek42.cats.Kitty
 import com.ubergeek42.cats.Root
 
 val context = applicationContext
-val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)!!
+val defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)!!
 
 
 fun interface Validator<P> {
@@ -15,8 +16,9 @@ fun interface Validator<P> {
 
 
 abstract class Preference<A, P>(
-    val key: String,
-    val default: P
+    @JvmField val key: String,
+    @JvmField val default: P,
+    protected val sharedPreferences: SharedPreferences = defaultSharedPreferences
 ) {
     @Root private val kitty = Kitty.make()
 
@@ -55,33 +57,20 @@ abstract class Preference<A, P>(
         get() {
             if (!isValueSet) {
                 field = try {
-                                validate(retrieve())
-                            } catch (e: Exception) {
-                                kitty.wtf("error while validating or converting value", e)
-                                convert(default)
-                            }
+                            validate(retrieve())
+                        } catch (e: Exception) {
+                            kitty.wtf("error while validating or converting value", e)
+                            convert(default)
+                        }
                 isValueSet = true
             }
             return field
         }
 
     var hideUnlessCheck: Check = { true }
-
-    fun hideUnless(check: Check): Preference<A, P> {
-        hideUnlessCheck = check
-        return this
-    }
-
     val notHidden get() = hideUnlessCheck()
 
-
     var disableUnlessCheck: Check = { true }
-
-    fun disableUnless(check: Check): Preference<A, P> {
-        disableUnlessCheck = check
-        return this
-    }
-
     val notDisabled get() = disableUnlessCheck()
 
 
@@ -99,6 +88,21 @@ abstract class Preference<A, P>(
 
 private typealias AnyPreference = Preference<*, *>
 private typealias Check = () -> Boolean
+
+
+// the following two methods are not a part of the class because
+// a method that returns this will return the type of class its defined in and not of the actual
+// see https://stackoverflow.com/a/32614322/1449683
+
+fun <T: Preference<*, *>> T.hideUnless(check: Check): T {
+    hideUnlessCheck = check
+    return this
+}
+
+fun <T: Preference<*, *>> T.disableUnless(check: Check): T {
+    disableUnlessCheck = check
+    return this
+}
 
 
 fun Iterable<AnyPreference>.disableUnless(check: Check) {
