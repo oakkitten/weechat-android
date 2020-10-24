@@ -1,5 +1,6 @@
 package com.ubergeek42.WeechatAndroid.preferences
 
+import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.upload.i
 
 
@@ -72,17 +73,20 @@ open class NotQuiteAPreference(key: String) : Preference<Unit, Unit>(key, Unit) 
 
 
 open class MegabytesPreference(key: String, default: String) : FloatPreference(key, default) {
-    val bytes get() = value * 1000 * 1000
+    val bytes get() = (value * 1000 * 1000).i
 }
 
 open class HoursPreference(key: String, default: String) : FloatPreference(key, default) {
-    val milliseconds get() = value * 60 * 60 * 1000
+    val milliseconds get() = (value * 60 * 60 * 1000).i
 }
 
 open class SecondsPreference(key: String, default: String) : FloatPreference(key, default) {
     val milliseconds get() = (value * 1000).i
 }
 
+open class DpPreference(key: String, default: String) : FloatPreference(key, default) {
+    val dp get() = (value * P._1dp).i
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

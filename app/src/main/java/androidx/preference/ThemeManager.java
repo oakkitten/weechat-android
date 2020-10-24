@@ -40,8 +40,8 @@ public class ThemeManager {
 
     public static void loadColorSchemeFromPreferences(@NonNull Context context) {
         String path = P.darkThemeActive ?
-                Pref.theme.colorSchemeDay.getValue() :
-                Pref.theme.colorSchemeNight.getValue();
+                Pref.theme.colorSchemeNight.getValue() :
+                Pref.theme.colorSchemeDay.getValue();
         Properties p = loadColorScheme(path, context.getAssets());
         if (p == null)
             ErrorToast.show(R.string.pref__ThemeManager__error_loading_color_scheme, path);

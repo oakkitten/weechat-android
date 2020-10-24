@@ -59,7 +59,7 @@ abstract class Preference<A, P>(
                 field = try {
                             validate(retrieve())
                         } catch (e: Exception) {
-                            kitty.wtf("error while validating or converting value", e)
+                            kitty.wtf("error while validating or converting preference %s", key, e)
                             convert(default)
                         }
                 isValueSet = true

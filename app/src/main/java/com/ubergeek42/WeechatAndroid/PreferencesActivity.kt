@@ -15,6 +15,8 @@ import androidx.preference.DialogPreference.TargetFragment
 import com.ubergeek42.WeechatAndroid.preferences.Pref
 import com.ubergeek42.WeechatAndroid.upload.main
 import com.ubergeek42.WeechatAndroid.utils.Toaster.Companion.ErrorToast
+import com.ubergeek42.cats.Cat
+import com.ubergeek42.cats.CatD
 
 class PreferencesActivity : AppCompatActivity(),
                             PreferenceFragmentCompat.OnPreferenceStartScreenCallback {
@@ -66,9 +68,6 @@ class PreferencesActivity : AppCompatActivity(),
     ////////////////////////////////////////////////////////////////////////////////////////////////
     class PreferencesFragment : PreferenceFragmentCompat(), TargetFragment, Preference.OnPreferenceChangeListener {
         private var key: String? = null
-        //private var sslGroup: Preference? = null
-        //private var sshGroup: Preference? = null
-        //private var wsPath: Preference? = null
 
         private var resumePreference: Preference? = null
 

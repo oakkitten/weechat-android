@@ -39,34 +39,44 @@ object MediaPreviewPreferences {
         Disallow("required"),
     }
 
-    val enabledWhen = E("media_preview_enabled_for_network", When.Never, When.values())
+    @JvmField val enabledWhen = E("media_preview_enabled_for_network", When.Never, When.values())
 
-    val enabledForContext = ES("media_preview_enabled_for_location", Context.default, Context.values())
+    @JvmField val enabledForContext = ES("media_preview_enabled_for_location", Context.default, Context.values())
             .disableUnless { enabledWhen.value != When.Never }
 
-    val insecureRequests = E("media_preview_secure_request", InsecureRequests.RewriteAsHttps,
+    @JvmField val insecureRequests = E("media_preview_secure_request", InsecureRequests.RewriteAsHttps,
                                                              InsecureRequests.values())
 
-    val help = Q("media_preview_help")
+    @JvmField val help = Q("media_preview_help")
 
-    val strategies = T("media_preview_strategies", context.resources.getString(
+    @JvmField val strategies = T("media_preview_strategies", context.resources.getString(
             R.string.pref__media_preview__strategies_default))
             .addValidator(Config::parseConfig)
 
-    val advancedGroup = Q("media_preview_advanced_group")
+    @JvmField val advancedGroup = Q("media_preview_advanced_group")
 
-    val maximumBodySize = MegabytesPreference("media_preview_maximum_body_size", "10")
-    val diskCacheSize = MegabytesPreference("image_disk_cache_size", "250")
+    @JvmField val maximumBodySize = MegabytesPreference("media_preview_maximum_body_size", "10")
+    @JvmField val diskCacheSize = MegabytesPreference("image_disk_cache_size", "250")
 
-    val successCooldown = HoursPreference("media_preview_success_cooldown", "24")
+    @JvmField val successCooldown = HoursPreference("media_preview_success_cooldown", "24")
 
-    val thumbnailWidth = I("media_preview_thumbnail_width", "80")
-    val thumbnailMinHeight = I("media_preview_thumbnail_min_height", "40")
-    val thumbnailMaxHeight = I("media_preview_thumbnail_max_height", "160")
+    @JvmField val thumbnailWidth = DpPreference("media_preview_thumbnail_width", "80")
+    @JvmField val thumbnailMinHeight = DpPreference("media_preview_thumbnail_min_height", "40")
+    @JvmField val thumbnailMaxHeight = DpPreference("media_preview_thumbnail_max_height", "160")
 
     init {
         setOf(insecureRequests, help, strategies, advancedGroup).disableUnless {
             enabledWhen.value != When.Never && enabledForContext.value.isNotEmpty()
         }
+
+        val soo = enabledForContext.value.contains(Context.Chat)
     }
+
+    open class Base<T>(val t: T)
+
+    class Moo<E, Z: Set<E>>(val e: Set<E>) : Base<Set<E>>(e)
+
+    val moo = Moo(setOf(1))
+
+    val z: Set<Int> = moo.t
 }

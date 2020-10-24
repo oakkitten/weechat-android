@@ -21,7 +21,7 @@ object LookAndFeelPreferences {
 
     @JvmField val textSize = F("text_size", "16")
     @JvmField val autoHideToolbar = B("auto_hide_actionbar", true)
-    @JvmField val filterLines = B("text_size", true)
+    @JvmField val filterLines = B("chatview_filters", true)
     @JvmField val alignment = E("prefix_align", Align.Right, Align.values())
     @JvmField val maxPrefixWidth = I("prefix_max_width", "7")
     @JvmField val encloseNick = B("enclose_nick", false)

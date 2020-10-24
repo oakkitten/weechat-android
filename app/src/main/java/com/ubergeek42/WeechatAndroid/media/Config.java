@@ -7,6 +7,8 @@ import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
 
 import com.ubergeek42.WeechatAndroid.Weechat;
+import com.ubergeek42.WeechatAndroid.preferences.MediaPreviewPreferences;
+import com.ubergeek42.WeechatAndroid.preferences.Pref;
 import com.ubergeek42.WeechatAndroid.relay.BufferList;
 import com.ubergeek42.WeechatAndroid.service.P;
 import com.ubergeek42.WeechatAndroid.utils.Linkify;
@@ -25,12 +27,10 @@ import java.util.regex.Pattern;
 
 import static com.ubergeek42.WeechatAndroid.utils.Constants.PREF_MEDIA_PREVIEW_ENABLED_FOR_LOCATION;
 import static com.ubergeek42.WeechatAndroid.utils.Constants.PREF_MEDIA_PREVIEW_ENABLED_FOR_LOCATION_CHAT;
-import static com.ubergeek42.WeechatAndroid.utils.Constants.PREF_MEDIA_PREVIEW_ENABLED_FOR_LOCATION_D;
 import static com.ubergeek42.WeechatAndroid.utils.Constants.PREF_MEDIA_PREVIEW_ENABLED_FOR_LOCATION_NOTIFICATIONS;
 import static com.ubergeek42.WeechatAndroid.utils.Constants.PREF_MEDIA_PREVIEW_ENABLED_FOR_LOCATION_PASTE;
 import static com.ubergeek42.WeechatAndroid.utils.Constants.PREF_MEDIA_PREVIEW_ENABLED_FOR_NETWORK;
 import static com.ubergeek42.WeechatAndroid.utils.Constants.PREF_MEDIA_PREVIEW_ENABLED_FOR_NETWORK_ALWAYS;
-import static com.ubergeek42.WeechatAndroid.utils.Constants.PREF_MEDIA_PREVIEW_ENABLED_FOR_NETWORK_D;
 import static com.ubergeek42.WeechatAndroid.utils.Constants.PREF_MEDIA_PREVIEW_ENABLED_FOR_NETWORK_NEVER;
 import static com.ubergeek42.WeechatAndroid.utils.Constants.PREF_MEDIA_PREVIEW_ENABLED_FOR_NETWORK_UNMETERED_ONLY;
 import static com.ubergeek42.WeechatAndroid.utils.Constants.PREF_MEDIA_PREVIEW_ENABLED_FOR_NETWORK_WIFI_ONLY;
@@ -149,19 +149,19 @@ public class Config {
     public static void onSharedPreferenceChanged(SharedPreferences p, String key) {
         switch (key) {
             case PREF_MEDIA_PREVIEW_ENABLED_FOR_NETWORK:
-                enabledForNetwork = Enable.fromString(p.getString(key, PREF_MEDIA_PREVIEW_ENABLED_FOR_NETWORK_D));
+                enabledForNetwork = Enable.fromString(Pref.mediaPreview.enabledWhen.getValue().getValue());
                 break;
             case PREF_MEDIA_PREVIEW_ENABLED_FOR_LOCATION:
-                Set<String> set = p.getStringSet(key, PREF_MEDIA_PREVIEW_ENABLED_FOR_LOCATION_D);
-                enabledForChat = set.contains(PREF_MEDIA_PREVIEW_ENABLED_FOR_LOCATION_CHAT);
-                enabledForPaste = set.contains(PREF_MEDIA_PREVIEW_ENABLED_FOR_LOCATION_PASTE);
-                enabledForNotifications = set.contains(PREF_MEDIA_PREVIEW_ENABLED_FOR_LOCATION_NOTIFICATIONS);
+                Set<? extends MediaPreviewPreferences.Context> set = Pref.mediaPreview.enabledForContext.getValue();
+                enabledForChat = set.contains(MediaPreviewPreferences.Context.Chat);
+                enabledForPaste = set.contains(MediaPreviewPreferences.Context.Paste);
+                enabledForNotifications = set.contains(MediaPreviewPreferences.Context.Notifications);
                 break;
             case PREF_MEDIA_PREVIEW_SECURE_REQUEST:
-                secureRequestsPolicy = SecureRequest.fromString(p.getString(key, PREF_MEDIA_PREVIEW_SECURE_REQUEST_D));
+                secureRequestsPolicy = SecureRequest.fromString(Pref.mediaPreview.enabledWhen.getValue().getValue());
                 break;
             case PREF_MEDIA_PREVIEW_STRATEGIES:
-                Info info = parseConfigSafe(p.getString(key, PREF_MEDIA_PREVIEW_STRATEGIES_D));
+                Info info = parseConfigSafe(Pref.mediaPreview.strategies.getValue());
                 if (info != null) {
                     Linkify.setMessageFilter(info.messageFilter);
                     Engine.setLineFilters(info.lineFilters);
@@ -169,21 +169,21 @@ public class Config {
                 }
                 break;
             case PREF_MEDIA_PREVIEW_MAXIMUM_BODY_SIZE:
-                maximumBodySize = (long) (Float.parseFloat(p.getString(key, PREF_MEDIA_PREVIEW_MAXIMUM_BODY_SIZE_D)) * 1000 * 1000);
+                maximumBodySize = Pref.mediaPreview.maximumBodySize.getBytes();
                 break;
             case PREF_MEDIA_PREVIEW_SUCCESS_COOLDOWN:
-                successCooldown = (long) (Float.parseFloat(p.getString(key, PREF_MEDIA_PREVIEW_SUCCESS_COOLDOWN_D)) * 60 * 60 * 1000);
+                successCooldown = Pref.mediaPreview.successCooldown.getMilliseconds();
                 break;
             case PREF_MEDIA_PREVIEW_THUMBNAIL_WIDTH:
-                thumbnailWidth = (int) (P._1dp * Float.parseFloat(p.getString(key, PREF_MEDIA_PREVIEW_THUMBNAIL_WIDTH_D)));
+                thumbnailWidth = Pref.mediaPreview.thumbnailWidth.getDp();
                 thumbnailAreaWidth = thumbnailWidth + THUMBNAIL_HORIZONTAL_MARGIN * 2;
                 break;
             case PREF_MEDIA_PREVIEW_THUMBNAIL_MIN_HEIGHT:
-                thumbnailMinHeight = (int) (P._1dp * Float.parseFloat(p.getString(key, PREF_MEDIA_PREVIEW_THUMBNAIL_MIN_HEIGHT_D)));
+                thumbnailMinHeight = Pref.mediaPreview.thumbnailMinHeight.getDp();
                 thumbnailAreaMinHeight = thumbnailMinHeight + THUMBNAIL_VERTICAL_MARGIN * 2;
                 break;
             case PREF_MEDIA_PREVIEW_THUMBNAIL_MAX_HEIGHT:
-                thumbnailMaxHeight = (int) (P._1dp * Float.parseFloat(p.getString(key, PREF_MEDIA_PREVIEW_THUMBNAIL_MAX_HEIGHT_D)));
+                thumbnailMaxHeight = Pref.mediaPreview.thumbnailMaxHeight.getDp();
                 break;
             default:
                 return;
