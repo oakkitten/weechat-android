@@ -13,6 +13,7 @@
     <string name="connect">Verbinden</string>
     <string name="disconnect">Verbindung trennen</string>
     <string name="stop_connecting">Verbindungsaufbau beenden</string>
+    <string name="menu_hotlist">Hotlist</string>
     <string name="menu_nicklist">Benutzernamen</string>
     <string name="open_drawer">Schublade öffnen</string>
     <string name="close_drawer">Schublade schließen</string>
@@ -124,6 +125,7 @@
     <string name="pref_file_set">einstellen</string>
     <string name="pref_file_not_set">nicht einstellen</string>
     <!-- relay type -->
+    <string name="pref_relay_group">Relay</string>
     <string name="pref_relay_host">Relay-Host</string>
     <string name="pref_relay_port">Relay-Port</string>
     <string name="pref_relay_password">Relay-Passwort</string>
@@ -245,6 +247,7 @@
     <string name="pref_notification_enable_summary">Benachrichtigt über aktuelle Nachrichten, wie
         private Nachrichten oder Highlights</string>
     <string name="pref_notification_sound">Benachrichtigungston</string>
+    <string name="pref_notification_vibrate">Vibration</string>
     <string name="pref_notification_light">Benachrichtigungslicht</string>
     <!-- ringtone -->
     <string name="pref_ringtone_none">Keine</string>
@@ -297,6 +300,7 @@
     </plurals>
     <string name="pref_media_preview_advanced_group">Erweitere Einstellungen</string>
     <string name="pref_media_preview_maximum_body_size">Größenbeschränkung für Download</string>
+    <string name="pref_media_preview_maximum_body_size_summary">%s MB</string>
     <string name="pref_image_disk_cache_size">Disk Cache</string>
     <string name="pref_image_disk_cache_size_summary">%s MB; wird bei einem Neustart wirksam</string>
     <string name="pref_media_preview_success_cooldown">Erfolgreicher Rückgriff auf Bilder</string>
@@ -338,6 +342,7 @@
     <string name="pref_timestamp_invalid">Ungültiges Format für Zeitstempel</string>
     <string name="pref_number_invalid">Ungültige Nummer</string>
     <string name="pref_hostname_invalid">Keine Leerzeichen im Hostnamen erlaubt</string>
+    <string name="menu_debug">Debug</string>
     <string name="menu_sync_hotlist">Sync Hotlist</string>
     <string name="menu_die">Sterbe</string>
     <string name="menu_save">Sichern</string>
@@ -444,4 +449,13 @@
         <br>
         <br>Wenn Sie fortfahren möchten, bitte bekannte Hosts in den Einstellungen löschen.]]></string>
     <string name="pref_ssh_clear_known_hosts">Bekannte Hosts löschen</string>
+    <string-array name="pref_uploading_enabled_names">
+        <item>Nur Text</item>
+        <item>Text, Bilder und Videos</item>
+        <item>Alles</item>
+    </string-array>
+    <string-array name="pref_uploading_authentication_names">
+        <item>Keine</item>
+        <item>Basis</item>
+    </string-array>
 </resources>
