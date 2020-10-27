@@ -449,6 +449,11 @@
         <br>
         <br>Wenn Sie fortfahren möchten, bitte bekannte Hosts in den Einstellungen löschen.]]></string>
     <string name="pref_ssh_clear_known_hosts">Bekannte Hosts löschen</string>
+    <string name="pref_uploading_help_summary" tools:ignore="TypographyDashes,Typos"><![CDATA[Diese Einstellungen entsprechen in etwa dem folgenden Befehl:
+        <br><br>
+        <tt>curl -s --user user:pass --header \'Additional: Header\' --form file=@file.ext https://example.com | perl -nle \'/^https://\\S+/; print $1 // $&\'</tt>
+        <br><br>
+        Wenn ein reguläre Ausdruck festgelegt ist, wird dieser verwendet, um eine URL im Antworttext zu finden. Es wird entweder die passende Übereinstimmung verwendet, oder der gesamte Text.]]></string>
     <string-array name="pref_uploading_enabled_names">
         <item>Nur Text</item>
         <item>Text, Bilder und Videos</item>
