@@ -32,7 +32,7 @@
 
     <!-- ############################## main activity ui elements ############################## -->
 
-    <string name="ui__button_tab">Tab</string>
+    <string name="ui__button_tab" translatable="false">Tab</string>
     <string name="ui__button_send">Отправить</string>
 
     <string name="ui__button_fetch_more_lines">Загрузить больше строк</string>
@@ -549,7 +549,7 @@
 
     <string name="pref__theme">Тема</string>
     <string-array name="pref__theme__theme_names">
-        <item>@string/pref__theme__theme__system</item>
+        <item translatable="false">@string/pref__theme__theme__system</item>
         <item>Тёмная</item>
         <item>Светлая</item>
     </string-array>
