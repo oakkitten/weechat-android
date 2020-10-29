@@ -23,6 +23,7 @@
     <string name="error__etc__not_connected">Нет соединения</string>
     <string name="error__etc__activity_not_found_for_url">Не найдена Activity для Intent-а %s</string>
     <!-- ############################## main activity ui elements ############################## -->
+    <string name="ui__button_tab">Tab</string>
     <string name="ui__button_send">Отправить</string>
     <string name="ui__button_fetch_more_lines">Загрузить больше строк</string>
     <string name="ui__button_fetching_lines">Загрузка…</string>
