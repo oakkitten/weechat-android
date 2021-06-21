@@ -19,6 +19,14 @@ jobs:
     name: Build release apk
     runs-on: ubuntu-latest
     steps:
+      - name: Test
+        run: |
+          pip install --upgrade pip
+          pip install --user --upgrade google-api-python-client oauth2client httplib2 pyOpenSSL
+          python -c "import httplib2; httplib2.Http().close()"
+          echo ${{github.repository}}
+          echo ${{github.repository == 'ubergeek42/weechat-android'}}
+
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
