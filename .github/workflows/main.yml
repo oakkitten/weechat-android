@@ -113,6 +113,32 @@ jobs:
         env:
           GOOGLEPLAY_ACCT_EMAIL: ${{secrets.GOOGLEPLAY_ACCT_EMAIL}}
 
+  test_0:
+    name: Test 0
+    runs-on: ubuntu-latest
+    if: ${{github.repository == 'ubergeek42/weechat-android'}}
+    needs: [run-tests, build-dev-release, publish-to-s3, publish-to-play-store]
+    steps:
+      - name: Hello
+        run: echo hello ${{github.repository == 'ubergeek42/weechat-android'}}
+
+  test_1:
+    name: Test 1
+    runs-on: ubuntu-latest
+    if: ${{always() && github.repository == 'ubergeek42/weechat-android'}}
+    needs: [run-tests, build-dev-release, publish-to-s3, publish-to-play-store]
+    steps:
+      - name: Hello
+        run: echo hello ${{github.repository == 'ubergeek42/weechat-android'}}
+
+  test_2:
+    name: Test 2
+    runs-on: ubuntu-latest
+    if: ${{github.repository == 'ubergeek42/weechat-android'}}
+    steps:
+      - name: Hello
+        run: echo hello ${{github.repository == 'ubergeek42/weechat-android'}}
+
   notify_to_irc:
     name: Notify on IRC
     runs-on: ubuntu-latest
