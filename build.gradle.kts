@@ -70,12 +70,14 @@ subprojects {
 }
 
 
-// The below is a plugin that checks for dependency updates.
-// To get a plain text report, run:
-//   $ ./gradlew dependencyUpdates
-// See https://github.com/ben-manes/gradle-versions-plugin
 plugins {
+    // The below is a plugin that checks for dependency updates.
+    // To get a plain text report, run:
+    //   $ ./gradlew dependencyUpdates
+    // See https://github.com/ben-manes/gradle-versions-plugin
     id("com.github.ben-manes.versions") version "0.47.0"
+
+    id("com.google.devtools.ksp") version "1.9.0-1.0.11" apply false
 }
 
 fun isNonStable(version: String): Boolean {

@@ -9,7 +9,8 @@ import org.aspectj.tools.ajc.Main
 plugins {
     id("com.android.application")
     kotlin("android")
-    kotlin("kapt")
+    //kotlin("kapt")
+    id("com.google.devtools.ksp")
 }
 
 dependencies {
@@ -36,13 +37,13 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.2")
 
     implementation("com.github.bumptech.glide:glide:4.15.1")
-    kapt("com.github.bumptech.glide:compiler:4.15.1")
+    ksp("com.github.bumptech.glide:compiler:4.15.1")
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
 
     val roomVersion = "2.5.2"
     implementation("androidx.room:room-runtime:$roomVersion")
     annotationProcessor("androidx.room:room-compiler:$roomVersion")
-    kapt("androidx.room:room-compiler:$roomVersion")
+    ksp("androidx.room:room-compiler:$roomVersion")
 
     implementation("org.yaml:snakeyaml:2.0")
 
@@ -80,11 +81,9 @@ android {
 
         vectorDrawables.useSupportLibrary = true
 
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments["room.schemaLocation"] = "$projectDir/schemas"
-                arguments["room.incremental"] = "true"
-            }
+        ksp {
+            arg("room.schemaLocation", "$projectDir/schemas")
+            arg("room.incremental", "true")
         }
 
         kotlinOptions {
