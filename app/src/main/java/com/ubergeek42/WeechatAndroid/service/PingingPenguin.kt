@@ -14,16 +14,26 @@
 
 package com.ubergeek42.WeechatAndroid.service
 
+import android.app.Activity
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.SystemClock
+import android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
 import androidx.annotation.AnyThread
 import androidx.annotation.MainThread
+import androidx.annotation.RequiresApi
 import androidx.annotation.WorkerThread
+import androidx.core.content.getSystemService
+import androidx.core.net.toUri
+import androidx.fragment.app.FragmentActivity
+import com.ubergeek42.WeechatAndroid.R
+import com.ubergeek42.WeechatAndroid.dialogs.ScrollableDialog
 import com.ubergeek42.WeechatAndroid.upload.applicationContext
+import com.ubergeek42.cats.Cat
 import com.ubergeek42.cats.Kitty
 import com.ubergeek42.cats.Root
 
@@ -69,7 +79,12 @@ class PingingPenguin(val relayService: RelayService) {
 
     private fun scheduleTick(tick: Tick, at: Long) {
         lastTick = tick
-        alarmManager?.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, at, pendingPingIntent)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+            kitty.error("Can't schedule exact alarms, so pinging mechanism won't work")
+        } else {
+            alarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, at, pendingPingIntent)
+        }
     }
 }
 
@@ -92,7 +107,7 @@ class PingBroadcastReceiver : BroadcastReceiver() {
 private fun unschedulePings() {
     PendingIntent.getBroadcast(applicationContext, 0, pingIntent,
                                PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE)
-            ?.let { alarmManager?.cancel(it) }
+            ?.let { alarmManager.cancel(it) }
 }
 
 
@@ -103,5 +118,20 @@ private val pingIntent = Intent(applicationContext, PingBroadcastReceiver::class
 private val pendingPingIntent = PendingIntent.getBroadcast(applicationContext, 0, pingIntent,
         PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
-private val alarmManager = applicationContext
-        .getSystemService(Context.ALARM_SERVICE) as AlarmManager?
+private val alarmManager = applicationContext.getSystemService<AlarmManager>()!!
+
+
+@RequiresApi(Build.VERSION_CODES.S)
+fun shouldRequestExactAlarmPermission() = P.pingEnabled && !alarmManager.canScheduleExactAlarms()
+
+@RequiresApi(Build.VERSION_CODES.S)
+@Cat fun FragmentActivity.requestExactAlarmPermission() {
+    ScrollableDialog(
+        getString(R.string.dialog__alarm_permission_for_ping__title),
+        getString(R.string.dialog__alarm_permission_for_ping__text),
+        R.string.dialog__alarm_permission_for_ping__positive_button,
+        { _, _ -> startActivity(Intent(ACTION_REQUEST_SCHEDULE_EXACT_ALARM, "package:$packageName".toUri())) },
+        null,
+        null
+    ).show(supportFragmentManager, "alarm-permission-for-ping-dialog")
+}
