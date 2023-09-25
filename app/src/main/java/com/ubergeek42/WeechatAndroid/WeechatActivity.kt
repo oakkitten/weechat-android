@@ -13,6 +13,7 @@
 // limitations under the License.
 package com.ubergeek42.WeechatAndroid
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
@@ -53,6 +54,7 @@ import com.ubergeek42.WeechatAndroid.dialogs.ScrollableDialog
 import com.ubergeek42.WeechatAndroid.fragments.BufferFragment
 import com.ubergeek42.WeechatAndroid.fragments.BufferFragmentContainer
 import com.ubergeek42.WeechatAndroid.media.CachePersist
+import com.ubergeek42.WeechatAndroid.notifications.NotificationPermissionChecker
 import com.ubergeek42.WeechatAndroid.notifications.shortcuts
 import com.ubergeek42.WeechatAndroid.notifications.statistics
 import com.ubergeek42.WeechatAndroid.relay.BufferList
@@ -128,6 +130,11 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
         private set
 
     private val toolbarController = ToolbarController(this).apply { observeLifecycle() }
+
+    private val notificationPermissionChecker = when {
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> NotificationPermissionChecker(this)
+        else -> null
+    }
 
     init { WeechatActivityFullScreenController(this).observeLifecycle() }
 
@@ -224,6 +231,12 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && shouldRequestExactAlarmPermission()) {
             requestExactAlarmPermission()
+            return
+        }
+
+        @SuppressLint("NewApi")   // notificationPermissionChecker is null on incompatible APIs
+        if (notificationPermissionChecker?.shouldRequestNotificationPermission() == true) {
+            notificationPermissionChecker.requestNotificationPermission()
             return
         }
 
