@@ -96,6 +96,10 @@ import com.ubergeek42.WeechatAndroid.views.DrawerToggleFix
 import com.ubergeek42.WeechatAndroid.views.ToolbarController
 import com.ubergeek42.WeechatAndroid.views.hideSoftwareKeyboard
 import com.ubergeek42.WeechatAndroid.views.onSystemBarsAndImeInsetsChanged
+import com.ubergeek42.WeechatAndroid.views.snackbar.BaseSnackbarBuilderProvider
+import com.ubergeek42.WeechatAndroid.views.snackbar.SnackbarBuilder
+import com.ubergeek42.WeechatAndroid.views.snackbar.SnackbarPositionController
+import com.ubergeek42.WeechatAndroid.views.snackbar.setOrScheduleSettingAnchorAfterPagerChange
 import com.ubergeek42.WeechatAndroid.views.solidColor
 import com.ubergeek42.WeechatAndroid.views.updateDimensions
 import com.ubergeek42.WeechatAndroid.views.updateMargins
@@ -119,7 +123,7 @@ import kotlin.system.exitProcess
 
 
 class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
-        BufferListClickListener, BufferFragmentContainer {
+        BufferListClickListener, BufferFragmentContainer, BaseSnackbarBuilderProvider {
     private var uiMenu: Menu? = null
 
     private lateinit var pagerAdapter: MainPagerAdapter
@@ -158,15 +162,16 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
         }
 
         setContentView(R.layout.main_screen)
-        ui = WeaselBinding.bind(findViewById(android.R.id.content))
         uiDrawer = findViewById(R.id.bufferlist_fragment)
-        uiWeasel = findViewById(R.id.weasel)    // ui.weasel for some reason returns a wrong view
+        uiWeasel = findViewById(R.id.coordinator_layout)    // ui.weasel for some reason returns a wrong view
+        ui = WeaselBinding.bind(uiWeasel)
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
         ui.pager.rootView.onSystemBarsAndImeInsetsChanged { insets ->
             ui.toolbarContainer.updatePadding(top = insets.top, left = insets.left, right = insets.right)
             ui.navigationPadding.updateDimensions(height = insets.bottom)
             ui.pager.updateMargins(bottom = insets.bottom)
+            snackbarPositionController.setInsets(insets)
         }
 
         setSupportActionBar(ui.toolbar)
@@ -444,6 +449,10 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
             ui.kitty.visibility = if (pagerAdapter.count == 0) View.VISIBLE else View.GONE
             applyMainBackgroundColor()
         }
+
+        snackbarPositionController.setOrScheduleSettingAnchorAfterPagerChange(
+            pointer, pagerAdapter.currentBufferFragment, supportFragmentManager
+        )
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -511,6 +520,12 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
         // `onCreateOptionsMenu` is called *after* onStart, when `updateHotCount` was already called
         updateHotCount(hotNumber)
         return super.onCreateOptionsMenu(menu)
+    }
+
+    val snackbarPositionController = SnackbarPositionController()
+
+    override val baseSnackbarBuilder: SnackbarBuilder = {
+        snackbarPositionController.setSnackbar(this)
     }
 
     @MainThread @Cat("Menu") override fun onOptionsItemSelected(item: MenuItem): Boolean {
