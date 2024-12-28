@@ -13,6 +13,10 @@ import com.ubergeek42.WeechatAndroid.relay.BufferList
 import com.ubergeek42.WeechatAndroid.relay.as0x
 import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.utils.Constants
+import com.ubergeek42.WeechatAndroid.views.snackbar.BaseSnackbarBuilderProvider
+import com.ubergeek42.WeechatAndroid.views.snackbar.SnackbarBuilder
+import com.ubergeek42.WeechatAndroid.views.snackbar.SnackbarPositionController
+import com.ubergeek42.WeechatAndroid.views.snackbar.setOrScheduleSettingAnchorAfterPagerChange
 import com.ubergeek42.WeechatAndroid.views.onSystemBarsAndImeInsetsChanged
 import com.ubergeek42.WeechatAndroid.views.solidColor
 import com.ubergeek42.WeechatAndroid.views.updateDimensions
@@ -20,7 +24,7 @@ import com.ubergeek42.cats.Cat
 import com.ubergeek42.weechat.ColorScheme
 
 
-class BubbleActivity : AppCompatActivity(), BufferFragmentContainer {
+class BubbleActivity : AppCompatActivity(), BufferFragmentContainer, BaseSnackbarBuilderProvider {
     private var bufferFragment: BufferFragment? = null
 
     lateinit var ui: BubbleActivityBinding
@@ -53,6 +57,10 @@ class BubbleActivity : AppCompatActivity(), BufferFragmentContainer {
             } else {
                 alreadyAddedFragment as BufferFragment
             }
+
+            snackbarPositionController.setOrScheduleSettingAnchorAfterPagerChange(
+                pointer, bufferFragment, supportFragmentManager
+            )
 
             notifyBubbleActivityCreated(pointer)
         }
@@ -95,4 +103,11 @@ class BubbleActivity : AppCompatActivity(), BufferFragmentContainer {
     override fun closeBuffer(pointer: Long) {
         finish()
     }
+
+    private val snackbarPositionController = SnackbarPositionController()
+
+    override val baseSnackbarBuilder: SnackbarBuilder = {
+        snackbarPositionController.setSnackbar(this)
+    }
+
 }
