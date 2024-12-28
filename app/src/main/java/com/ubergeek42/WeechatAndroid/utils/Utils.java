@@ -149,7 +149,7 @@ public class Utils {
         view.setLayoutParams(params);
     }
 
-    public static Activity getActivity(View view) {
+    public static @Nullable Activity getActivity(@NonNull View view) {
         Context context = view.getContext();
         while (context instanceof ContextWrapper) {
             if (context instanceof Activity) return (Activity) context;
