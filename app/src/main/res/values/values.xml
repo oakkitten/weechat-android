@@ -128,4 +128,6 @@
     <dimen name="paste_dialog_image_half_vertical_margin">1.5dp</dimen>
 
     <dimen name="connectivity_indicator_bottom_margin">30dp</dimen>
+
+    <dimen name="mtrl_snackbar_background_corner_radius" tools:ignore="PrivateResource">12dp</dimen>
 </resources>
