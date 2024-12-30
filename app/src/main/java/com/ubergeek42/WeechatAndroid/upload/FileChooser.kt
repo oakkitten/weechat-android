@@ -15,17 +15,18 @@ import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import com.ubergeek42.WeechatAndroid.R
 import com.ubergeek42.WeechatAndroid.WeechatActivity
-import com.ubergeek42.WeechatAndroid.media.ContentUriFetcher.FILE_PROVIDER_SUFFIX
-import com.ubergeek42.WeechatAndroid.utils.Constants
 import com.ubergeek42.WeechatAndroid.dialogs.ScrollableDialog
-import com.ubergeek42.WeechatAndroid.utils.Toaster.Companion.ErrorToast
+import com.ubergeek42.WeechatAndroid.media.ContentUriFetcher.FILE_PROVIDER_SUFFIX
 import com.ubergeek42.WeechatAndroid.utils.applicationContext
+import com.ubergeek42.WeechatAndroid.utils.Constants
+import com.ubergeek42.WeechatAndroid.views.snackbar.showSnackbar
 import com.ubergeek42.cats.Kitty
 import com.ubergeek42.cats.Root
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 
 @Root private val kitty: Kitty = Kitty.make()
@@ -136,7 +137,7 @@ fun chooseFiles(fragment: Fragment, target: Target) {
         dialog.show(activity.supportFragmentManager, "camera-write-permission-dialog")
     } catch (e: Exception) {
         kitty.warn("Error while starting file picker activity", e)
-        ErrorToast.show(e)
+        fragment.showSnackbar(e)
     }
 }
 
