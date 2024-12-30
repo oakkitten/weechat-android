@@ -8,7 +8,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.preference.ThemeManager.enumerateThemes
 import com.ubergeek42.WeechatAndroid.R
-import com.ubergeek42.WeechatAndroid.utils.Toaster
+import com.ubergeek42.WeechatAndroid.views.snackbar.showSnackbar
 
 
 class ThemePreference(context: Context, attrs: AttributeSet?) : DialogPreference(context, attrs), DialogFragmentGetter {
@@ -34,7 +34,7 @@ class ThemePreference(context: Context, attrs: AttributeSet?) : DialogPreference
             try {
                 ThemeInfo.fromPath(path).name
             } catch (e: Exception) {
-                Toaster.ErrorToast.show(e)
+                showSnackbar(e)
                 context.getString(R.string.pref__ThemePreference__error)
             }
         }
@@ -53,7 +53,7 @@ class ThemePreference(context: Context, attrs: AttributeSet?) : DialogPreference
         override fun onPrepareDialogBuilder(builder: AlertDialog.Builder) {
             super.onPrepareDialogBuilder(builder)
 
-            themes = enumerateThemes(requireContext()).sortedBy { it.name.lowercase() }.toList()
+            themes = enumerateThemes(requireActivity()).sortedBy { it.name.lowercase() }.toList()
 
             val themeNames = themes.map { it.name }.toTypedArray()
             val currentPath = (preference as ThemePreference).themePath

@@ -10,14 +10,14 @@ import com.ubergeek42.WeechatAndroid.utils.applicationContext
 import com.ubergeek42.WeechatAndroid.upload.resolver
 import com.ubergeek42.WeechatAndroid.upload.suppress
 import com.ubergeek42.WeechatAndroid.utils.Constants
-import com.ubergeek42.WeechatAndroid.utils.Toaster
 import com.ubergeek42.WeechatAndroid.utils.getUris
 import com.ubergeek42.WeechatAndroid.utils.saveUriToFile
+import com.ubergeek42.WeechatAndroid.views.snackbar.showSnackbar
 import com.ubergeek42.weechat.ColorScheme
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import java.io.File
 import java.io.FileInputStream
-import java.util.*
+import java.util.Properties
 
 
 object ThemeManager {
@@ -44,20 +44,22 @@ object ThemeManager {
         }
     }
 
-    private fun Context.getExternalThemes() = sequence {
+    private fun Activity.getExternalThemes() = sequence {
         getThemeSearchDirectories(this@getExternalThemes).forEach { directoryName ->
             val directory = File(directoryName)
             if (directory.exists()) {
                 directory.listFiles()?.forEach { file ->
-                    suppress<Exception>(showToast = true) {
+                    try {
                         yield(ThemeInfo.fromPath(file.absolutePath))
+                    } catch (e: Exception) {
+                        showSnackbar(e)
                     }
                 }
             }
         }
     }
 
-    fun enumerateThemes(context: Context) = context.getAssetThemes() + context.getExternalThemes()
+    fun enumerateThemes(activity: Activity) = activity.getAssetThemes() + activity.getExternalThemes()
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -65,10 +67,10 @@ object ThemeManager {
         activity.startActivityForResult(importThemesIntent, IMPORT_THEMES_REQUEST_CODE, null)
     }
 
-    @JvmStatic fun importThemesFromResultIntent(context: Context, intent: Intent?) {
+    @JvmStatic fun importThemesFromResultIntent(context: Activity, intent: Intent?) {
         val imported = sequence {
             intent?.getUris()?.forEach { uri ->
-                suppress<Exception>(showToast = true) {
+                try {
                     val mediaType = resolver.getType(uri)?.toMediaTypeOrNull()
                     val fileName = Suri.makeFileNameWithExtension(uri, mediaType)
                     val folder = context.getExternalFilesDir(CUSTOM_THEMES_DIRECTORY)
@@ -83,12 +85,14 @@ object ThemeManager {
                     }
 
                     yield(themeName)
+                } catch (e: Exception) {
+                    context.showSnackbar(e)
                 }
             }
         }
 
-        Toaster.SuccessToast.show(context.getString(R.string.pref__ThemePreference__imported,
-                                                    imported.joinToString(", ")))
+        context.showSnackbar(context.getString(R.string.pref__ThemePreference__imported,
+                                               imported.joinToString(", ")))
     }
 }
 
