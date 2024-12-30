@@ -9,6 +9,7 @@ import android.text.TextPaint
 import android.text.style.URLSpan
 import android.view.View
 import com.ubergeek42.WeechatAndroid.R
+import com.ubergeek42.WeechatAndroid.views.snackbar.showSnackbar
 import java.util.regex.Pattern
 
 
@@ -61,7 +62,8 @@ private class URLSpan2(url: String) : URLSpan(url) {
         try {
             widget.context.startActivity(intent)
         } catch (e: ActivityNotFoundException) {
-            Toaster.ErrorToast.show(R.string.error__etc__activity_not_found_for_url, url)
+            val text = widget.resources.getString(R.string.error__etc__activity_not_found_for_url, url)
+            widget.showSnackbar(text)
         }
     }
 }
