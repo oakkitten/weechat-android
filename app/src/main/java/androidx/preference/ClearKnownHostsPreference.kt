@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import com.ubergeek42.WeechatAndroid.R
 import com.ubergeek42.WeechatAndroid.service.P
-import com.ubergeek42.WeechatAndroid.utils.Toaster.Companion.SuccessToast
+import com.ubergeek42.WeechatAndroid.views.snackbar.showSnackbar
 
 class ClearKnownHostsPreference(context: Context, attrs: AttributeSet) : ClearPreference(context, attrs) {
     override val message = R.string.pref__ClearKnownHostsPreference__prompt
@@ -22,6 +22,6 @@ class ClearKnownHostsPreference(context: Context, attrs: AttributeSet) : ClearPr
 
     override fun clear() {
         P.sshServerKeyVerifier.clear()
-        SuccessToast.show(R.string.pref__ClearKnownHostsPreference__success_cleared)
+        showSnackbar(R.string.pref__ClearKnownHostsPreference__success_cleared)
     }
 }
