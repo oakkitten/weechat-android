@@ -4,8 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import com.ubergeek42.WeechatAndroid.R
 import com.ubergeek42.WeechatAndroid.service.SSLHandler
-import com.ubergeek42.WeechatAndroid.utils.Toaster.Companion.ErrorToast
-import com.ubergeek42.WeechatAndroid.utils.Toaster.Companion.SuccessToast
+import com.ubergeek42.WeechatAndroid.views.snackbar.showSnackbar
 
 class ClearCertPreference(context: Context, attrs: AttributeSet) : ClearPreference(context, attrs) {
     override val message = R.string.pref__ClearCertPreference__prompt
@@ -25,9 +24,9 @@ class ClearCertPreference(context: Context, attrs: AttributeSet) : ClearPreferen
     override fun clear() {
         val removed = SSLHandler.getInstance(context).removeUserKeystore()
         if (removed) {
-            SuccessToast.show(R.string.pref__ClearCertPreference__success_cleared)
+            showSnackbar(R.string.pref__ClearCertPreference__success_cleared)
         } else {
-            ErrorToast.show(R.string.pref__ClearCertPreference__error_could_not_clear)
+            showSnackbar(R.string.pref__ClearCertPreference__error_could_not_clear)
         }
     }
 }
