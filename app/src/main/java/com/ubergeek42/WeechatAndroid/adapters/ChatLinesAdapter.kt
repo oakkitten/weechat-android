@@ -41,13 +41,13 @@ import com.ubergeek42.WeechatAndroid.search.Search
 import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.upload.i
 import com.ubergeek42.WeechatAndroid.upload.main
-import com.ubergeek42.WeechatAndroid.utils.Toaster
 import com.ubergeek42.WeechatAndroid.utils.forEachReversedIndexed
 import com.ubergeek42.WeechatAndroid.utils.isAnyOf
 import com.ubergeek42.WeechatAndroid.utils.ulet
 import com.ubergeek42.WeechatAndroid.views.AnimatedRecyclerView
 import com.ubergeek42.WeechatAndroid.views.Animation
 import com.ubergeek42.WeechatAndroid.views.LineView
+import com.ubergeek42.WeechatAndroid.views.snackbar.showSnackbar
 import com.ubergeek42.WeechatAndroid.views.solidColor
 import com.ubergeek42.WeechatAndroid.views.updateMargins
 import com.ubergeek42.cats.Kitty
@@ -288,7 +288,7 @@ class ChatLinesAdapter @MainThread constructor(
     @MainThread fun scrollToHotLineIfNeeded() {
         when (val idx = findHotLine()) {
             HOT_LINE_NOT_PRESENT -> return
-            HOT_LINE_LOST -> Toaster.ShortToast.show(R.string.error__etc__hot_line_lost)
+            HOT_LINE_LOST -> uiLines.showSnackbar(R.string.error__etc__hot_line_lost)
             else -> main(100) { uiLines.smoothScrollToPositionAfterAnimation(idx) }
         }
     }
