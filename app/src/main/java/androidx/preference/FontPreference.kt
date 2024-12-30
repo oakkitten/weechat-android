@@ -52,7 +52,7 @@ class FontPreference(context: Context, attrs: AttributeSet?) : DialogPreference(
 
             val fakeDefaultFontName = getString(R.string.pref__FontPreference__default)
             val fakeDefaultFont = FontInfo(fakeDefaultFontName, "", Typeface.MONOSPACE)
-            val managerFonts = FontManager.enumerateFonts(requireContext())
+            val managerFonts = FontManager.enumerateFonts(requireActivity())
             fonts = listOf(fakeDefaultFont) + managerFonts.sortedBy { it.name.lowercase() }
 
             val currentPath = (preference as FontPreference).fontPath

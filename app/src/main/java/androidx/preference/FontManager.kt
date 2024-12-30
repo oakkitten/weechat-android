@@ -10,10 +10,9 @@ import android.graphics.Typeface
 import com.ubergeek42.WeechatAndroid.R
 import com.ubergeek42.WeechatAndroid.upload.Suri
 import com.ubergeek42.WeechatAndroid.upload.resolver
-import com.ubergeek42.WeechatAndroid.upload.suppress
-import com.ubergeek42.WeechatAndroid.utils.Toaster
 import com.ubergeek42.WeechatAndroid.utils.getUris
 import com.ubergeek42.WeechatAndroid.utils.saveUriToFile
+import com.ubergeek42.WeechatAndroid.views.snackbar.showSnackbar
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import java.io.File
 
@@ -28,16 +27,18 @@ internal object FontManager {
         }
     }
 
-    fun enumerateFonts(context: Context): List<FontInfo> {
+    fun enumerateFonts(context: Activity): List<FontInfo> {
         val fonts = mutableListOf<FontInfo>()
 
         getFontSearchDirectories(context).forEach { directoryName ->
             val directory = File(directoryName)
             if (directory.exists()) {
                 directory.listFiles()?.forEach { file ->
-                    suppress<Exception>(showToast = true) {
+                    try {
                         val typeface = Typeface.createFromFile(file.absolutePath)
                         fonts.add(FontInfo(file.name, file.absolutePath, typeface))
+                    } catch (e: Exception) {
+                        context.showSnackbar(e)
                     }
                 }
             }
@@ -50,11 +51,11 @@ internal object FontManager {
         activity.startActivityForResult(importFontsIntent, IMPORT_FONTS_REQUEST_CODE, null)
     }
 
-    @JvmStatic fun importFontsFromResultIntent(context: Context, intent: Intent?) {
+    @JvmStatic fun importFontsFromResultIntent(context: Activity, intent: Intent?) {
         val imported = mutableListOf<String>()
 
         intent?.getUris()?.forEach { uri ->
-            suppress<Exception>(showToast = true) {
+            try {
                 val mediaType = resolver.getType(uri)?.toMediaTypeOrNull()
                 val fileName = Suri.makeFileNameWithExtension(uri, mediaType)
                 val folder = context.getExternalFilesDir(CUSTOM_FONTS_DIRECTORY)
@@ -71,12 +72,14 @@ internal object FontManager {
                 // so we are not doing any validation
 
                 imported.add(fileName)
+            } catch (e: Exception) {
+                context.showSnackbar(e)
             }
         }
 
         if (imported.isNotEmpty()) {
-            Toaster.SuccessToast.show(context.getString(R.string.pref__FontPreference__imported,
-                                                        imported.joinToString(", ")))
+            context.showSnackbar(context.getString(R.string.pref__FontPreference__imported,
+                                 imported.joinToString(", ")))
         }
     }
 }
