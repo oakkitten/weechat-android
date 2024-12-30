@@ -5,6 +5,7 @@ import android.widget.EditText
 import androidx.core.text.getSpans
 import com.ubergeek42.WeechatAndroid.R
 import com.ubergeek42.WeechatAndroid.upload.ShareSpan
+import com.ubergeek42.WeechatAndroid.views.snackbar.showSnackbar
 
 class History : java.io.Serializable {
     companion object {
@@ -69,7 +70,7 @@ class History : java.io.Serializable {
         if (editText.text.getSpans<ShareSpan>().isNotEmpty()) {
             // The editText contains non-uploaded ShareSpans that would be lost by navigating away.
             // Bail out early to prevent data loss.
-            Toaster.ErrorToast.show(R.string.error__etc__cannot_navigate_input_history_if_sharespans_in_input)
+            editText.showSnackbar(R.string.error__etc__cannot_navigate_input_history_if_sharespans_in_input)
             return
         }
         var newIndex = when (direction) {
