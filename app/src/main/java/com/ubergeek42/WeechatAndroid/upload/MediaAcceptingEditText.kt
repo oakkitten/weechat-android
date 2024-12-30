@@ -13,7 +13,7 @@ import androidx.core.view.inputmethod.InputConnectionCompat
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.ubergeek42.WeechatAndroid.utils.ActionEditText
-import com.ubergeek42.WeechatAndroid.utils.Toaster.Companion.ErrorToast
+import com.ubergeek42.WeechatAndroid.views.snackbar.showSnackbar
 import com.ubergeek42.cats.Kitty
 import com.ubergeek42.cats.Root
 import kotlinx.coroutines.launch
@@ -51,7 +51,7 @@ class MediaAcceptingEditText : ActionEditText {
             true
         } catch(e:Exception) {
             kitty.error("Error while accessing uri", e)
-            ErrorToast.show(e)
+            showSnackbar("Error while accessing URI", e)
             false
         }
     }
@@ -134,10 +134,12 @@ class MediaAcceptingEditText : ActionEditText {
             findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
                 state.shareSpans.forEach { (uri, start, end) ->
                     launch {
-                        suppress<Exception>(showToast = true) {
+                        try {
                             val suri = Suri.fromUri(uri)
                             val thumbnailSpannable = makeThumbnailSpannable(context, suri)
                             text?.replace(start, end, thumbnailSpannable)
+                        } catch (e: Exception) {
+                            showSnackbar("Error while accessing URI", e)
                         }
                     }
                 }
