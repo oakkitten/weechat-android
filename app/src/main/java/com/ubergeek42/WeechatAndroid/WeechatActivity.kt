@@ -84,7 +84,6 @@ import com.ubergeek42.WeechatAndroid.utils.FriendlyExceptions
 import com.ubergeek42.WeechatAndroid.utils.Network
 import com.ubergeek42.WeechatAndroid.utils.SimpleTransitionDrawable
 import com.ubergeek42.WeechatAndroid.utils.ThemeFix
-import com.ubergeek42.WeechatAndroid.utils.Toaster
 import com.ubergeek42.WeechatAndroid.utils.findCause
 import com.ubergeek42.WeechatAndroid.utils.isAnyOf
 import com.ubergeek42.WeechatAndroid.utils.let
@@ -100,6 +99,7 @@ import com.ubergeek42.WeechatAndroid.views.snackbar.BaseSnackbarBuilderProvider
 import com.ubergeek42.WeechatAndroid.views.snackbar.SnackbarBuilder
 import com.ubergeek42.WeechatAndroid.views.snackbar.SnackbarPositionController
 import com.ubergeek42.WeechatAndroid.views.snackbar.setOrScheduleSettingAnchorAfterPagerChange
+import com.ubergeek42.WeechatAndroid.views.snackbar.showSnackbar
 import com.ubergeek42.WeechatAndroid.views.solidColor
 import com.ubergeek42.WeechatAndroid.views.updateDimensions
 import com.ubergeek42.WeechatAndroid.views.updateMargins
@@ -243,7 +243,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
 
         val errorStringId = P.validateConnectionPreferences()
         if (errorStringId != 0) {
-            Toaster.ErrorToast.show(errorStringId)
+            showSnackbar(errorStringId)
             return
         }
 
@@ -420,7 +420,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
             }
         } else {
             val friendlyException = FriendlyExceptions(this).getFriendlyException(event.e)
-            Toaster.ErrorToast.show(R.string.error__etc__prefix, friendlyException.message)
+            showSnackbar(event.e)
             if (friendlyException.shouldStopConnecting) main { disconnect() }
         }
     }
@@ -585,7 +585,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
         if (buffer != null) {
             openBuffer(buffer.pointer)
         } else {
-            Toaster.ShortToast.show(R.string.error__etc__no_hot_buffers)
+            showSnackbar(R.string.error__etc__no_hot_buffers)
         }
     }
 
@@ -732,7 +732,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
             if (fullName != null && fullName != Constants.EXTRA_BUFFER_FULL_NAME_ANY) {
                 val buffer = BufferList.findByFullName(fullName)
                 if (buffer == null) {
-                    Toaster.ErrorToast.show("Couldn’t find buffer $fullName")
+                    showSnackbar("Couldn’t find buffer $fullName")
                     intent.removeExtra(Constants.EXTRA_BUFFER_FULL_NAME)
                     return
                 } else {
@@ -772,7 +772,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
                         shareObject = fromUris(uris)
                     } catch (e: Exception) {
                         kitty.warn("Error while accessing uri", e)
-                        Toaster.ErrorToast.show(e)
+                        showSnackbar("Error while accessing URI", e)
                     }
                 }
             }
