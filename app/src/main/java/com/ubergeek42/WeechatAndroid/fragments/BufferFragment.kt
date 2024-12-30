@@ -67,10 +67,15 @@ import com.ubergeek42.WeechatAndroid.upload.chooseFiles
 import com.ubergeek42.WeechatAndroid.upload.getShareObjectFromIntent
 import com.ubergeek42.WeechatAndroid.upload.i
 import com.ubergeek42.WeechatAndroid.upload.insertAddingSpacesAsNeeded
-import com.ubergeek42.WeechatAndroid.upload.suppress
 import com.ubergeek42.WeechatAndroid.upload.validateUploadConfig
-import com.ubergeek42.WeechatAndroid.utils.*
 import com.ubergeek42.WeechatAndroid.utils.Assert.assertThat
+import com.ubergeek42.WeechatAndroid.utils.History
+import com.ubergeek42.WeechatAndroid.utils.Utils
+import com.ubergeek42.WeechatAndroid.utils.afterTextChanged
+import com.ubergeek42.WeechatAndroid.utils.equalsIgnoringUselessSpans
+import com.ubergeek42.WeechatAndroid.utils.indexOfOrElse
+import com.ubergeek42.WeechatAndroid.utils.makeCopyWithoutUselessSpans
+import com.ubergeek42.WeechatAndroid.utils.ulet
 import com.ubergeek42.WeechatAndroid.views.OnBackGestureListener
 import com.ubergeek42.WeechatAndroid.views.OnJumpedUpWhileScrollingListener
 import com.ubergeek42.WeechatAndroid.views.calculateApproximateWeaselWidth
@@ -81,6 +86,7 @@ import com.ubergeek42.WeechatAndroid.views.onSystemBarsAndImeInsetsChanged
 import com.ubergeek42.WeechatAndroid.views.scrollToPositionWithOffsetFix
 import com.ubergeek42.WeechatAndroid.views.showSoftwareKeyboard
 import com.ubergeek42.WeechatAndroid.views.updateMargins
+import com.ubergeek42.WeechatAndroid.views.snackbar.showSnackbar
 import com.ubergeek42.cats.Cat
 import com.ubergeek42.cats.CatD
 import com.ubergeek42.cats.Kitty
@@ -567,7 +573,7 @@ class BufferFragment : Fragment(), BufferEye {
                 P.history.reset(input)
                 input.setText("")   // this will reset tab completion
             } else {
-                Toaster.ErrorToast.show(R.string.error__etc__not_connected)
+                showSnackbar(R.string.error__etc__not_connected)
             }
         }
     }
@@ -684,8 +690,7 @@ class BufferFragment : Fragment(), BufferEye {
 
         override fun onUploadFailure(suri: Suri, e: Exception) {
             if (e !is CancelledException) {
-                val message = FriendlyExceptions(context).getFriendlyException(e).message
-                Toaster.ErrorToast.show("Could not upload: %s\n\nError: %s", suri.uri, message)
+                showSnackbar("Could not upload file", e)
             }
         }
 
@@ -697,10 +702,12 @@ class BufferFragment : Fragment(), BufferEye {
 
     @Cat override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == Activity.RESULT_OK) {
-            suppress<Exception>(showToast = true) {
+            try {
                 getShareObjectFromIntent(requestCode, data)?.let {
                     setShareObject(it, InsertAt.CURRENT_POSITION)
                 }
+            } catch (e: Exception) {
+                showSnackbar("Could not import data", e)
             }
         }
     }
@@ -759,9 +766,11 @@ class BufferFragment : Fragment(), BufferEye {
     }
 
     private fun startUploads(suris: List<Suri>?) {
-        suppress<Exception>(showToast = true) {
+        try {
             validateUploadConfig()
             uploadManager!!.startUploads(suris!!)
+        } catch (e: Exception) {
+            showSnackbar(e)
         }
     }
 
@@ -1013,9 +1022,11 @@ class BufferFragment : Fragment(), BufferEye {
                 }
 
                 lifecycleScope.launch {
-                    suppress<Exception>(showToast = true) {
+                    try {
                         UrisShareObject.fromUris(uris).insertAsync(ui.chatInput, InsertAt.CURRENT_POSITION)
                         setPendingInputForParallelFragments()
+                    } catch (e: Exception) {
+                        showSnackbar("Could not import data", e)
                     }
                 }
             } else if (clipData.itemCount > 0) {
