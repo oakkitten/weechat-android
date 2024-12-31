@@ -10,8 +10,8 @@ import android.util.Base64
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import com.ubergeek42.WeechatAndroid.R
-import com.ubergeek42.WeechatAndroid.utils.Toaster
 import com.ubergeek42.WeechatAndroid.utils.Utils
+import com.ubergeek42.WeechatAndroid.views.snackbar.showSnackbar
 import com.ubergeek42.cats.Kitty
 import com.ubergeek42.cats.Root
 
@@ -43,14 +43,14 @@ open class FilePreference(context: Context, attrs: AttributeSet?)
         return null
     }
 
-    private fun saveDataAndShowToast(bytesGetter: ThrowingGetter<ByteArray?>) {
+    private fun saveDataAndShowSnackbar(bytesGetter: ThrowingGetter<ByteArray?>) {
         try {
             val bytes = bytesGetter.get()
             val message = saveData(bytes)
-            if (message != null) Toaster.SuccessToast.show(message)
+            if (message != null) showSnackbar(message)
         } catch (e: Exception) {
             kitty.error("error", e)
-            Toaster.ErrorToast.show(e)
+            showSnackbar(e)
         }
     }
 
@@ -58,7 +58,7 @@ open class FilePreference(context: Context, attrs: AttributeSet?)
 
     // this gets called when a file has been picked
     fun onActivityResult(intent: Intent) {
-        saveDataAndShowToast { Utils.readFromUri(context, intent.data) }
+        saveDataAndShowSnackbar { Utils.readFromUri(context, intent.data) }
     }
 
     override fun getDialogFragment(): DialogFragment = FilePreferenceFragment()
@@ -70,16 +70,16 @@ open class FilePreference(context: Context, attrs: AttributeSet?)
             val preference = preference as FilePreference
 
             builder.setNeutralButton(R.string.pref__FilePreference__button_clear) { _, _ ->
-                preference.saveDataAndShowToast { null }
+                preference.saveDataAndShowSnackbar { null }
             }
 
             builder.setNegativeButton(R.string.pref__FilePreference__button_paste) { _, _ ->
                 val clipboardManager = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val clipboardText = clipboardManager.text
                 if (!clipboardText.isNullOrEmpty()) {
-                    preference.saveDataAndShowToast { clipboardText.toString().toByteArray() }
+                    preference.saveDataAndShowSnackbar { clipboardText.toString().toByteArray() }
                 } else {
-                    Toaster.ErrorToast.show(R.string.error__pref__clipboard_empty)
+                    showSnackbar(R.string.error__pref__clipboard_empty)
                 }
             }
 
