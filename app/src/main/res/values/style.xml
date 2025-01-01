@@ -29,7 +29,7 @@
              to pick up the proper layout that uses these attributes. -->
         <item name="snackbarStyle">@style/Widget.MaterialComponents.Snackbar</item>
         <item name="snackbarTextViewStyle">@style/Widget.MaterialComponents.Snackbar.TextView</item>
-        <item name="snackbarButtonStyle">@style/Widget.MaterialComponents.Button.TextButton.Snackbar</item>
+        <item name="snackbarButtonStyle">@style/SnackbarButtonStyle</item>
 
     </style>
 
@@ -96,5 +96,14 @@
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowIsFloating">true</item>
+    </style>
+
+    <style name="SnackbarButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Snackbar">
+        <!-- This color will be layered over the surface color, with some alpha -->
+        <item name="android:textColor">@color/button_text_color</item>
+        <!-- Material buttons have some letter spacing added, but since no other components
+             in the app use material theming, let's remove it for the sake of consistency.
+             TODO Remove if the app moves to material theming. -->
+        <item name="android:letterSpacing">0</item>
     </style>
 </resources>
