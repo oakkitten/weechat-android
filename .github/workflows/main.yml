@@ -124,7 +124,7 @@ jobs:
     name: Publish to GitHub
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [run-tests, publish-to-s3]
+    needs: [run-tests, build-dev-release]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
