@@ -120,17 +120,49 @@ jobs:
         env:
           GOOGLEPLAY_ACCT_EMAIL: ${{secrets.GOOGLEPLAY_ACCT_EMAIL}}
 
+  publish-to-github:
+    name: Publish to GitHub
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [run-tests, publish-to-s3]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-outputs
+          path: app/build/outputs/
+
+      - name: Name the apk
+        run: mv app/build/outputs/apk/dev/app-dev.apk app/build/outputs/apk/dev/WeechatAndroid-${{ github.token }}.apk
+
+      - name: Publish to Github
+        run: >- 
+          gh release create 
+          ${{ github.ref_name }}
+          --verify-tag 
+          --notes-from-tag 
+          --title ${{ github.ref_name }}
+          app/build/outputs/apk/dev/WeechatAndroid-${{ github.token }}.apk
+        env:
+          GH_TOKEN: ${{ github.token }}
+
   notify_to_irc:
     name: Notify on IRC
     runs-on: ubuntu-latest
     if: ${{always() && github.repository == 'ubergeek42/weechat-android'}}
-    needs: [run-tests, build-dev-release, publish-to-s3, publish-to-play-store]
+    needs: [run-tests, build-dev-release, publish-to-s3, publish-to-github, publish-to-play-store]
     steps:
       - name: Prepare strings
         id: prepare
         run: |
-          status="tests ${{needs.run-tests.result}}, build ${{needs.build-dev-release.result}}, "
-          status+="s3 ${{needs.publish-to-s3.result}}, play store ${{needs.publish-to-play-store.result}}"
+          status="tests ${{needs.run-tests.result}}, "
+          status+="build ${{needs.build-dev-release.result}}, "
+          status+="s3 ${{needs.publish-to-s3.result}}, "
+          status+="gh ${{needs.publish-to-github.result}}, "
+          status+="play store ${{needs.publish-to-play-store.result}}"
           status="${status//success/✔️}"
           status="${status//failure/$'\x03'04❌$'\x0f'}"
           status="${status//cancelled/✖️}"
