@@ -49,7 +49,7 @@ public class FriendlyExceptions {
         if (e instanceof SSHConnection.FailedToAuthenticateWithKeyException)
             return getFriendlyException((SSHConnection.FailedToAuthenticateWithKeyException) e);
 
-        return new Result(getJoinedExceptionString(e).toString(), false);
+        return new Result(getDefaultExceptionString(e), false);
     }
 
     public Result getFriendlyException(ClientCertificateMismatchException e) {
@@ -79,16 +79,12 @@ public class FriendlyExceptions {
         return new Result(message, false);
     }
 
-    @SuppressWarnings("ConstantConditions")
-    public CharSequence getJoinedExceptionString(Throwable t) {
-        ArrayList<CharSequence> messages = new ArrayList<>();
-        while (t != null) {
-            String message = t.getMessage();
-            if (TextUtils.isEmpty(message)) message = t.getClass().getSimpleName();
-            if (!message.endsWith(".")) message += ".";
-            messages.add(message);
-            t = t.getCause();
+    public String getDefaultExceptionString(Throwable t) {
+        String message = t.getMessage();
+        if (TextUtils.isEmpty(message)) {
+            return t.getClass().getSimpleName();
+        } else {
+            return message;
         }
-        return join(" ", messages);
     }
 }
