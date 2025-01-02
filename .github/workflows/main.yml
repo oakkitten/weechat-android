@@ -142,7 +142,8 @@ jobs:
         run: >- 
           gh release create 
           ${{ github.ref_name }}
-          --verify-tag 
+          --verify-tag
+          --generate-notes
           --notes-from-tag 
           --title ${{ github.ref_name }}
           app/build/outputs/apk/debug/WeechatAndroid-${{ github.token }}.apk
