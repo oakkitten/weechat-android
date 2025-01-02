@@ -136,7 +136,7 @@ jobs:
           path: app/build/outputs/
 
       - name: Name the apk
-        run: mv app/build/outputs/apk/dev/app-dev.apk app/build/outputs/apk/dev/WeechatAndroid-${{ github.token }}.apk
+        run: mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/WeechatAndroid-${{ github.token }}.apk
 
       - name: Publish to Github
         run: >- 
@@ -145,7 +145,7 @@ jobs:
           --verify-tag 
           --notes-from-tag 
           --title ${{ github.ref_name }}
-          app/build/outputs/apk/dev/WeechatAndroid-${{ github.token }}.apk
+          app/build/outputs/apk/debug/WeechatAndroid-${{ github.token }}.apk
         env:
           GH_TOKEN: ${{ github.token }}
 
