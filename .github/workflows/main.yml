@@ -141,7 +141,7 @@ jobs:
         run: git tag --list v69.420 --format='%(contents)'
 
       - name: Name the apk
-        run: mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/WeechatAndroid-${{ github.token }}.apk
+        run: mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/WeechatAndroid-${{ github.ref_name }}.apk
 
       - name: Publish to Github
         run: >- 
@@ -150,7 +150,7 @@ jobs:
           --verify-tag
           --notes-from-tag 
           --title ${{ github.ref_name }}
-          app/build/outputs/apk/debug/WeechatAndroid-${{ github.token }}.apk
+          app/build/outputs/apk/debug/WeechatAndroid-${{ github.ref_name }}.apk
         env:
           GH_TOKEN: ${{ github.token }}
 
