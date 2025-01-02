@@ -137,11 +137,13 @@ jobs:
           name: build-outputs
           path: app/build/outputs/
 
-      - name: Echo
-        run: git tag --list v69.420 --format='%(contents)'
-
       - name: Name the apk
-        run: mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/WeechatAndroid-${{ github.ref_name }}.apk
+        id: name
+        run: |
+          short_sha=`git rev-parse --short HEAD`
+          apk_full_path="app/build/outputs/apk/debug/weechatandroid-${{ github.ref_name }}-${short_sha}.apk"
+          mv app/build/outputs/apk/debug/app-debug.apk "${apk_full_path}"
+          echo ::set-output name=apk_full_path::"${apk_full_path}"
 
       - name: Publish to Github
         run: >- 
@@ -150,7 +152,7 @@ jobs:
           --verify-tag
           --notes-from-tag 
           --title ${{ github.ref_name }}
-          app/build/outputs/apk/debug/WeechatAndroid-${{ github.ref_name }}.apk
+          ${{ steps.name.outputs.apk_full_path }}
         env:
           GH_TOKEN: ${{ github.token }}
 
