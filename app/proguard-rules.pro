@@ -14,6 +14,11 @@
 
 -optimizationpasses 5
 
+# Prevent R8 from merging exception classes, which is done to reduce the number of classes.
+# Merging does not affect functionality or pose a problem for deobfuscation,
+# however now that we are presenting some exceptions to the user it's best to keep original names.
+-keep,allowshrinking class * extends java.lang.Exception { *; }
+
 # support library stuff
 -keep public class android.support.v7.preference.** { *; }
 
