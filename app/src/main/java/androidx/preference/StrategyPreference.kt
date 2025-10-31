@@ -5,34 +5,32 @@ import android.util.AttributeSet
 import android.widget.TextView
 import com.ubergeek42.WeechatAndroid.R
 import com.ubergeek42.WeechatAndroid.media.Config
-import com.ubergeek42.WeechatAndroid.utils.Utils
 import com.ubergeek42.cats.Cat
 
-class StrategyPreference(context: Context?, attrs: AttributeSet?) :
+class StrategyPreference(context: Context, attrs: AttributeSet?) :
         FullScreenEditTextPreference(context, attrs) {
-    @Cat(exit = true) override fun getSummary(): CharSequence? {
-        val context = getContext()
 
-        val info = Config.parseConfigSafe(getText())
-        if (info == null) return context.getString(R.string.pref__StrategyPreference__summary_error)
+    @Cat(exit = true) override fun getSummary(): CharSequence {
+        val info = Config.parseConfigSafe(text)
+                ?: return context.getString(R.string.pref__StrategyPreference__summary_error)
 
-        val messageFilter =
-            if (info.messageFilter != null) context.getString(R.string.pref__StrategyPreference__message_filter_set) else context.getString(
-                R.string.pref__StrategyPreference__message_filter_not_set)
+        val messageFilter = if (info.messageFilter != null)
+            context.getString(R.string.pref__StrategyPreference__message_filter_set) else
+            context.getString(R.string.pref__StrategyPreference__message_filter_not_set)
 
-        val lineFilters =
-            if (info.lineFilters == null) context.getString(R.string.pref__StrategyPreference__0_line_filters_set) else context.getResources()
-                    .getQuantityString(R.plurals.pref__StrategyPreference__n_line_filters_set,
-                                       info.lineFilters!!.size, info.lineFilters!!.size)
+        val lineFilters = if (info.lineFilters == null)
+            context.getString(R.string.pref__StrategyPreference__0_line_filters_set) else
+            context.resources.getQuantityString(
+                R.plurals.pref__StrategyPreference__n_line_filters_set,
+                info.lineFilters.size,
+                info.lineFilters.size
+            )
 
-        val summaries: String?
-        if (info.strategies == null) {
-            summaries = context.getString(R.string.pref__StrategyPreference__strategies_not_loaded)
+        val summaries = if (info.strategies == null) {
+            context.getString(R.string.pref__StrategyPreference__strategies_not_loaded)
         } else {
-            val names: MutableList<CharSequence?> = ArrayList<CharSequence?>()
-            for (s in info.strategies) names.add(s.getName())
-            summaries = context.getString(R.string.pref__StrategyPreference__strategies_list,
-                                          Utils.join(", ", names))
+            val commaSeparatedNames = info.strategies.joinToString { it.name }
+            context.getString(R.string.pref__StrategyPreference__strategies_list, commaSeparatedNames)
         }
 
         return context.getString(R.string.pref__StrategyPreference__summary,
@@ -44,6 +42,6 @@ class StrategyPreference(context: Context?, attrs: AttributeSet?) :
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
         val summary = holder.findViewById(android.R.id.summary) as TextView
-        summary.setMaxHeight(Int.Companion.MAX_VALUE)
+        summary.setMaxHeight(Int.MAX_VALUE)
     }
 }

@@ -119,9 +119,9 @@ public class Config {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static class Info {
-        @Nullable public Pattern messageFilter;
-        @Nullable public List<LineFilter> lineFilters;
-        @Nullable public List<Strategy> strategies;
+        @Nullable final public Pattern messageFilter;
+        @Nullable final public List<LineFilter> lineFilters;
+        @Nullable final public List<Strategy> strategies;
 
         Info(@Nullable Pattern messageFilter, @Nullable List<LineFilter> lineFilters, @Nullable List<Strategy> strategies) {
             this.messageFilter = messageFilter;
