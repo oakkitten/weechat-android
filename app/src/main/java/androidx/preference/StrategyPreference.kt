@@ -1,17 +1,20 @@
 package androidx.preference
 
 import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
 import android.util.AttributeSet
 import android.widget.TextView
 import com.ubergeek42.WeechatAndroid.R
 import com.ubergeek42.WeechatAndroid.media.Config
+import com.ubergeek42.WeechatAndroid.utils.Constants.PREF_MEDIA_PREVIEW_STRATEGIES
 import com.ubergeek42.cats.Cat
 
 class StrategyPreference(context: Context, attrs: AttributeSet?) :
-        FullScreenEditTextPreference(context, attrs) {
+        Preference(context, attrs) {
 
     @Cat(exit = true) override fun getSummary(): CharSequence {
-        val info = Config.parseConfigSafe(text)
+        val info = Config.parseConfigSafe(getPersistedString(""))
                 ?: return context.getString(R.string.pref__StrategyPreference__summary_error)
 
         val messageFilter = if (info.messageFilter != null)
@@ -44,4 +47,32 @@ class StrategyPreference(context: Context, attrs: AttributeSet?) :
         val summary = holder.findViewById(android.R.id.summary) as TextView
         summary.setMaxHeight(Int.MAX_VALUE)
     }
+
+    init {
+        intent = Intent(context, StrategyPreferenceActivity::class.java)
+    }
+
+    // With dialogs, we can can call through to the preference to notify it of change.
+    // With activities we can't, so simply watch for the change in shared preferences.
+    val changeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key == this.key) notifyChanged()
+    }
+
+    override fun onAttached() {
+        super.onAttached()
+        preferenceManager.sharedPreferences?.registerOnSharedPreferenceChangeListener(changeListener)
+    }
+
+    override fun onDetached() {
+        super.onDetached()
+        preferenceManager.sharedPreferences?.unregisterOnSharedPreferenceChangeListener(changeListener)
+    }
+}
+
+class StrategyPreferenceActivity : FullScreenEditTextPreferenceActivity() {
+    override val key = PREF_MEDIA_PREVIEW_STRATEGIES
+    override val title get() = getString(R.string.pref__media_preview__strategies)
+    override val defaultValue get() = getString(R.string.pref__media_preview__strategies_default)
+
+    override fun validate(value: String) = Config.parseConfigSafe(value) != null
 }

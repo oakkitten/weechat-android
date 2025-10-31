@@ -142,6 +142,8 @@
 
 
         <activity android:name=".PreferencesActivity" />
+        <activity android:name="androidx.preference.StrategyPreferenceActivity" />
+
         <activity android:name=".copypaste.CopyActivity"
             android:windowSoftInputMode="adjustNothing|stateAlwaysHidden" />
         <activity android:name=".WeechatAboutActivity"
