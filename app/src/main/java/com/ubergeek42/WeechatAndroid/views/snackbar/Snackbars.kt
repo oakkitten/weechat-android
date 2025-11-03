@@ -2,23 +2,24 @@ package com.ubergeek42.WeechatAndroid.views.snackbar
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.os.bundleOf
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.preference.Preference
 import com.google.android.material.snackbar.Snackbar
 import com.ubergeek42.WeechatAndroid.BuildConfig
 import com.ubergeek42.WeechatAndroid.R
+import com.ubergeek42.WeechatAndroid.copypaste.setClipboard
+import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.utils.FriendlyExceptions
 import com.ubergeek42.WeechatAndroid.utils.Toaster
 import com.ubergeek42.WeechatAndroid.utils.Utils
+import com.ubergeek42.WeechatAndroid.views.EditTextActivity
 import com.ubergeek42.cats.Kitty
 import com.ubergeek42.cats.Root
 
@@ -200,34 +201,59 @@ private fun Snackbar.setMaxLines(maxLines: Int) {
 }
 
 
-class SnackbarDetailsDialogFragment : DialogFragment() {
-    override fun onCreateDialog(savedInstanceState: Bundle?) =
-        AlertDialog.Builder(requireActivity())
-            .setMessage(requireArguments().getCharSequence("message"))
-            .setPositiveButton("Ok") { _, _ -> }
-            .create()
-
-    companion object {
-        fun make(message: CharSequence) = SnackbarDetailsDialogFragment()
-            .apply { arguments = bundleOf("message" to message) }
-    }
-}
-
-private fun Snackbar.addDetails(details: String, actionText: String = "Details") {
-    setAction(actionText) {
-        val fragmentManager = (context as AppCompatActivity).supportFragmentManager
-        SnackbarDetailsDialogFragment
-            .make(message = details)
-            .show(fragmentManager, "snackbars-details-dialog-fragment")
-    }
-}
-
-
 private fun Context.getSnackbarTextForThrowable(t: Throwable): CharSequence {
     val exceptionMessage = FriendlyExceptions(this).getFriendlyException(t).message
     return resources.getString(R.string.error__etc__prefix, exceptionMessage)
 }
 
-private fun getSnackbarBuilderForThrowable(t: Throwable): SnackbarBuilder =
-    { addDetails(t.stackTraceToString()) }
+private fun getSnackbarBuilderForThrowable(t: Throwable): SnackbarBuilder = {
+    setAction("Details") {
+        val intent = Intent(context, ErrorDetailsActivity::class.java).apply {
+            putExtra(EXTRA_ERROR_TEXT, t.stackTraceToString())
+        }
+        context.startActivity(intent)
+    }
+}
 
+
+private const val EXTRA_ERROR_TEXT = "error_text"
+
+class ErrorDetailsActivity : EditTextActivity(allowSoftKeyboard = false) {
+    private lateinit var errorText: CharSequence
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        window.decorView.setBackgroundColor(P.colorPrimary)
+
+        errorText = intent.getCharSequenceExtra(EXTRA_ERROR_TEXT) ?: "huh"
+
+        ui.toolbar.apply {
+            setTitle("Error details")
+            inflateMenu(R.menu.error_details_activity)
+            setOnMenuItemClickListener { item: MenuItem ->
+                when (item.itemId) {
+                    R.id.copy      -> {
+                        setClipboard(errorText)
+                        finish()
+                    }
+
+                    R.id.wrap_text -> {
+                        item.isChecked = !item.isChecked
+                        ui.text.setHorizontallyScrolling(!item.isChecked)
+                    }
+                }
+                true
+            }
+        }
+
+        // Allow word breaking after "." or "$"
+        // and before opening parentheses--for stuff like "method(File.kt:69)"
+        val breakableErrorText = errorText
+            .replace("([.$])(?!\\s)".toRegex(), "$1\u200b")
+            .replace("(?<!\\s)\\(".toRegex(), "\u200b(")
+
+        ui.text.setText(breakableErrorText)
+        ui.text.setTextIsSelectable(true)
+    }
+}

@@ -60,7 +60,7 @@ private class Copy(
 }
 
 
-private fun setClipboard(text: CharSequence) {
+fun setClipboard(text: CharSequence) {
     val clipboardManager = applicationContext
             .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager?
     clipboardManager?.text = text

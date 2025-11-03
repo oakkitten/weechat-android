@@ -153,6 +153,9 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity android:name="com.ubergeek42.WeechatAndroid.views.snackbar.ErrorDetailsActivity"
+            android:windowSoftInputMode="adjustNothing|stateAlwaysHidden" />
+
         <receiver android:enabled="true" android:name=".service.BootUpReceiver"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED"
             android:exported="true">
