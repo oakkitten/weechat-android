@@ -206,7 +206,7 @@ public class Config {
     }
 
     @SuppressWarnings("unchecked")
-    private static Info parseConfig(String text) throws ConfigException {
+    public static Info parseConfig(String text) throws ConfigException {
         String stage = "parsing document";
         try {
             Object obj = new Yaml().load(text);
@@ -302,7 +302,7 @@ public class Config {
         return (List<T>) list;
     }
 
-    private static class ConfigException extends Exception {
+    public static class ConfigException extends Exception {
         ConfigException(String stage, Throwable cause) {
             super(stage, cause);
         }

@@ -8,6 +8,7 @@ import android.widget.TextView
 import com.ubergeek42.WeechatAndroid.R
 import com.ubergeek42.WeechatAndroid.media.Config
 import com.ubergeek42.WeechatAndroid.utils.Constants.PREF_MEDIA_PREVIEW_STRATEGIES
+import com.ubergeek42.WeechatAndroid.views.snackbar.showSnackbar
 import com.ubergeek42.cats.Cat
 
 class StrategyPreference(context: Context, attrs: AttributeSet?) :
@@ -74,5 +75,12 @@ class StrategyPreferenceActivity : FullScreenEditTextPreferenceActivity() {
     override val title get() = getString(R.string.pref__media_preview__strategies)
     override val defaultValue get() = getString(R.string.pref__media_preview__strategies_default)
 
-    override fun validate(value: String) = Config.parseConfigSafe(value) != null
+    override fun validate(value: String) =
+        try {
+            Config.parseConfig(value) != null
+            true
+        } catch (e: Exception) {
+            showSnackbar(e)
+            false
+        }
 }
