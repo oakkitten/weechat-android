@@ -9,9 +9,8 @@ import com.ubergeek42.cats.Root
 interface UploadObserver {
     @MainThread fun onUploadsStarted()
     @MainThread fun onProgress(ratio: Float)
-    @MainThread fun onUploadDone(suri: Suri)
-    @MainThread fun onUploadFailure(suri: Suri, e: Exception)
-    @MainThread fun onFinished()
+    @MainThread fun onUploadFinished(suri: Suri, result: Upload.Result)
+    @MainThread fun onAllUploadsFinished()
 }
 
 
@@ -34,7 +33,7 @@ class UploadManager {
             }
         }
 
-    // this will call through to onFailure
+    // this will call through to onFinished
     @MainThread fun filterUploads(suris: List<Suri>) {
         for (upload in uploads) {
             if (upload.suri !in suris) {
@@ -53,7 +52,7 @@ class UploadManager {
                 val cachedHttpUri = Cache.retrieve(suri.uri)
                 if (cachedHttpUri != null) {
                     suri.httpUri = cachedHttpUri
-                    observer?.onUploadDone(suri)
+                    observer?.onUploadFinished(suri, Upload.Result.Done(cachedHttpUri))
                 } else {
                     startUpload(suri)
                 }
@@ -84,28 +83,20 @@ class UploadManager {
                 }
             }
 
-            override fun onDone(upload: Upload, httpUri: String) {
-                suri.httpUri = httpUri
+            override fun onFinished(upload: Upload, result: Upload.Result) {
                 main {
-                    kitty.info("Upload done: $upload, result: $httpUri")
-                    Cache.record(upload.suri.uri, httpUri)
-                    // uploads.remove(upload)
-                    observer?.onUploadDone(suri)
-                    if (!uploads.areRunning) {
-                        observer?.onFinished()
-                        uploads.clear()
-                    }
-                }
-            }
-
-            override fun onFailure(upload: Upload, e: Exception) {
-                main {
-                    kitty.info("Upload failure: $upload, ${e.javaClass.simpleName}: ${e.message}")
+                    kitty.info("Upload finished: $upload, result: $result")
                     uploads.remove(upload)
-                    observer?.onUploadFailure(suri, e)
-                    if (!uploads.areRunning) {
-                        observer?.onFinished()
-                        uploads.clear()
+
+                    if (result is Upload.Result.Done) {
+                        suri.httpUri = result.httpUri
+                        Cache.record(suri.uri, result.httpUri)
+                    }
+
+                    observer?.onUploadFinished(suri, result)
+
+                    if (uploads.isEmpty()) {
+                        observer?.onAllUploadsFinished()
                     }
                 }
             }

@@ -58,7 +58,7 @@ import com.ubergeek42.WeechatAndroid.upload.ShareObject
 import com.ubergeek42.WeechatAndroid.upload.Suri
 import com.ubergeek42.WeechatAndroid.upload.Target
 import com.ubergeek42.WeechatAndroid.upload.TextShareObject
-import com.ubergeek42.WeechatAndroid.upload.Upload.CancelledException
+import com.ubergeek42.WeechatAndroid.upload.Upload
 import com.ubergeek42.WeechatAndroid.upload.UploadManager
 import com.ubergeek42.WeechatAndroid.upload.UploadObserver
 import com.ubergeek42.WeechatAndroid.upload.UrisShareObject
@@ -684,17 +684,15 @@ class BufferFragment : Fragment(), BufferEye {
             setUploadProgress(ratio)
         }
 
-        override fun onUploadDone(suri: Suri) {
-            ui?.chatInput?.textifyReadySuris()
-        }
-
-        override fun onUploadFailure(suri: Suri, e: Exception) {
-            if (e !is CancelledException) {
-                showSnackbar("Could not upload file", e)
+        override fun onUploadFinished(suri: Suri, result: Upload.Result) {
+            when (result) {
+                is Upload.Result.Done -> ui?.chatInput?.textifyReadySuris()
+                is Upload.Result.Failed -> showSnackbar("Could not upload file", result.e)
+                is Upload.Result.Cancelled -> {}
             }
         }
 
-        override fun onFinished() = ulet(ui) { ui ->
+        override fun onAllUploadsFinished() = ulet(ui) { ui ->
             setUploadStatus(if (ui.chatInput.getNotReadySuris().isNotEmpty())
                 UploadStatus.HAS_THINGS_TO_UPLOAD else UploadStatus.NOTHING_TO_UPLOAD)
         }

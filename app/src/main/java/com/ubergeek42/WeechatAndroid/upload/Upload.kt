@@ -48,7 +48,7 @@ class Upload(
             val httpUri = httpUriGetter.getUri(responseBody)
             state = State.DONE
             jobs.lock {
-                listeners.forEach { it.onDone(this@Upload, httpUri) }
+                listeners.forEach { it.onFinished(this@Upload, Result.Done(httpUri)) }
                 remove(suri.uri)
             }
         } catch (e: Exception) {
@@ -57,7 +57,7 @@ class Upload(
             if (!cancelled) {
                 kitty.warn("error while uploading", e)
                 jobs.lock {
-                    listeners.forEach { it.onFailure(this@Upload, e) }
+                    listeners.forEach { it.onFinished(this@Upload, Result.Failed(e)) }
                     remove(suri.uri)
                 }
             }
@@ -70,7 +70,7 @@ class Upload(
         jobs.lock {
             state = State.FAILED
             call?.cancel()
-            listeners.forEach { it.onFailure(this@Upload, CancelledException()) }
+            listeners.forEach { it.onFinished(this@Upload, Result.Cancelled) }
             remove(suri.uri)
         }
     }
@@ -129,13 +129,16 @@ class Upload(
         }
     }
 
-    class CancelledException : IOException("Upload cancelled")
+    sealed interface Result {
+        object Cancelled : Result
+        data class Done(val httpUri: String) : Result
+        data class Failed(val e: Exception) : Result
+    }
 
     interface Listener {
         fun onStarted(upload: Upload)
         fun onProgress(upload: Upload)
-        fun onDone(upload: Upload, httpUri: String)
-        fun onFailure(upload: Upload, e: Exception)
+        fun onFinished(upload: Upload, result: Result)
     }
 
     override fun toString(): String {
