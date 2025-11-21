@@ -33,6 +33,8 @@ class UploadManager {
             }
         }
 
+    private val unreportedUploadEventsTracker = UnreportedUploadEventsTracker()
+
     // this will call through to onFinished
     @MainThread fun filterUploads(suris: List<Suri>) {
         for (upload in uploads) {
@@ -94,9 +96,11 @@ class UploadManager {
                     }
 
                     observer?.onUploadFinished(suri, result)
+                    unreportedUploadEventsTracker.onUploadFinished(suri, result, observer != null)
 
                     if (uploads.isEmpty()) {
                         observer?.onAllUploadsFinished()
+                        unreportedUploadEventsTracker.onAllUploadsFinished(observer != null)
                     }
                 }
             }

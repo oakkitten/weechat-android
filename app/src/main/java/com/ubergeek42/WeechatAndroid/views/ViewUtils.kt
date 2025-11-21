@@ -3,8 +3,10 @@
 package com.ubergeek42.WeechatAndroid.views
 
 import android.app.Activity
+import android.app.Application
 import android.content.Context
 import android.content.Context.INPUT_METHOD_SERVICE
+import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
@@ -17,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
 import com.ubergeek42.WeechatAndroid.R
+import com.ubergeek42.WeechatAndroid.Weechat.application
 import com.ubergeek42.WeechatAndroid.WeechatActivity
 import com.ubergeek42.WeechatAndroid.utils.applicationContext
 import com.ubergeek42.WeechatAndroid.upload.dp_to_px
@@ -240,4 +243,42 @@ fun Activity.calculateApproximateWeaselWidth(): Int {
     }
 
     return windowWidthIsh
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+val resumedActivities = mutableListOf<Activity>()
+
+fun startTrackingResumedActivities() {
+    application.registerActivityLifecycleCallbacks(object : DefaultActivityLifecycleCallbacks {
+        override fun onActivityResumed(activity: Activity) {
+            resumedActivities.add(activity)
+        }
+
+        override fun onActivityPaused(activity: Activity) {
+            resumedActivities.remove(activity)
+        }
+    })
+}
+
+fun onMainActivityResumed(block: Activity.() -> Unit) {
+    application.registerActivityLifecycleCallbacks(object : DefaultActivityLifecycleCallbacks {
+        override fun onActivityResumed(activity: Activity) {
+            if (activity is WeechatActivity) {
+                activity.block()
+                application.unregisterActivityLifecycleCallbacks(this)
+            }
+        }
+    })
+}
+
+interface DefaultActivityLifecycleCallbacks : Application.ActivityLifecycleCallbacks {
+    override fun onActivityCreated(activity: Activity,savedInstanceState: Bundle?) {}
+    override fun onActivityStarted(activity: Activity) {}
+    override fun onActivityResumed(activity: Activity) {}
+    override fun onActivityPaused(activity: Activity) {}
+    override fun onActivityStopped(activity: Activity) {}
+    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+    override fun onActivityDestroyed(activity: Activity) {}
 }

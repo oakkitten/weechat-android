@@ -3,6 +3,8 @@
 
 package com.ubergeek42.WeechatAndroid;
 
+import static com.ubergeek42.WeechatAndroid.views.ViewUtilsKt.startTrackingResumedActivities;
+
 import android.app.Application;
 import android.content.Context;
 import android.os.Build;
@@ -30,11 +32,14 @@ import java.util.EnumSet;
 public class Weechat extends Application {
     static Thread mainThread = Thread.currentThread();
     static Handler mainHandler = new Handler();
+    static public Application application;
     static public Context applicationContext;
 
     @Override public void onCreate() {
         super.onCreate();
+        application = this;
         applicationContext = getApplicationContext();
+        startTrackingResumedActivities();
         JodaTimeAndroid.init(applicationContext);
         Cats.setup(applicationContext);
         if (EmojiUtilKt.SHOULD_EMOJIFY) EmojiUtilKt.initEmojiCompat();
