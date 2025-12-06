@@ -687,7 +687,7 @@ class BufferFragment : Fragment(), BufferEye {
         override fun onUploadFinished(suri: Suri, result: Upload.Result) {
             when (result) {
                 is Upload.Result.Done -> ui?.chatInput?.textifyReadySuris()
-                is Upload.Result.Failed -> showSnackbar("Could not upload file", result.e)
+                is Upload.Result.Failed -> showSnackbar(R.string.error__etc__could_not_upload_file, result.e)
                 is Upload.Result.Cancelled -> {}
             }
         }
@@ -705,7 +705,7 @@ class BufferFragment : Fragment(), BufferEye {
                     setShareObject(it, InsertAt.CURRENT_POSITION)
                 }
             } catch (e: Exception) {
-                showSnackbar("Could not import data", e)
+                showSnackbar(R.string.error__etc__could_not_import_data, e)
             }
         }
     }
@@ -1024,7 +1024,7 @@ class BufferFragment : Fragment(), BufferEye {
                         UrisShareObject.fromUris(uris).insertAsync(ui.chatInput, InsertAt.CURRENT_POSITION)
                         setPendingInputForParallelFragments()
                     } catch (e: Exception) {
-                        showSnackbar("Could not import data", e)
+                        showSnackbar(R.string.error__etc__could_not_import_data, e)
                     }
                 }
             } else if (clipData.itemCount > 0) {

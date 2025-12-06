@@ -207,7 +207,7 @@ private fun Context.getSnackbarTextForThrowable(t: Throwable): CharSequence {
 }
 
 private fun getSnackbarBuilderForThrowable(t: Throwable): SnackbarBuilder = {
-    setAction("Details") {
+    setAction(R.string.ui__snackbars__action__error_details) {
         val intent = Intent(context, ErrorDetailsActivity::class.java).apply {
             putExtra(EXTRA_ERROR_TEXT, t.stackTraceToString())
         }
@@ -229,7 +229,7 @@ class ErrorDetailsActivity : EditTextActivity(allowSoftKeyboard = false) {
         errorText = intent.getCharSequenceExtra(EXTRA_ERROR_TEXT) ?: "huh"
 
         ui.toolbar.apply {
-            setTitle("Error details")
+            setTitle(R.string.dialog__error_details__title)
             inflateMenu(R.menu.error_details_activity)
             setOnMenuItemClickListener { item: MenuItem ->
                 when (item.itemId) {

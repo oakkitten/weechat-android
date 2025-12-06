@@ -1,6 +1,7 @@
 package com.ubergeek42.WeechatAndroid.upload
 
 import com.ubergeek42.WeechatAndroid.BubbleActivity
+import com.ubergeek42.WeechatAndroid.R
 import com.ubergeek42.WeechatAndroid.WeechatActivity
 import com.ubergeek42.WeechatAndroid.utils.Toaster
 import com.ubergeek42.WeechatAndroid.views.onMainActivityResumed
@@ -89,12 +90,13 @@ private fun notifyUserOfFinishedUploads(result: UploadsFinishedResult) {
 
     if (result is UploadsFinishedResult.AllUploadsDone) {
         if (resumedActivityOrNull != null) {
-            resumedActivityOrNull.showSnackbar("Upload complete")
+            resumedActivityOrNull.showSnackbar(R.string.ui__snackbars__upload_complete)
         } else {
-            Toaster.InfoToast.show("Upload complete")
+            Toaster.InfoToast.show(R.string.ui__snackbars__upload_complete)
         }
     } else if (result is UploadsFinishedResult.UploadsFailed) {
-        val message = if (result.exceptions.size == 1) "Could not upload file" else "Could not upload files"
+        val message = if (result.exceptions.size == 1)
+            R.string.error__etc__could_not_upload_file else R.string.error__etc__could_not_upload_files
 
         if (resumedActivityOrNull != null) {
             resumedActivityOrNull.showSnackbar(message, result.exceptions.combineIntoOne())

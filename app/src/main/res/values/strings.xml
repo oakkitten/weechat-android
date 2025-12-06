@@ -38,6 +38,11 @@
     <string name="error__etc__cannot_navigate_input_history_if_sharespans_in_input">
         Remove or upload media to navigate input history</string>
 
+    <string name="error__etc__while_accessing_uri">Error while accessing URI</string>
+    <string name="error__etc__could_not_upload_file">Could not upload file</string>
+    <string name="error__etc__could_not_upload_files">Could not upload files</string>
+    <string name="error__etc__could_not_import_data">Could not import data</string>
+
     <!-- ############################## main activity ui elements ############################## -->
 
     <string name="ui__button_paperclip">Upload file</string>
@@ -61,6 +66,9 @@
 
     <string name="ui__ActionBarDrawerToggle__open_drawer">Open drawer</string>
     <string name="ui__ActionBarDrawerToggle__close_drawer">Close drawer</string>
+
+    <string name="ui__snackbars__action__error_details">Details</string>
+    <string name="ui__snackbars__upload_complete">Upload complete</string>
 
     <!-- ####################################################################################### -->
     <!-- ######################################### menu ######################################## -->
@@ -110,6 +118,11 @@
     <string name="menu__copy__with_timestamps">With timestamps</string>
     <string name="menu__copy__without_timestamps">Without timestamps</string>
     <string name="menu__copy__messages_only">Messages only</string>
+
+    <!-- ####################################################################################### -->
+
+    <string name="menu__error_details__copy">Copy</string>
+    <string name="menu__error_details__wrap_text">Wrap text</string>
 
     <!-- ####################################################################################### -->
     <!-- #################################### notifications #################################### -->
@@ -204,6 +217,8 @@
     <string name="dialog__notification_permission__positive_button">Grant permission</string>
     <string name="dialog__notification_permission__negative_button">
         Continue without granting permission</string>
+
+    <string name="dialog__error_details__title">Error details</string>
 
     <!-- ####################################################################################### -->
     <!-- ################################# certificate dialogs ################################# -->

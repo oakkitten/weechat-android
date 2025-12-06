@@ -772,7 +772,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
                         shareObject = fromUris(uris)
                     } catch (e: Exception) {
                         kitty.warn("Error while accessing uri", e)
-                        showSnackbar("Error while accessing URI", e)
+                        showSnackbar(R.string.error__etc__while_accessing_uri, e)
                     }
                 }
             }

@@ -12,6 +12,7 @@ import androidx.core.view.inputmethod.EditorInfoCompat
 import androidx.core.view.inputmethod.InputConnectionCompat
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import com.ubergeek42.WeechatAndroid.R
 import com.ubergeek42.WeechatAndroid.utils.ActionEditText
 import com.ubergeek42.WeechatAndroid.views.snackbar.showSnackbar
 import com.ubergeek42.cats.Kitty
@@ -51,7 +52,7 @@ class MediaAcceptingEditText : ActionEditText {
             true
         } catch(e:Exception) {
             kitty.error("Error while accessing uri", e)
-            showSnackbar("Error while accessing URI", e)
+            showSnackbar(R.string.error__etc__while_accessing_uri, e)
             false
         }
     }
@@ -139,7 +140,7 @@ class MediaAcceptingEditText : ActionEditText {
                             val thumbnailSpannable = makeThumbnailSpannable(context, suri)
                             text?.replace(start, end, thumbnailSpannable)
                         } catch (e: Exception) {
-                            showSnackbar("Error while accessing URI", e)
+                            showSnackbar(R.string.error__etc__while_accessing_uri, e)
                         }
                     }
                 }
