@@ -34,6 +34,11 @@
     <string name="error__etc__cannot_navigate_input_history_if_sharespans_in_input">
         Удалите или загрузите медиа, чтобы осущеставить навигацию по истории ввода</string>
 
+    <string name="error__etc__while_accessing_uri">Ошибка при обращении к URI</string>
+    <string name="error__etc__could_not_upload_file">Не удалось загрузить файл</string>
+    <string name="error__etc__could_not_upload_files">Не удалось загрузить файлы</string>
+    <string name="error__etc__could_not_import_data">Не удалось импортировать данные</string>
+
     <!-- ############################## main activity ui elements ############################## -->
 
     <string name="ui__button_paperclip">Загрузить</string>
@@ -57,6 +62,9 @@
 
     <string name="ui__ActionBarDrawerToggle__open_drawer">Открыть список буферов</string>
     <string name="ui__ActionBarDrawerToggle__close_drawer">Закрыть список буферов</string>
+
+    <string name="ui__snackbars__action__error_details">Детали</string>
+    <string name="ui__snackbars__upload_complete">Загрузка завершена</string>
 
     <!-- ####################################################################################### -->
     <!-- ######################################### menu ######################################## -->
@@ -106,6 +114,11 @@
     <string name="menu__copy__with_timestamps">С временными метками</string>
     <string name="menu__copy__without_timestamps">Без временных меток</string>
     <string name="menu__copy__messages_only">Только сообщения</string>
+
+    <!-- ####################################################################################### -->
+
+    <string name="menu__error_details__copy">Копировать</string>
+    <string name="menu__error_details__wrap_text">Перенос текста</string>
 
     <!-- ####################################################################################### -->
     <!-- #################################### notifications #################################### -->
@@ -204,6 +217,8 @@
     <string name="dialog__notification_permission__positive_button">Дать разрешение</string>
     <string name="dialog__notification_permission__negative_button">
         Продолжить, не дав разрешение</string>
+
+    <string name="dialog__error_details__title">Детали ошибки</string>
 
     <!-- ####################################################################################### -->
     <!-- ################################# certificate dialogs ################################# -->
