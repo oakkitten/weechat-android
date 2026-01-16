@@ -35,6 +35,11 @@
     <string name="error__etc__cannot_navigate_input_history_if_sharespans_in_input">
         Supprimez ou envoyez les fichiers pour parcourir l’historique des entrées</string>
 
+    <string name="error__etc__while_accessing_uri">Erreur lors de l’accès à l’URI</string>
+    <string name="error__etc__could_not_upload_file">Impossible de téléverser le fichier</string>
+    <string name="error__etc__could_not_upload_files">Impossible de téléverser les fichiers</string>
+    <string name="error__etc__could_not_import_data">Impossible d’importer les données</string>
+
     <!-- ############################## main activity ui elements ############################## -->
 
     <string name="ui__button_paperclip">Téléverser un fichier</string>
@@ -58,6 +63,9 @@
 
     <string name="ui__ActionBarDrawerToggle__open_drawer">Ouvrir le tiroir</string>
     <string name="ui__ActionBarDrawerToggle__close_drawer">Fermer le tiroir</string>
+
+    <string name="ui__snackbars__action__error_details">Détails</string>
+    <string name="ui__snackbars__upload_complete">Téléversement terminé</string>
 
     <!-- ####################################################################################### -->
     <!-- ###################################### main menu ###################################### -->
@@ -107,6 +115,11 @@
     <string name="menu__copy__with_timestamps">Avec l’horodatage</string>
     <string name="menu__copy__without_timestamps">Sans l’horodatage</string>
     <string name="menu__copy__messages_only">Messages uniquement</string>
+
+    <!-- ####################################################################################### -->
+
+    <string name="menu__error_details__copy">Copier</string>
+    <string name="menu__error_details__wrap_text">Retour à la ligne</string>
 
     <!-- ####################################################################################### -->
     <!-- #################################### notifications #################################### -->
@@ -200,6 +213,8 @@
     <string name="dialog__notification_permission__positive_button">Donner l’autorisation</string>
     <string name="dialog__notification_permission__negative_button">
         Continuer sans donner l’autorisation</string>
+
+    <string name="dialog__error_details__title">Détails de l’erreur</string>
 
     <!-- ####################################################################################### -->
     <!-- ################################# certificate dialogs ################################# -->
