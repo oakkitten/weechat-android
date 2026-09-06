@@ -11,6 +11,7 @@ import androidx.core.graphics.Insets
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
+import cats.Trace
 import com.ubergeek42.WeechatAndroid.WeechatActivity
 import com.ubergeek42.WeechatAndroid.adapters.BufferListAdapter
 import com.ubergeek42.WeechatAndroid.databinding.BufferlistBinding
@@ -25,7 +26,6 @@ import com.ubergeek42.WeechatAndroid.views.jumpThenSmoothScrollCentering
 import com.ubergeek42.WeechatAndroid.views.onSystemBarsAndImeInsetsChanged
 import com.ubergeek42.WeechatAndroid.views.scrollCenteringWithoutAnimation
 import com.ubergeek42.WeechatAndroid.views.updateMargins
-import com.ubergeek42.cats.Cat
 import com.ubergeek42.cats.Kitty
 import com.ubergeek42.cats.Root
 
@@ -44,17 +44,17 @@ class BufferListFragment : Fragment(), BufferListEye {
     ////////////////////////////////////////////////////////////////////////////////////// lifecycle
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    @MainThread @Cat override fun onAttach(context: Context) {
+    @MainThread @Trace override fun onAttach(context: Context) {
         super.onAttach(context)
         weechatActivity = context as WeechatActivity
     }
 
-    @MainThread @Cat override fun onCreate(savedInstanceState: Bundle?) {
+    @MainThread @Trace override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         adapter = BufferListAdapter(requireContext())
     }
 
-    @MainThread @Cat override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
+    @MainThread @Trace override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                                savedInstanceState: Bundle?): View {
         ui = BufferlistBinding.inflate(inflater)
 
@@ -118,7 +118,7 @@ class BufferListFragment : Fragment(), BufferListEye {
         }
     }
 
-    @MainThread @Cat override fun onStart() {
+    @MainThread @Trace override fun onStart() {
         super.onStart()
         ui.filterInput.visibility = if (P.showBufferFilter) View.VISIBLE else View.GONE
         filterInputHeight = requireContext().getActionBarHeight()
@@ -127,7 +127,7 @@ class BufferListFragment : Fragment(), BufferListEye {
         attachToBufferList()
     }
 
-    @MainThread @Cat override fun onStop() {
+    @MainThread @Trace override fun onStop() {
         super.onStop()
         detachFromBufferList()
     }
@@ -165,7 +165,7 @@ class BufferListFragment : Fragment(), BufferListEye {
     //
     // todo don't update on every change?
     // todo move hotlist updates to the activity
-    @AnyThread @Cat override fun onBuffersChanged() {
+    @AnyThread @Trace override fun onBuffersChanged() {
         adapter.onBuffersChanged()
         val hotBufferCount = BufferList.hotBufferCount
 

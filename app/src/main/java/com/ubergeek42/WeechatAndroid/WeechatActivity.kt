@@ -13,7 +13,6 @@
 // limitations under the License.
 package com.ubergeek42.WeechatAndroid
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
@@ -47,6 +46,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
 import androidx.preference.PreferenceManager
+import cats.Debug
 import cats.Name
 import cats.Trace
 import com.ubergeek42.WeechatAndroid.CutePagerTitleStrip.CutePageChangeListener
@@ -108,8 +108,6 @@ import com.ubergeek42.WeechatAndroid.views.snackbar.showSnackbar
 import com.ubergeek42.WeechatAndroid.views.solidColor
 import com.ubergeek42.WeechatAndroid.views.updateDimensions
 import com.ubergeek42.WeechatAndroid.views.updateMargins
-import com.ubergeek42.cats.Cat
-import com.ubergeek42.cats.CatD
 import com.ubergeek42.cats.Kitty
 import com.ubergeek42.cats.Root
 import com.ubergeek42.weechat.ColorScheme
@@ -158,7 +156,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
     ///////////////////////////////////////////////////////////////////////////////////// life cycle
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    @MainThread @CatD public override fun onCreate(savedInstanceState: Bundle?) {
+    @MainThread @Debug public override fun onCreate(savedInstanceState: Bundle?) {
         // after OOM kill and not going to restore anything? remove all fragments & open buffers
         if (!P.isServiceAlive() && !BufferList.hasData() && P.openBuffers.isNotEmpty()) {
             P.openBuffers.clear()
@@ -244,7 +242,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
         ThemeFix.fixIconAndColor(this)
     }
 
-    @MainThread @CatD(linger = true) fun connect() {
+    @MainThread @Debug fun connect() {
         P.loadConnectionPreferences()
 
         val errorStringId = P.validateConnectionPreferences()
@@ -267,7 +265,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
         RelayService.startWithAction(this, RelayService.ACTION_START)
     }
 
-    @MainThread @CatD fun disconnect() {
+    @MainThread @Debug fun disconnect() {
         RelayService.startWithAction(this, RelayService.ACTION_STOP)
     }
 
@@ -288,7 +286,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
         return super.onCreateView(parent, name, context, attrs)
     }
 
-    @MainThread @Trace override fun onStart() {
+    @MainThread @Debug override fun onStart() {
         Network.get().register(this, null)  // no callback, simply make sure that network info is correct while we are showing
         EventBus.getDefault().register(this)
         connectionState = EventBus.getDefault().getStickyEvent(StateChangedEvent::class.java).state
@@ -302,7 +300,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
         enableDisableExclusionRects()
     }
 
-    @MainThread @CatD override fun onStop() {
+    @MainThread @Debug override fun onStop() {
         started = false
         EventBus.getDefault().unregister(this)
         P.saveStuff()
@@ -329,7 +327,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
     //////////////////////////////////////////////////////////////////////////////////////// the joy
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    @MainThread @Cat private fun adjustUI() {
+    @MainThread @Trace private fun adjustUI() {
         setKittyImage(when {
             connectionState.isStopped -> R.drawable.ic_big_disconnected
             connectionState.isAuthenticated -> R.drawable.ic_big_connected
@@ -343,7 +341,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
     private var connectionState: EnumSet<RelayService.STATE>? = null
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN_ORDERED)
-    @MainThread @Cat fun onEvent(event: StateChangedEvent) {
+    @MainThread @Trace fun onEvent(event: StateChangedEvent) {
         val init = connectionState === event.state
         connectionState = event.state
         adjustUI()
@@ -473,7 +471,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
 
     // update hot count (that red square over the bell icon) at any time
     // also sets "hotNumber" in case menu has to be recreated
-    @MainThread @Cat("Menu") fun updateHotCount(newHotNumber: Int) {
+    @MainThread @Trace fun updateHotCount(newHotNumber: Int) {
         //if (hotNumber == newHotNumber) return;
         hotNumber = newHotNumber
         uiHot?.apply {
@@ -510,7 +508,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
         }
     }
 
-    @MainThread @Cat("Menu") override fun onCreateOptionsMenu(menu: Menu): Boolean {
+    @MainThread @Trace override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_actionbar, menu)
 
         val menuHotlist = menu.findItem(R.id.menu_hotlist).actionView!!
@@ -537,7 +535,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
         snackbarPositionController.setSnackbar(this)
     }
 
-    @MainThread @Cat("Menu") override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    @MainThread @Trace override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> if (slidy) {
                 if (isPagerNoticeablyObscured) hideDrawer() else showDrawer()
@@ -589,7 +587,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
         return true
     }
 
-    @MainThread @Cat("Menu") private fun onHotlistSelected() {
+    @MainThread @Trace private fun onHotlistSelected() {
         val buffer = BufferList.getNextHotBuffer()
         if (buffer != null) {
             openBuffer(buffer.pointer)
@@ -598,7 +596,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
         }
     }
 
-    @MainThread @Cat("Menu") private fun makeMenuReflectConnectionStatus() = ulet(uiMenu) { menu ->
+    @MainThread @Trace private fun makeMenuReflectConnectionStatus() = ulet(uiMenu) { menu ->
         val connectionStateTitle = getString(when {
             connectionState.isAuthenticated -> R.string.menu__connection_state__disconnect
             connectionState.isStarted -> R.string.menu__connection_state__stop_connecting
@@ -622,7 +620,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
         }
     }
 
-    @MainThread @Cat("Buffers") fun openBuffer(pointer: Long, shareObject: ShareObject? = null) {
+    @MainThread @Trace fun openBuffer(pointer: Long, shareObject: ShareObject? = null) {
         pagerAdapter.openBuffer(pointer)
         pagerAdapter.focusBuffer(pointer)
 
@@ -646,7 +644,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
         }
     }
 
-    @MainThread @Cat("Buffers") override fun closeBuffer(pointer: Long) {
+    @MainThread @Trace override fun closeBuffer(pointer: Long) {
         pagerAdapter.closeBuffer(pointer)
         if (slidy) showDrawerIfPagerIsEmpty()
     }
@@ -747,16 +745,16 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
 
     // call drawerVisibilityChanged() right away
     // as we need for isPagerNoticeablyObscured to be set immediately
-    @MainThread @Cat("Drawer") fun showDrawer() {
+    @MainThread @Trace fun showDrawer() {
         if (!isPagerNoticeablyObscured) drawerVisibilityChanged(true)
         uiDrawerLayout.openDrawer(uiDrawer, started)
     }
 
-    @MainThread @Cat("Drawer") fun hideDrawer() {
+    @MainThread @Trace fun hideDrawer() {
         uiDrawerLayout.closeDrawer(uiDrawer, started)
     }
 
-    @MainThread @Cat("Drawer") fun showDrawerIfPagerIsEmpty() {
+    @MainThread @Trace fun showDrawerIfPagerIsEmpty() {
         if (!isPagerNoticeablyObscured && pagerAdapter.count == 0) {
             showDrawer()
         }
@@ -766,7 +764,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
 
     // set the kitty image that appears when no pages are open
     private var kittyImageResourceId = -1
-    @MainThread @Cat private fun setKittyImage(resourceId: Int) {
+    @MainThread @Trace private fun setKittyImage(resourceId: Int) {
         if (kittyImageResourceId == resourceId) return
         kittyImageResourceId = resourceId
         val drawable = ui.kitty.drawable as SimpleTransitionDrawable
@@ -779,7 +777,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // we may get intent while we are connected to the service and when we are not
-    @MainThread @Cat("Intent") override fun onNewIntent(intent: Intent) {
+    @MainThread @Trace override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         if (intent.hasExtra(Constants.EXTRA_BUFFER_POINTER) ||
                 intent.hasExtra(Constants.EXTRA_BUFFER_FULL_NAME)) {
@@ -789,7 +787,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
     }
 
     // when this is called, EXTRA_BUFFER_POINTER must be set
-    @MainThread @Cat("Intent") private fun openBufferFromIntent() {
+    @MainThread @Trace private fun openBufferFromIntent() {
         val intent = intent
         var pointer = intent.getLongExtra(Constants.EXTRA_BUFFER_POINTER,
                                           Constants.EXTRA_BUFFER_POINTER_ANY)

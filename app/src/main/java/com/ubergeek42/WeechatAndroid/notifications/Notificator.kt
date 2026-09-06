@@ -33,6 +33,7 @@ import androidx.core.content.edit
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import androidx.preference.PreferenceManager
+import cats.Trace
 import com.ubergeek42.WeechatAndroid.BubbleActivity
 import com.ubergeek42.WeechatAndroid.R
 import com.ubergeek42.WeechatAndroid.WeechatActivity
@@ -46,7 +47,6 @@ import com.ubergeek42.WeechatAndroid.service.RelayService
 import com.ubergeek42.WeechatAndroid.utils.Constants
 import com.ubergeek42.WeechatAndroid.utils.Toaster
 import com.ubergeek42.WeechatAndroid.utils.applicationContext
-import com.ubergeek42.cats.Cat
 import com.ubergeek42.cats.Kitty
 import com.ubergeek42.cats.Root
 import kotlin.apply
@@ -304,14 +304,14 @@ private fun ifNotificationStillDisplayed(hotBuffer: HotlistBuffer, action: () ->
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-@Cat fun filterNotifications(hotlistBuffers: Collection<HotlistBuffer>) {
+@Trace fun filterNotifications(hotlistBuffers: Collection<HotlistBuffer>) {
     if (!P.notificationEnable) return
     cancelOrSuppressUnwantedNotifications(hotlistBuffers)
     if (summaryNotificationDisplayed) pushSummaryNotification(hotlistBuffers, false)
 }
 
 
-@Cat fun updateHotNotification(hotBuffer: HotlistBuffer, hotlistBuffers: Collection<HotlistBuffer>) {
+@Trace fun updateHotNotification(hotBuffer: HotlistBuffer, hotlistBuffers: Collection<HotlistBuffer>) {
     if (!P.notificationEnable) return
     ifNotificationStillDisplayed(hotBuffer) {
         cancelOrSuppressUnwantedNotifications(hotlistBuffers)
@@ -320,19 +320,19 @@ private fun ifNotificationStillDisplayed(hotBuffer: HotlistBuffer, action: () ->
 }
 
 
-@Cat fun showHotNotification(hotlistBuffers: Collection<HotlistBuffer>, hotBuffer: HotlistBuffer) {
+@Trace fun showHotNotification(hotlistBuffers: Collection<HotlistBuffer>, hotBuffer: HotlistBuffer) {
     if (!P.notificationEnable) return
     pushSummaryAndBufferNotifications(hotlistBuffers, hotBuffer, makeNoise = true)
 }
 
 
-@Cat fun showHotAsyncNotification(hotlistBuffers: Collection<HotlistBuffer>, hotBuffer: HotlistBuffer) {
+@Trace fun showHotAsyncNotification(hotlistBuffers: Collection<HotlistBuffer>, hotBuffer: HotlistBuffer) {
     if (!P.notificationEnable) return
     pushSummaryAndBufferNotifications(hotlistBuffers, hotBuffer, makeNoise = false)
 }
 
 
-@Cat fun addOrRemoveActionForCurrentNotifications(addReplyAction: Boolean) = notificationHandler.post {
+@Trace fun addOrRemoveActionForCurrentNotifications(addReplyAction: Boolean) = notificationHandler.post {
     hotlistBuffers.values.forEach { hotBuffer ->
         ifNotificationStillDisplayed(hotBuffer) {
             pushBufferNotification(hotBuffer, makeNoise = false, addReplyAction)

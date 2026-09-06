@@ -34,7 +34,6 @@ import androidx.fragment.app.FragmentActivity
 import com.ubergeek42.WeechatAndroid.R
 import com.ubergeek42.WeechatAndroid.dialogs.createScrollableDialog
 import com.ubergeek42.WeechatAndroid.utils.applicationContext
-import com.ubergeek42.cats.Cat
 import com.ubergeek42.cats.Kitty
 import com.ubergeek42.cats.Root
 
@@ -138,7 +137,7 @@ class ExactAlarmPermissionRationaleDialogFragment : DialogFragment() {
 fun shouldRequestExactAlarmPermission() = P.pingEnabled && !alarmManager.canScheduleExactAlarms()
 
 @RequiresApi(Build.VERSION_CODES.S)
-@Cat fun FragmentActivity.showAlarmPermissionRationaleDialog() {
+fun FragmentActivity.showAlarmPermissionRationaleDialog() {
     ExactAlarmPermissionRationaleDialogFragment()
         .show(supportFragmentManager, "alarm-permission-for-ping-dialog")
 }

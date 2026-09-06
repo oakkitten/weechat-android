@@ -8,13 +8,13 @@ import android.text.style.SuperscriptSpan
 import androidx.annotation.AnyThread
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
+import cats.Trace
 import com.ubergeek42.WeechatAndroid.notifications.Hotlist
 import com.ubergeek42.WeechatAndroid.notifications.shortcuts
 import com.ubergeek42.WeechatAndroid.service.Events
 import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.utils.Assert
 import com.ubergeek42.WeechatAndroid.utils.updatable
-import com.ubergeek42.cats.Cat
 import com.ubergeek42.cats.Kitty
 import com.ubergeek42.cats.Root
 
@@ -158,13 +158,13 @@ class Buffer @WorkerThread constructor(
     //     so we request lines and nicks upon user actually (getting close to) opening the buffer.
     // we are requesting nicks along with the lines because:
     //     nick completion
-    @MainThread @Cat @Synchronized fun addBufferEye(bufferEye: BufferEye) {
+    @MainThread @Trace @Synchronized fun addBufferEye(bufferEye: BufferEye) {
         bufferEyes = bufferEyes + bufferEye
         if (lines.status == Lines.Status.Init) requestMoreLines()
         if (nicks.status == Nicks.Status.Init) BufferList.requestNicklistForBuffer(pointer)
     }
 
-    @MainThread @Cat @Synchronized fun removeBufferEye(bufferEye: BufferEye) {
+    @MainThread @Trace @Synchronized fun removeBufferEye(bufferEye: BufferEye) {
         bufferEyes = bufferEyes - bufferEye
     }
 
