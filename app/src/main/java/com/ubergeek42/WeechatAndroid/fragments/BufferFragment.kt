@@ -37,7 +37,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ItemDecoration
+import cats.Name
+import cats.Suffix
 import cats.Trace
+import cats.trace
 import com.ubergeek42.WeechatAndroid.R
 import com.ubergeek42.WeechatAndroid.Weechat
 import com.ubergeek42.WeechatAndroid.WeechatActivity
@@ -91,8 +94,6 @@ import com.ubergeek42.WeechatAndroid.views.scrollToPositionWithOffsetFix
 import com.ubergeek42.WeechatAndroid.views.showSoftwareKeyboard
 import com.ubergeek42.WeechatAndroid.views.snackbar.showSnackbar
 import com.ubergeek42.WeechatAndroid.views.updateMargins
-import com.ubergeek42.cats.Kitty
-import com.ubergeek42.cats.Root
 import com.ubergeek42.weechat.ColorScheme
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
@@ -112,8 +113,9 @@ interface BufferFragmentContainer {
 }
 
 
+@Name("BF")
 class BufferFragment : Fragment(), BufferEye {
-    @Root private val kitty: Kitty = Kitty.make("BF")
+    @Suffix var suffix = "?"
 
     var pointer: Long = 0
 
@@ -138,10 +140,8 @@ class BufferFragment : Fragment(), BufferEye {
     @MainThread override fun setArguments(args: Bundle?) {
         super.setArguments(args)
         pointer = requireArguments().getLong(POINTER_KEY)
-        BufferList.findByPointer(pointer)?.let {
-            buffer = it
-            kitty.setPrefix(it.shortName)
-        } ?: kitty.setPrefix(Utils.pointerToString(pointer))
+        BufferList.findByPointer(pointer)?.let { buffer = it }
+        suffix = buffer?.shortName ?: Utils.pointerToString(pointer)
         uploadManager = UploadManager.forBuffer(pointer)
     }
 
@@ -316,7 +316,7 @@ class BufferFragment : Fragment(), BufferEye {
     @MainThread @Trace fun onVisibilityStateChanged(changedState: ChangedState): Unit
             = ulet(container, buffer) { container, buffer ->
         if (!buffer.linesAreReady()) return
-        kitty.trace("proceeding!")
+        trace { "proceeding!" }
 
         val watchedKey = if (container is WeechatActivity) "main-activity" else "bubble-activity"
         val watched = attachedToBuffer && focusedInViewPager && !container.isPagerNoticeablyObscured

@@ -11,6 +11,7 @@ import androidx.core.graphics.Insets
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
+import cats.Name
 import cats.Trace
 import com.ubergeek42.WeechatAndroid.WeechatActivity
 import com.ubergeek42.WeechatAndroid.adapters.BufferListAdapter
@@ -26,14 +27,9 @@ import com.ubergeek42.WeechatAndroid.views.jumpThenSmoothScrollCentering
 import com.ubergeek42.WeechatAndroid.views.onSystemBarsAndImeInsetsChanged
 import com.ubergeek42.WeechatAndroid.views.scrollCenteringWithoutAnimation
 import com.ubergeek42.WeechatAndroid.views.updateMargins
-import com.ubergeek42.cats.Kitty
-import com.ubergeek42.cats.Root
 
+@Name("BLF")
 class BufferListFragment : Fragment(), BufferListEye {
-    companion object {
-        @Root private val kitty: Kitty = Kitty.make("BLF")
-    }
-
     private lateinit var weechatActivity: WeechatActivity
     private lateinit var layoutManager: FullScreenDrawerLinearLayoutManager
     private lateinit var adapter: BufferListAdapter

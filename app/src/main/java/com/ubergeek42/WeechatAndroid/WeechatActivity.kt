@@ -49,6 +49,9 @@ import androidx.preference.PreferenceManager
 import cats.Debug
 import cats.Name
 import cats.Trace
+import cats.debug
+import cats.err
+import cats.warn
 import com.ubergeek42.WeechatAndroid.CutePagerTitleStrip.CutePageChangeListener
 import com.ubergeek42.WeechatAndroid.adapters.BufferListClickListener
 import com.ubergeek42.WeechatAndroid.adapters.MainPagerAdapter
@@ -108,8 +111,6 @@ import com.ubergeek42.WeechatAndroid.views.snackbar.showSnackbar
 import com.ubergeek42.WeechatAndroid.views.solidColor
 import com.ubergeek42.WeechatAndroid.views.updateDimensions
 import com.ubergeek42.WeechatAndroid.views.updateMargins
-import com.ubergeek42.cats.Kitty
-import com.ubergeek42.cats.Root
 import com.ubergeek42.weechat.ColorScheme
 import com.ubergeek42.weechat.SslAxolotl
 import com.ubergeek42.weechat.relay.connection.SSHServerKeyVerifier
@@ -261,7 +262,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
             return
         }
 
-        kitty.debug("proceeding!")
+        debug { "proceeding!" }
         RelayService.startWithAction(this, RelayService.ACTION_START)
     }
 
@@ -366,7 +367,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
     // '101 Switching Protocols'”. this error is also valid so we consider this a non-issue
     @Subscribe
     @WorkerThread fun onEvent(event: ExceptionEvent) {
-        kitty.error("onEvent(ExceptionEvent)", event.e)
+        err(event.e) { "onEvent(ExceptionEvent)" }
         var fragmentMaker: (() -> DialogFragment)? = null
 
         if (event.e.wasCausedByEither<SSLPeerUnverifiedException, CertificateException>()) {
@@ -838,7 +839,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
                     try {
                         shareObject = fromUris(uris)
                     } catch (e: Exception) {
-                        kitty.warn("Error while accessing uri", e)
+                        warn(e) { "Error while accessing uri" }
                         showSnackbar(R.string.error__etc__while_accessing_uri, e)
                     }
                 }
@@ -885,10 +886,6 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
                 emptyList()
             }
         }
-    }
-
-    companion object {
-        @Root private val kitty: Kitty = Kitty.make("WA")
     }
 }
 

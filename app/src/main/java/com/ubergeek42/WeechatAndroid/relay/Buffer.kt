@@ -8,22 +8,22 @@ import android.text.style.SuperscriptSpan
 import androidx.annotation.AnyThread
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
+import cats.Suffix
 import cats.Trace
+import cats.trace
 import com.ubergeek42.WeechatAndroid.notifications.Hotlist
 import com.ubergeek42.WeechatAndroid.notifications.shortcuts
 import com.ubergeek42.WeechatAndroid.service.Events
 import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.utils.Assert
 import com.ubergeek42.WeechatAndroid.utils.updatable
-import com.ubergeek42.cats.Kitty
-import com.ubergeek42.cats.Root
 
 class Buffer @WorkerThread constructor(
     @JvmField val pointer: Long,
 ) {
     @JvmField var number: Int = 0
     @JvmField var fullName: String = ""
-    @JvmField var shortName: String = ""
+    @JvmField @Suffix var shortName: String = ""
     @JvmField var hidden: Boolean = false
     @JvmField var type = BufferSpec.Type.Other
 
@@ -54,7 +54,6 @@ class Buffer @WorkerThread constructor(
             number = updater.number
             fullName = updater.fullName
             shortName = updater.shortName ?: fullName
-            kitty.setPrefix(shortName)
             processBufferNameSpannable()
         }
 
@@ -82,7 +81,6 @@ class Buffer @WorkerThread constructor(
     @JvmField var readUnreads = 0
     @JvmField var readHighlights = 0
 
-    @Root private val kitty: Kitty = Kitty.make("Buffer")
 
     // number of hotlist updates while syncing this buffer. if >= 2, when the new update arrives, we
     // keep own unreads/highlights as they have been correct since the last update
@@ -105,7 +103,7 @@ class Buffer @WorkerThread constructor(
 
     @JvmField var printable: Spannable? = null  // printable buffer without title (for TextView)
 
-    init { kitty.trace("→ Buffer(number=%s, fullName=%s)", number, fullName) }
+    init { trace {"→ Buffer(number=$number, fullName=$fullName)" } }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////// LINES
