@@ -59,7 +59,7 @@ class SeaLayout(
 
         println("   !!! ${prefix} ${message} :: fitting=$fittingChars, consumed=$consumedWidth ")
 
-        prefixLayout = StaticLayout.Builder.obtain(prefix.toString(), 0, fittingChars, P.textPaint, consumedWidth.roundToInt())
+        prefixLayout = StaticLayout.Builder.obtain(prefix, 0, fittingChars, P.textPaint, consumedWidth.roundToInt())
                 .build()
 
 
@@ -72,8 +72,10 @@ class SeaLayout(
     }
 
     fun draw(canvas: Canvas) {
+        val fontMetrics = textPaint.fontMetrics
+        val lineHeight = fontMetrics.bottom - fontMetrics.top + fontMetrics.leading
         println("!!! drawing: $timeStamp ${prefixLayout.text} w=${prefixLayout.width} [pref ofs: $prefixOffset, msg ofs: $messageOffset]")
-        canvas.drawText(timeStamp, 0f, 0f + -P.textPaint.fontMetrics.ascent, timeStampPaint)
+        canvas.drawText(timeStamp, 0f, -fontMetrics.top, timeStampPaint)
         canvas.translate(prefixOffset, 0f)
         prefixLayout.drawText(canvas)
         canvas.translate(messageOffset, 0f)
