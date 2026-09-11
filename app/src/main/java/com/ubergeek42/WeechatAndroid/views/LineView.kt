@@ -28,11 +28,13 @@ import com.ubergeek42.WeechatAndroid.media.Engine
 import com.ubergeek42.WeechatAndroid.media.Strategy
 import com.ubergeek42.WeechatAndroid.media.Utils.isContextValidForGlide
 import com.ubergeek42.WeechatAndroid.relay.Line
+import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.upload.f
 import com.ubergeek42.WeechatAndroid.upload.i
 import com.ubergeek42.WeechatAndroid.upload.main
 import com.ubergeek42.WeechatAndroid.utils.applicationContext
 import com.ubergeek42.WeechatAndroid.utils.invalidatableLazy
+import com.ubergeek42.weechat.ColorScheme
 
 
 private const val ANIMATION_DURATION = 250L // ms
@@ -58,6 +60,7 @@ class LineView @JvmOverloads constructor(
     private val glide = getSafeGlide()
 
     private var text: Spannable = NoText
+    private var line: Line? = null
 
     fun setText(line: Line) {
         if (text == line.spannable && currentLayout.usesCurrentPaint()) return
@@ -84,6 +87,7 @@ class LineView @JvmOverloads constructor(
 
     private fun setTextInternal(line: Line) {
         this.text = line.spannable
+        this.line = line
 
         val (url, cacheInfo) = getUrlInfo(line)
         val prettySureWillShowImage = cacheInfo == Cache.Info.FETCHED_RECENTLY
@@ -105,8 +109,26 @@ class LineView @JvmOverloads constructor(
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private val wideLayoutDelegate = invalidatableLazy { AlphaLayout.make(text, wideLayoutWidth) }
-    private val narrowLayoutDelegate = invalidatableLazy { AlphaLayout.make(text, narrowLayoutWidth) }
+    private val wideLayoutDelegate = invalidatableLazy {
+        AlphaLayout(SeaLayout(
+            timeStamp = line!!.timestampString.toString(),
+            prefix = line!!.getPrefixSpannable(),
+            message = line!!.getMessageSpannable(),
+            width = wideLayoutWidth,
+            colorScheme = ColorScheme.get(),
+            textPaint = P.textPaint,
+        ))
+        //AlphaLayout.make(text, wideLayoutWidth)
+    }
+    private val narrowLayoutDelegate = invalidatableLazy {
+        AlphaLayout(SeaLayout(
+            timeStamp = line!!.timestampString.toString(),
+            prefix = line!!.getPrefixSpannable(),
+            message = line!!.getMessageSpannable(),
+            width = narrowLayoutWidth,
+            colorScheme = ColorScheme.get(),
+            textPaint = P.textPaint,
+        ))    }
 
     private val wideLayout by wideLayoutDelegate
     private val narrowLayout by narrowLayoutDelegate
@@ -353,18 +375,18 @@ class LineView @JvmOverloads constructor(
 
                 // see android.text.method.LinkMovementMethod.onTouchEvent
                 override fun onSingleTapUp(event: MotionEvent): Boolean {
-                    val currentLayout = this@LineView.currentLayout
-                    val line = currentLayout.getLineForVertical(event.y.i)
-
-                    if (event.x in currentLayout.getHorizontalTextCoordinatesForLine(line)) {
-                        val offset = currentLayout.getOffsetForHorizontal(line, event.x)
-                        val links = text.getSpans(offset, offset, ClickableSpan::class.java)
-
-                        if (links.isNotEmpty()) {
-                            links.first().onClick(this@LineView)
-                            return true
-                        }
-                    }
+//                    val currentLayout = this@LineView.currentLayout
+//                    val line = currentLayout.getLineForVertical(event.y.i)
+//
+//                    if (event.x in currentLayout.getHorizontalTextCoordinatesForLine(line)) {
+//                        val offset = currentLayout.getOffsetForHorizontal(line, event.x)
+//                        val links = text.getSpans(offset, offset, ClickableSpan::class.java)
+//
+//                        if (links.isNotEmpty()) {
+//                            links.first().onClick(this@LineView)
+//                            return true
+//                        }
+//                    }
 
                     return false
                 }

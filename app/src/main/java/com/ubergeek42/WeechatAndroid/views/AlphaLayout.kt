@@ -15,8 +15,8 @@ import com.ubergeek42.WeechatAndroid.utils.invalidatableLazy
 
 
 // a class that mimics Layout but one that can draw with alpha by drawing into a Bitmap first.
-internal class AlphaLayout private constructor(
-    private val layout: Layout
+internal class AlphaLayout constructor(
+    private val layout: SeaLayout
 ) {
     private val bitmapDelegate = invalidatableLazy {
         Bitmap.createBitmap(layout.width, layout.height, Bitmap.Config.ARGB_8888).also {
@@ -31,18 +31,18 @@ internal class AlphaLayout private constructor(
 
     fun clearBitmap() = bitmapDelegate.invalidate()
 
-    fun usesCurrentPaint() = layout.paint === P.textPaint
+    fun usesCurrentPaint() = layout.textPaint === P.textPaint
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    val paint: Paint get() = layout.paint
+    //val paint: Paint get() = layout.paint
     val height: Int get() = layout.height
     fun draw(canvas: Canvas) = layout.draw(canvas)
-    fun getLineForVertical(vertical: Int) = layout.getLineForVertical(vertical)
-    fun getOffsetForHorizontal(line: Int, horiz: Float) = layout.getOffsetForHorizontal(line, horiz)
+    //fun getLineForVertical(vertical: Int) = layout.getLineForVertical(vertical)
+    //fun getOffsetForHorizontal(line: Int, horiz: Float) = layout.getOffsetForHorizontal(line, horiz)
 
-    fun getHorizontalTextCoordinatesForLine(line: Int)
-            = layout.getParagraphLeft(line).f..layout.getLineMax(line)
+    //fun getHorizontalTextCoordinatesForLine(line: Int)
+    //        = layout.getParagraphLeft(line).f..layout.getLineMax(line)
 
     companion object {
         private val ALIGNMENT = Layout.Alignment.ALIGN_NORMAL
@@ -50,24 +50,29 @@ internal class AlphaLayout private constructor(
         private const val SPACING_ADDITION = 0f
         private const val INCLUDE_PADDING = false
 
-        // in the super rare case where thumbnail width > screen width
-        // text width can be calculated to be less than 0, so set it to a positive value else crash
-        @SuppressLint("WrongConstant")
-        @Suppress("DEPRECATION")
-        @JvmStatic
-        fun make(text: Spannable, anyWidth: Int): AlphaLayout {
-            val width = if (anyWidth > 0) anyWidth else 100
-            val layout = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                StaticLayout.Builder.obtain(text, 0, text.length, P.textPaint, width)
-                        .setBreakStrategy(Layout.BREAK_STRATEGY_HIGH_QUALITY)
-                        .setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_NORMAL)
-                        .build()
-            } else {
-                StaticLayout(text, P.textPaint, width,
-                        ALIGNMENT, SPACING_MULTIPLIER, SPACING_ADDITION, INCLUDE_PADDING)
-            }
-            return AlphaLayout(layout)
-        }
+        //// in the super rare case where thumbnail width > screen width
+        //// text width can be calculated to be less than 0, so set it to a positive value else crash
+        //@SuppressLint("WrongConstant")
+        //@Suppress("DEPRECATION")
+        //@JvmStatic
+        //fun make(text: Spannable, anyWidth: Int): AlphaLayout {
+        //    val width = if (anyWidth > 0) anyWidth else 100
+        //    val layout = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        //        StaticLayout.Builder.obtain(text, 0, text.length, P.textPaint, width)
+        //                .setBreakStrategy(Layout.BREAK_STRATEGY_HIGH_QUALITY)
+        //                .setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_NORMAL)
+        //                .build()
+        //    } else {
+        //        StaticLayout(text, P.textPaint, width,
+        //                ALIGNMENT, SPACING_MULTIPLIER, SPACING_ADDITION, INCLUDE_PADDING)
+        //    }
+        //    return AlphaLayout(layout)
+        //}
+
+        //@SuppressLint("WrongConstant")
+        //@Suppress("DEPRECATION")
+        //@JvmStatic
+        //fun make(layout: SeaLayout): AlphaLayout {
     }
 }
 

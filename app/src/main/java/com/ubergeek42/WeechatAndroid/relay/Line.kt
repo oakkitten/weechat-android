@@ -82,7 +82,7 @@ open class Line(
         return _spannable!!
     }
 
-    private val timestampString get() = P.dateFormat?.let { dateFormat ->
+    val timestampString get() = P.dateFormat?.let { dateFormat ->
         StringBuilder().also { builder -> dateFormat.printTo(builder, this.timestamp) }
     }
 
@@ -94,6 +94,57 @@ open class Line(
 
     private var _messageString: String? = null
     open val messageString get() = _messageString ?: Color().parseColors(rawMessage).toString()
+
+
+    fun getPrefixSpannable(): Spannable {
+        val color = Color()
+        color.parseColors(rawPrefix)
+        val spannable: Spannable = SpannableString(color.out)
+        for (span in color.spanList) {
+            val droidSpan = when (span.type) {
+                Color.Span.FGCOLOR -> ForegroundColorSpan(span.color or -0x1000000)
+                Color.Span.BGCOLOR -> BackgroundColorSpan(span.color or -0x1000000)
+                Color.Span.ITALIC -> StyleSpan(Typeface.ITALIC)
+                Color.Span.BOLD -> StyleSpan(Typeface.BOLD)
+                Color.Span.UNDERLINE -> UnderlineSpan()
+                else -> continue
+            }
+            spannable.setSpan(droidSpan, span.start, span.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+
+        //linkify(spannable, color.messageString)
+
+        if (SHOULD_EMOJIFY) emojify(spannable)
+
+        return spannable
+    }
+
+    fun getMessageSpannable(): Spannable {
+        val color = Color()
+        color.parseColors(rawMessage)
+        val spannable: Spannable = SpannableString(color.out)
+        for (span in color.spanList) {
+            val droidSpan = when (span.type) {
+                Color.Span.FGCOLOR -> ForegroundColorSpan(span.color or -0x1000000)
+                Color.Span.BGCOLOR -> BackgroundColorSpan(span.color or -0x1000000)
+                Color.Span.ITALIC -> StyleSpan(Typeface.ITALIC)
+                Color.Span.BOLD -> StyleSpan(Typeface.BOLD)
+                Color.Span.UNDERLINE -> UnderlineSpan()
+                else -> continue
+            }
+            spannable.setSpan(droidSpan, span.start, span.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+
+        linkify(spannable, color.out)
+
+        if (SHOULD_EMOJIFY) emojify(spannable)
+
+        return spannable
+    }
+
+
+
+
 
     // caching this method (for the purpose of speeding up search)
     // yields about 5ms for searches of 4096 lines, despite what the flame chart shows
