@@ -8,6 +8,7 @@ import android.text.StaticLayout
 import android.text.TextPaint
 import androidx.core.graphics.withTranslation
 import com.ubergeek42.WeechatAndroid.service.P
+import com.ubergeek42.WeechatAndroid.utils.SHOULD_EMOJIFY
 import com.ubergeek42.weechat.ColorScheme
 
 
@@ -42,37 +43,20 @@ class SeaLayout(
         timeStampWidth = timeStampPaint.measureText(timeStamp)
 
         val prefixWidth = timeStampPaint.measureText("a") * 3
+        val prefixWithWithALittleExtra = prefixWidth + 0.33 * spaceWidth
 
-
-        val tempLayout = StaticLayout.Builder.obtain(prefix, 0, prefix.length, P.textPaint, Int.MAX_VALUE)
-                .build()
-
-        var fittingChars = 0
-        var consumedWidth = 0f
-        for (i in prefix.indices) {
-            val offsetForChar = tempLayout.getPrimaryHorizontal(i + 1)
-            println("!!! ${prefix.substring(0, i+1)} -> $offsetForChar}")
-
-            if (offsetForChar > prefixWidth + 0.33 * spaceWidth) {
-                //consumedWidth = offsetForChar;
-                //fittingChars ++
-                break
-
-            } else {
-                consumedWidth = offsetForChar;
-                fittingChars ++
-            }
+        val (fittingChars, consumedWidth) = if (SHOULD_EMOJIFY) {
+            cutPrefixUsingLayout(prefixWithWithALittleExtra)
+        } else {
+            cutPrefixUsingPaint(prefixWithWithALittleExtra)
         }
 
         prefixOffset = timeStampWidth + spaceWidth + (prefixWidth - consumedWidth)
-
-        println("   !!! ${prefix} ${message} :: fitting=$fittingChars, consumed=$consumedWidth, prefixWidth=$prefixWidth, plusWidth=$plusWidth spaceWidth=$spaceWidth ")
 
         prefixLayout = StaticLayout.Builder.obtain(prefix, 0, fittingChars, P.textPaint, Int.MAX_VALUE)
                 .build()
 
         moreOffset = if (fittingChars < prefix.length) prefixOffset + consumedWidth else -1f
-
 
         messageOffset = prefixOffset + consumedWidth + plusWidth
 
@@ -90,7 +74,7 @@ class SeaLayout(
         //canvas.drawRect(timeStampWidth, 0f, prefixOffset, 10f, timeStampPaint)
         //canvas.drawRect(timeStampWidth + spaceWidth, 10f, prefixOffset, 20f, timeStampPaint)
         canvas.withTranslation(prefixOffset, 0f) {
-            prefixLayout.drawText(canvas)
+            prefixLayout.draw(canvas)
         }
         if (moreOffset != -1f) {
             canvas.withTranslation(moreOffset, 0f) {
@@ -98,7 +82,57 @@ class SeaLayout(
             }
         }
         canvas.withTranslation(messageOffset, 0f) {
-            messageLayout.drawText(canvas)
+            messageLayout.draw(canvas)
         }
     }
+
+    data class FittingChars(val amount: Int, val width: Float)
+
+    fun cutPrefixUsingPaint(maxWidth: Double): FittingChars {
+        val widths = FloatArray(prefix.length)
+
+        // getTextWidths natively respects Spanned markup, including RelativeSizeSpan,
+        // AbsoluteSizeSpan, and ReplacementSpans (like EmojiSpan / ImageSpan)
+        textPaint.getTextWidths(prefix, 0, prefix.length, widths)
+
+        var fittingChars = 0
+        var consumedWidth = 0f
+
+        for (charWidth in widths) {
+            if (consumedWidth + charWidth > maxWidth) {
+                break
+            } else {
+                consumedWidth += charWidth
+                fittingChars ++
+            }
+        }
+
+        return FittingChars(fittingChars, consumedWidth)
+    }
+
+    fun cutPrefixUsingLayout(maxWidth: Double): FittingChars {
+        val tempLayout = StaticLayout.Builder.obtain(prefix, 0, prefix.length, P.textPaint, Int.MAX_VALUE)
+                .build()
+
+        var fittingChars = 0
+        var consumedWidth = 0f
+        for (i in prefix.indices) {
+            val offsetForChar = tempLayout.getPrimaryHorizontal(i + 1)
+            println("!!! ${prefix.substring(0, i+1)} -> $offsetForChar}")
+
+            if (offsetForChar > maxWidth) {
+                //consumedWidth = offsetForChar;
+                //fittingChars ++
+                break
+
+            } else {
+                consumedWidth = offsetForChar;
+                fittingChars ++
+            }
+        }
+
+        return FittingChars(fittingChars, consumedWidth)
+    }
 }
+
+//        println("   !!! ${prefix} ${message} :: fitting=$fittingChars, consumed=$consumedWidth, prefixWidth=$prefixWidth, plusWidth=$plusWidth spaceWidth=$spaceWidth ")
