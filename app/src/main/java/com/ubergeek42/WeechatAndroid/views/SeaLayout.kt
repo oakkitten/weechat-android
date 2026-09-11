@@ -7,6 +7,7 @@ import android.text.Layout
 import android.text.Spannable
 import android.text.StaticLayout
 import android.text.TextPaint
+import androidx.core.graphics.withTranslation
 import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.weechat.ColorScheme
 import kotlin.math.roundToInt
@@ -63,9 +64,9 @@ class SeaLayout(
                 .build()
 
 
-        messageOffset = consumedWidth + spaceWidth
+        messageOffset = prefixOffset + consumedWidth + spaceWidth
 
-        messageLayout = StaticLayout.Builder.obtain(message, 0, message.length, P.textPaint, width - messageOffset.toInt() - prefixOffset.toInt())
+        messageLayout = StaticLayout.Builder.obtain(message, 0, message.length, P.textPaint, width - messageOffset.toInt())
                 .setBreakStrategy(Layout.BREAK_STRATEGY_HIGH_QUALITY)
                 .setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_NORMAL)
                 .build()
@@ -76,9 +77,11 @@ class SeaLayout(
         val lineHeight = fontMetrics.bottom - fontMetrics.top + fontMetrics.leading
         println("!!! drawing: $timeStamp ${prefixLayout.text} w=${prefixLayout.width} [pref ofs: $prefixOffset, msg ofs: $messageOffset]")
         canvas.drawText(timeStamp, 0f, -fontMetrics.top, timeStampPaint)
-        canvas.translate(prefixOffset, 0f)
-        prefixLayout.drawText(canvas)
-        canvas.translate(messageOffset, 0f)
-        messageLayout.drawText(canvas)
+        canvas.withTranslation(prefixOffset, 0f) {
+            prefixLayout.drawText(canvas)
+        }
+        canvas.withTranslation(messageOffset, 0f) {
+            messageLayout.drawText(canvas)
+        }
     }
 }
