@@ -59,13 +59,13 @@ class SeaLayout(
 
         println("   !!! ${prefix} ${message} :: fitting=$fittingChars, consumed=$consumedWidth ")
 
-        prefixLayout = StaticLayout.Builder.obtain(prefix, 0, fittingChars, P.textPaint, consumedWidth.roundToInt())
+        prefixLayout = StaticLayout.Builder.obtain(prefix, 0, fittingChars, P.textPaint, Int.MAX_VALUE)
                 .build()
 
 
         messageOffset = consumedWidth + spaceWidth
 
-        messageLayout = StaticLayout.Builder.obtain(message, 0, message.length, P.textPaint, width)
+        messageLayout = StaticLayout.Builder.obtain(message, 0, message.length, P.textPaint, width - messageOffset.toInt() - prefixOffset.toInt())
                 .setBreakStrategy(Layout.BREAK_STRATEGY_HIGH_QUALITY)
                 .setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_NORMAL)
                 .build()
