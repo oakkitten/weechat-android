@@ -1,7 +1,6 @@
 package com.ubergeek42.WeechatAndroid.views
 
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.text.Layout
 import android.text.Spannable
@@ -10,7 +9,6 @@ import android.text.TextPaint
 import androidx.core.graphics.withTranslation
 import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.weechat.ColorScheme
-import kotlin.math.roundToInt
 
 
 class SeaLayout(
@@ -22,11 +20,12 @@ class SeaLayout(
     val textPaint: TextPaint,
 ) {
     val timeStampPaint: Paint get() = Paint(P.textPaint).apply { //-get
-        //fontFeatureSettings = "tnum"
+        fontFeatureSettings = "tnum"
         color = colorScheme.chat_time[0] or -0x1000000// bg?
     }
 
     val prefixOffset: Float
+    val moreOffset: Float
     val messageOffset: Float
 
     val prefixLayout: Layout
@@ -35,7 +34,7 @@ class SeaLayout(
     val height get() = messageLayout.height
 
     init {
-        val spaceWidth = timeStampPaint.measureText("a")
+        val plusWidth = timeStampPaint.measureText("+")
         val timeStampWidth = timeStampPaint.measureText(timeStamp)
 
         val prefixWidth = timeStampPaint.measureText("a") * 3
@@ -56,15 +55,17 @@ class SeaLayout(
             }
         }
 
-        prefixOffset = timeStampWidth + spaceWidth + (prefixWidth - consumedWidth)
+        prefixOffset = timeStampWidth + plusWidth + (prefixWidth - consumedWidth)
 
         println("   !!! ${prefix} ${message} :: fitting=$fittingChars, consumed=$consumedWidth ")
 
         prefixLayout = StaticLayout.Builder.obtain(prefix, 0, fittingChars, P.textPaint, Int.MAX_VALUE)
                 .build()
 
+        moreOffset = if (fittingChars < prefix.length) prefixOffset + consumedWidth else -1f
 
-        messageOffset = prefixOffset + consumedWidth + spaceWidth
+
+        messageOffset = prefixOffset + consumedWidth + plusWidth
 
         messageLayout = StaticLayout.Builder.obtain(message, 0, message.length, P.textPaint, width - messageOffset.toInt())
                 .setBreakStrategy(Layout.BREAK_STRATEGY_HIGH_QUALITY)
@@ -79,6 +80,11 @@ class SeaLayout(
         canvas.drawText(timeStamp, 0f, -fontMetrics.top, timeStampPaint)
         canvas.withTranslation(prefixOffset, 0f) {
             prefixLayout.drawText(canvas)
+        }
+        if (moreOffset != -1f) {
+            canvas.withTranslation(moreOffset, 0f) {
+                canvas.drawText("+", 0f, -fontMetrics.top, timeStampPaint)
+            }
         }
         canvas.withTranslation(messageOffset, 0f) {
             messageLayout.drawText(canvas)
