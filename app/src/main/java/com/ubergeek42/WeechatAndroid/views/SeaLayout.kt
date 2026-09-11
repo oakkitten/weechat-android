@@ -6,8 +6,10 @@ import android.text.Layout
 import android.text.Spannable
 import android.text.StaticLayout
 import android.text.TextPaint
+import androidx.annotation.FloatRange
 import androidx.core.graphics.withTranslation
 import com.ubergeek42.WeechatAndroid.service.P
+import com.ubergeek42.WeechatAndroid.upload.f
 import com.ubergeek42.WeechatAndroid.utils.SHOULD_EMOJIFY
 import com.ubergeek42.weechat.ColorScheme
 
@@ -132,6 +134,18 @@ class SeaLayout(
         }
 
         return FittingChars(fittingChars, consumedWidth)
+    }
+
+    fun getLineForVertical(vertical: Int): Int {
+        return messageLayout.getLineForVertical(vertical)
+    }
+
+    fun getOffsetForHorizontal(line: Int, horiz: Float): Int {
+        return messageLayout.getOffsetForHorizontal(line, horiz + messageOffset)
+    }
+
+    fun getHorizontalTextCoordinatesForLine(line: Int): ClosedFloatingPointRange<Float> {
+        return (messageOffset + messageLayout.getParagraphLeft(line).f)..(messageOffset + messageLayout.getLineMax(line))
     }
 }
 

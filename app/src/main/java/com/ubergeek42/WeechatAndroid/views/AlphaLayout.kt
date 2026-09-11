@@ -38,11 +38,10 @@ internal class AlphaLayout constructor(
     //val paint: Paint get() = layout.paint
     val height: Int get() = layout.height
     fun draw(canvas: Canvas) = layout.draw(canvas)
-    //fun getLineForVertical(vertical: Int) = layout.getLineForVertical(vertical)
-    //fun getOffsetForHorizontal(line: Int, horiz: Float) = layout.getOffsetForHorizontal(line, horiz)
+    fun getLineForVertical(vertical: Int) = layout.getLineForVertical(vertical)
+    fun getOffsetForHorizontal(line: Int, horiz: Float) = layout.getOffsetForHorizontal(line, horiz)
 
-    //fun getHorizontalTextCoordinatesForLine(line: Int)
-    //        = layout.getParagraphLeft(line).f..layout.getLineMax(line)
+    fun getHorizontalTextCoordinatesForLine(line: Int) = layout.getHorizontalTextCoordinatesForLine(line)
 
     companion object {
         private val ALIGNMENT = Layout.Alignment.ALIGN_NORMAL
