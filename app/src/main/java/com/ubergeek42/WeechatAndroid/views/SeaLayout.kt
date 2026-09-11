@@ -31,11 +31,15 @@ class SeaLayout(
     val prefixLayout: Layout
     val messageLayout: Layout
 
+    val timeStampWidth: Float
+    val spaceWidth: Float
+
     val height get() = messageLayout.height
 
     init {
         val plusWidth = timeStampPaint.measureText("+")
-        val timeStampWidth = timeStampPaint.measureText(timeStamp)
+        spaceWidth = timeStampPaint.measureText(" ")
+        timeStampWidth = timeStampPaint.measureText(timeStamp)
 
         val prefixWidth = timeStampPaint.measureText("a") * 3
 
@@ -47,17 +51,22 @@ class SeaLayout(
         var consumedWidth = 0f
         for (i in prefix.indices) {
             val offsetForChar = tempLayout.getPrimaryHorizontal(i + 1)
-            if (offsetForChar > prefixWidth) {
+            println("!!! ${prefix.substring(0, i+1)} -> $offsetForChar}")
+
+            if (offsetForChar > prefixWidth + 0.33 * spaceWidth) {
+                //consumedWidth = offsetForChar;
+                //fittingChars ++
                 break
+
             } else {
                 consumedWidth = offsetForChar;
                 fittingChars ++
             }
         }
 
-        prefixOffset = timeStampWidth + plusWidth + (prefixWidth - consumedWidth)
+        prefixOffset = timeStampWidth + spaceWidth + (prefixWidth - consumedWidth)
 
-        println("   !!! ${prefix} ${message} :: fitting=$fittingChars, consumed=$consumedWidth ")
+        println("   !!! ${prefix} ${message} :: fitting=$fittingChars, consumed=$consumedWidth, prefixWidth=$prefixWidth, plusWidth=$plusWidth spaceWidth=$spaceWidth ")
 
         prefixLayout = StaticLayout.Builder.obtain(prefix, 0, fittingChars, P.textPaint, Int.MAX_VALUE)
                 .build()
@@ -76,8 +85,10 @@ class SeaLayout(
     fun draw(canvas: Canvas) {
         val fontMetrics = textPaint.fontMetrics
         val lineHeight = fontMetrics.bottom - fontMetrics.top + fontMetrics.leading
-        println("!!! drawing: $timeStamp ${prefixLayout.text} w=${prefixLayout.width} [pref ofs: $prefixOffset, msg ofs: $messageOffset]")
+        println("!!! drawing: $timeStamp ${prefixLayout.text} w=${prefixLayout.width} [pref ofs: $prefixOffset, msg ofs: $messageOffset] $$$$ = ${prefixOffset - timeStampWidth -spaceWidth}")
         canvas.drawText(timeStamp, 0f, -fontMetrics.top, timeStampPaint)
+        //canvas.drawRect(timeStampWidth, 0f, prefixOffset, 10f, timeStampPaint)
+        //canvas.drawRect(timeStampWidth + spaceWidth, 10f, prefixOffset, 20f, timeStampPaint)
         canvas.withTranslation(prefixOffset, 0f) {
             prefixLayout.drawText(canvas)
         }
