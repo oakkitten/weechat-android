@@ -2,6 +2,7 @@
 // you may not use this file except in compliance with the License.
 package com.ubergeek42.WeechatAndroid.relay
 
+import android.text.Spannable
 import android.text.SpannableString
 import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.utils.Linkify
@@ -256,21 +257,21 @@ open class FakeLine(pointer: Long, isVisible: Boolean = false) : Line(
         nick = null, isVisible = isVisible, isHighlighted = false,
         LineSpec.DisplayAs.Unspecified, LineSpec.NotifyLevel.Low)
 
-
+object EmptyLine : FakeLine(0)
 object MarkerLine : FakeLine(++fakePointerCounter)  // can have only one per buffer
 class SquiggleLine(pointer: Long = ++fakePointerCounter, isVisible: Boolean = false) : FakeLine(pointer, isVisible)  // can have several of these
 
 
 class HeaderLine(
-    override val messageString : String,
-    override val spannable: SpannableString,
+    //override val messageString : String,
+    //override val spannable: SpannableString,
     val status: Lines.Status,
 ) : FakeLine(TITLE_LINE_POINTER) {
     companion object {
         fun make(data: String, status: Lines.Status): HeaderLine {
             val title = Color.stripEverything(data)
             val spannable = SpannableString(title).also { Linkify.linkify(it) }
-            return HeaderLine(title, spannable, status)
+            return HeaderLine(/*title, spannable,*/ status)
         }
     }
 }

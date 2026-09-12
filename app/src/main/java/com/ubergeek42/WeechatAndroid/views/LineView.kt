@@ -27,6 +27,7 @@ import com.ubergeek42.WeechatAndroid.media.Config
 import com.ubergeek42.WeechatAndroid.media.Engine
 import com.ubergeek42.WeechatAndroid.media.Strategy
 import com.ubergeek42.WeechatAndroid.media.Utils.isContextValidForGlide
+import com.ubergeek42.WeechatAndroid.relay.EmptyLine
 import com.ubergeek42.WeechatAndroid.relay.Line
 import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.upload.f
@@ -59,11 +60,10 @@ class LineView @JvmOverloads constructor(
 ) : View(context, attrs, defStyle) {
     private val glide = getSafeGlide()
 
-    private var text: Spannable = NoText
-    private var line: Line? = null
+    private var line: Line = EmptyLine
 
     fun setText(line: Line) {
-        if (text == line.spannable && currentLayout.usesCurrentPaint()) return
+        if (this.line == line && currentLayout.usesCurrentPaint()) return
 
         invalidateInternal()
         setTextInternal(line)
@@ -73,7 +73,7 @@ class LineView @JvmOverloads constructor(
     private fun invalidateInternal() {
         wideLayoutDelegate.invalidate()
         narrowLayoutDelegate.invalidate()
-        text = NoText
+        line = EmptyLine
         image = null
         firstDrawAt = HAVE_NOT_DRAWN
         state = State.TextOnly
@@ -86,7 +86,6 @@ class LineView @JvmOverloads constructor(
     }
 
     private fun setTextInternal(line: Line) {
-        this.text = line.spannable
         this.line = line
 
         val (url, cacheInfo) = getUrlInfo(line)
@@ -105,15 +104,17 @@ class LineView @JvmOverloads constructor(
 
     private var state = State.TextOnly
 
-    val urls: Array<URLSpan> get() = text.getSpans(0, text.length, URLSpan::class.java)
+    val urls: Array<URLSpan> get() = line?.getMessageSpannable()
+            ?.let { it.getSpans(0, it.length, URLSpan::class.java) }
+            ?: emptyArray()
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     private val wideLayoutDelegate = invalidatableLazy {
         AlphaLayout(SeaLayout(
-            timeStamp = line!!.timestampString.toString(),
-            prefix = line!!.getPrefixSpannable(),
-            message = line!!.getMessageSpannable(),
+            timeStamp = P.dateFormat?.print(line.timestamp),
+            prefix = line.getPrefixSpannable(),
+            message = line.getMessageSpannable(),
             width = wideLayoutWidth,
             colorScheme = ColorScheme.get(),
             textPaint = P.textPaint,
@@ -122,9 +123,9 @@ class LineView @JvmOverloads constructor(
     }
     private val narrowLayoutDelegate = invalidatableLazy {
         AlphaLayout(SeaLayout(
-            timeStamp = line!!.timestampString.toString(),
-            prefix = line!!.getPrefixSpannable(),
-            message = line!!.getMessageSpannable(),
+            timeStamp = P.dateFormat?.print(line.timestamp),
+            prefix = line.getPrefixSpannable(),
+            message = line.getMessageSpannable(),
             width = narrowLayoutWidth,
             colorScheme = ColorScheme.get(),
             textPaint = P.textPaint,
@@ -209,10 +210,10 @@ class LineView @JvmOverloads constructor(
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     private fun measureViewHeight(): Int {
-        fun getTextOnlyHeight() = if (text === NoText) 0 else wideLayout.height
+        fun getTextOnlyHeight() = if (line === EmptyLine) 0 else wideLayout.height
 
         fun getTextWithImageHeight(): Int {
-            val narrowLayoutHeight = if (text === NoText) 0 else narrowLayout.height
+            val narrowLayoutHeight = if (line === EmptyLine) 0 else narrowLayout.height
             return maxOf(narrowLayoutHeight, Config.thumbnailAreaMinHeight)
         }
 
@@ -380,7 +381,7 @@ class LineView @JvmOverloads constructor(
 
                     if (event.x in currentLayout.getHorizontalTextCoordinatesForLine(line)) {
                         val offset = currentLayout.getOffsetForHorizontal(line, event.x)
-                        val links = text.getSpans(offset, offset, ClickableSpan::class.java)
+                        val links = this@LineView.line.getMessageSpannable().getSpans(offset, offset, ClickableSpan::class.java)
 
                         if (links.isNotEmpty()) {
                             links.first().onClick(this@LineView)

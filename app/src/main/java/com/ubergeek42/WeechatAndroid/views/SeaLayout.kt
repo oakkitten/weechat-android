@@ -2,6 +2,7 @@ package com.ubergeek42.WeechatAndroid.views
 
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.text.LineBreaker
 import android.text.Layout
 import android.text.Spannable
 import android.text.StaticLayout
@@ -15,7 +16,7 @@ import com.ubergeek42.weechat.ColorScheme
 
 
 class SeaLayout(
-    val timeStamp: String,
+    val timeStamp: String?,
     val prefix: Spannable,
     val message: Spannable,
     val width: Int,
@@ -42,7 +43,12 @@ class SeaLayout(
     init {
         val plusWidth = timeStampPaint.measureText("+")
         spaceWidth = timeStampPaint.measureText(" ")
-        timeStampWidth = timeStampPaint.measureText(timeStamp)
+
+        if (timeStamp != null) {
+            timeStampWidth = timeStampPaint.measureText(timeStamp)
+        } else {
+            timeStampWidth = 0f
+        }
 
         val prefixWidth = timeStampPaint.measureText("a") * 3
         val prefixWithWithALittleExtra = prefixWidth + 0.33 * spaceWidth
@@ -72,7 +78,9 @@ class SeaLayout(
         val fontMetrics = textPaint.fontMetrics
         val lineHeight = fontMetrics.bottom - fontMetrics.top + fontMetrics.leading
         println("!!! drawing: $timeStamp ${prefixLayout.text} w=${prefixLayout.width} [pref ofs: $prefixOffset, msg ofs: $messageOffset] $$$$ = ${prefixOffset - timeStampWidth -spaceWidth}")
-        canvas.drawText(timeStamp, 0f, -fontMetrics.top, timeStampPaint)
+        if (timeStamp != null) {
+            canvas.drawText(timeStamp, 0f, -fontMetrics.top, timeStampPaint)
+        }
         //canvas.drawRect(timeStampWidth, 0f, prefixOffset, 10f, timeStampPaint)
         //canvas.drawRect(timeStampWidth + spaceWidth, 10f, prefixOffset, 20f, timeStampPaint)
         canvas.withTranslation(prefixOffset, 0f) {
