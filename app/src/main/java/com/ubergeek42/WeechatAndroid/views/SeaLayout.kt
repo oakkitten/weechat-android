@@ -11,6 +11,17 @@ import com.ubergeek42.WeechatAndroid.upload.f
 import com.ubergeek42.WeechatAndroid.utils.SHOULD_EMOJIFY
 import com.ubergeek42.weechat.ColorScheme
 
+// public final static int ALIGN_NONE = 0;
+// public final static int ALIGN_LEFT = 1;
+// public final static int ALIGN_RIGHT = 2;
+// public final static int ALIGN_TIMESTAMP = 3;
+
+enum class Alignment {
+    Left,
+    Timestamp,
+    PrefixLeft,
+    PrefixRight,
+}
 
 class SeaLayout(
     val timeStamp: String?,
@@ -19,7 +30,12 @@ class SeaLayout(
     val width: Int,
     val colorScheme: ColorScheme,
     val textPaint: TextPaint,
-) {
+    val alignment: Alignment = Alignment.PrefixRight,
+
+    ) {
+    fun getTimestampColor() = colorScheme.chat_time[0] or -0x1000000 // TODO bg
+    fun getChatNickPrefixColor() = colorScheme.chat_nick_prefix[0] or -0x1000000 // TODO bg
+
     val timeStampPaint: Paint get() = Paint(textPaint).apply { //-get
         fontFeatureSettings = "tnum"
         color = colorScheme.chat_time[0] or -0x1000000// bg?
@@ -48,7 +64,7 @@ class SeaLayout(
         val maxPrefixWidth = timeStampPaint.measureText("a") * 3
 
         val maxPrefixWithWithALittleExtra = when {
-            drawingTimestamp -> maxPrefixWidth + 0.33f * spaceWidth
+            alignment == Alignment.PrefixRight && drawingTimestamp -> maxPrefixWidth + 0.33f * spaceWidth
             else -> maxPrefixWidth
         }
 
@@ -58,18 +74,30 @@ class SeaLayout(
             cutPrefixToFitWidthUsingPaint(maxPrefixWithWithALittleExtra)
         }
 
-        prefixOffset = timeStampAndSpaceWidth + (maxPrefixWidth - actualPrefixWidth)
+        prefixOffset = when {
+            alignment == Alignment.PrefixRight -> timeStampAndSpaceWidth + (maxPrefixWidth - actualPrefixWidth)
+            else -> timeStampAndSpaceWidth
+        }
 
         prefixLayout = StaticLayout.Builder.obtain(prefix, 0, fittingPrefixChars, textPaint, Int.MAX_VALUE)
                 .build()
 
         moreOffset = if (fittingPrefixChars < prefix.length) prefixOffset + actualPrefixWidth else -1f
 
-        messageOffset = prefixOffset + actualPrefixWidth + plusWidth
+        messageOffset = when (alignment) {
+            Alignment.Left -> 0f
+            Alignment.Timestamp -> timeStampAndSpaceWidth
+            else -> prefixOffset + actualPrefixWidth + plusWidth
+        }
+
+        val leadingMargin = prefixOffset + actualPrefixWidth + plusWidth - messageOffset
 
         messageLayout = StaticLayout.Builder.obtain(message, 0, message.length, textPaint, width - messageOffset.toInt())
                 .setBreakStrategy(Layout.BREAK_STRATEGY_HIGH_QUALITY)
                 .setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_NORMAL)
+                .apply {
+                    if (leadingMargin != 0f) setIndents(intArrayOf(leadingMargin.toInt(), 0), null)
+                }
                 .build()
     }
 
