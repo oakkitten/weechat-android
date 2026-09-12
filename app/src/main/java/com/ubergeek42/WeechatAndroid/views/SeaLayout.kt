@@ -51,8 +51,8 @@ class SeaLayout(
     val height get() = messageLayout.height
 
     init {
-        val spaceWidth = timeStampPaint.measureText(" ")
-        val plusWidth = timeStampPaint.measureText("+")
+        val spaceWidth = textPaint.measureText(" ")
+        val plusWidth = textPaint.measureText("+")
 
         val drawingTimestamp = timeStamp != null
 
@@ -61,7 +61,7 @@ class SeaLayout(
             else -> 0f
         }
 
-        val maxPrefixWidth = timeStampPaint.measureText("a") * 3
+        val maxPrefixWidth = textPaint.measureText("a") * 3
 
         val maxPrefixWithWithALittleExtra = when {
             alignment == Alignment.PrefixRight && drawingTimestamp -> maxPrefixWidth + 0.33f * spaceWidth
