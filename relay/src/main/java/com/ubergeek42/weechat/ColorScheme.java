@@ -31,8 +31,8 @@ public class ColorScheme {
     public int[] chat_time;
     int[] chat_highlight;
     public int[] chat_nick_prefix;
-    int[] chat_nick_suffix;
-    int[] chat_prefix_more;
+    public int[] chat_nick_suffix;
+    public int[] chat_prefix_more;
     public int[] chat_read_marker;
     public int[] default_color = new int[2];
     public int[] chat_inactive_buffer;

@@ -1,5 +1,6 @@
 package com.ubergeek42.WeechatAndroid.views
 
+import android.annotation.SuppressLint
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.text.Layout
@@ -30,20 +31,27 @@ class SeaLayout(
     val width: Int,
     val colorScheme: ColorScheme,
     val textPaint: TextPaint,
-    val alignment: Alignment = Alignment.PrefixRight,
+    val enclosePrefix: Boolean = true,
+    val alignment: Alignment = Alignment.Left,
 
     ) {
     fun getTimestampColor() = colorScheme.chat_time[0] or -0x1000000 // TODO bg
     fun getChatNickPrefixColor() = colorScheme.chat_nick_prefix[0] or -0x1000000 // TODO bg
+    fun getChatNickSuffixColor() = colorScheme.chat_nick_prefix[0] or -0x1000000 // TODO bg
+    fun getMoreColor() = colorScheme.chat_prefix_more[0] or -0x1000000 // TODO bg
 
     val timeStampPaint: Paint get() = Paint(textPaint).apply { //-get
         fontFeatureSettings = "tnum"
-        color = colorScheme.chat_time[0] or -0x1000000// bg?
+        color = getTimestampColor()
     }
+
+    val changingTextPaint = Paint(textPaint)
 
     val prefixOffset: Float
     val moreOffset: Float
     val messageOffset: Float
+    val nickPrefixOffset: Float
+    val nickSuffixOffset: Float
 
     val prefixLayout: Layout
     val messageLayout: Layout
@@ -61,37 +69,44 @@ class SeaLayout(
             else -> 0f
         }
 
-        val maxPrefixWidth = textPaint.measureText("a") * 3
+        val maxPrefixWidth = textPaint.measureText("a") * 5
 
         val maxPrefixWithWithALittleExtra = when {
             alignment == Alignment.PrefixRight && drawingTimestamp -> maxPrefixWidth + 0.33f * spaceWidth
             else -> maxPrefixWidth
         }
 
+        val nickPrefixWidth = if (enclosePrefix) textPaint.measureText("<") else 0f
+        val nickSuffixWidth = if (enclosePrefix) textPaint.measureText(">") else 0f
+
         val (fittingPrefixChars, actualPrefixWidth) = if (SHOULD_EMOJIFY) {
-            cutPrefixToFitWidthUsingLayout(maxPrefixWithWithALittleExtra)
+            cutPrefixToFitWidthUsingLayout(maxPrefixWithWithALittleExtra - nickPrefixWidth - nickSuffixWidth)
         } else {
-            cutPrefixToFitWidthUsingPaint(maxPrefixWithWithALittleExtra)
+            cutPrefixToFitWidthUsingPaint(maxPrefixWithWithALittleExtra - nickPrefixWidth - nickSuffixWidth)
         }
 
         prefixOffset = when {
-            alignment == Alignment.PrefixRight -> timeStampAndSpaceWidth + (maxPrefixWidth - actualPrefixWidth)
-            else -> timeStampAndSpaceWidth
+            alignment == Alignment.PrefixRight -> timeStampAndSpaceWidth + (maxPrefixWidth - actualPrefixWidth) - nickSuffixWidth
+            else -> timeStampAndSpaceWidth + nickPrefixWidth
         }
+
+        nickPrefixOffset = if (enclosePrefix) prefixOffset - nickPrefixWidth else -1f
+        nickSuffixOffset = if (enclosePrefix) prefixOffset + actualPrefixWidth else -1f
 
         prefixLayout = StaticLayout.Builder.obtain(prefix, 0, fittingPrefixChars, textPaint, Int.MAX_VALUE)
                 .build()
 
-        moreOffset = if (fittingPrefixChars < prefix.length) prefixOffset + actualPrefixWidth else -1f
+        moreOffset = if (fittingPrefixChars < prefix.length) prefixOffset + actualPrefixWidth + nickSuffixWidth else -1f
 
         messageOffset = when (alignment) {
             Alignment.Left -> 0f
             Alignment.Timestamp -> timeStampAndSpaceWidth
-            else -> prefixOffset + actualPrefixWidth + plusWidth
+            else -> prefixOffset + actualPrefixWidth + nickSuffixWidth + plusWidth
         }
 
-        val leadingMargin = prefixOffset + actualPrefixWidth + plusWidth - messageOffset
+        val leadingMargin = prefixOffset + actualPrefixWidth + nickSuffixWidth + plusWidth - messageOffset
 
+        @SuppressLint("WrongConstant") // Layout.BREAK_STRATEGY_HIGH_QUALITY
         messageLayout = StaticLayout.Builder.obtain(message, 0, message.length, textPaint, width - messageOffset.toInt())
                 .setBreakStrategy(Layout.BREAK_STRATEGY_HIGH_QUALITY)
                 .setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_NORMAL)
@@ -106,12 +121,20 @@ class SeaLayout(
             canvas.drawText(timeStamp, 0f, -timeStampPaint.fontMetrics.top, timeStampPaint)
         }
 
+        if (nickPrefixOffset != -1f) {
+            canvas.drawText("<", nickPrefixOffset, -textPaint.fontMetrics.top, changingTextPaint.apply { color = getChatNickPrefixColor() }) // TODO paint
+        }
+
         canvas.withTranslation(prefixOffset, 0f) {
             prefixLayout.draw(canvas)
         }
 
+        if (nickSuffixOffset != -1f) {
+            canvas.drawText(">", nickSuffixOffset, -textPaint.fontMetrics.top, changingTextPaint.apply { color = getChatNickSuffixColor() }) // TODO paint
+        }
+
         if (moreOffset != -1f) {
-            canvas.drawText("+", moreOffset, -textPaint.fontMetrics.top, timeStampPaint) // TODO paint
+            canvas.drawText("+", moreOffset, -textPaint.fontMetrics.top, changingTextPaint.apply { color = getMoreColor() }) // TODO paint
         }
 
         canvas.withTranslation(messageOffset, 0f) {
