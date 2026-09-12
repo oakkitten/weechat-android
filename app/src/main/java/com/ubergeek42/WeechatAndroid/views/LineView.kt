@@ -104,9 +104,9 @@ class LineView @JvmOverloads constructor(
 
     private var state = State.TextOnly
 
-    val urls: Array<URLSpan> get() = line?.getMessageSpannable()
-            ?.let { it.getSpans(0, it.length, URLSpan::class.java) }
-            ?: emptyArray()
+    val urls: Array<URLSpan> get() = line.getMessageSpannable()
+            .let { it.getSpans(0, it.length, URLSpan::class.java) }
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -119,7 +119,6 @@ class LineView @JvmOverloads constructor(
             colorScheme = ColorScheme.get(),
             textPaint = P.textPaint,
         ))
-        //AlphaLayout.make(text, wideLayoutWidth)
     }
     private val narrowLayoutDelegate = invalidatableLazy {
         AlphaLayout(SeaLayout(
@@ -129,7 +128,8 @@ class LineView @JvmOverloads constructor(
             width = narrowLayoutWidth,
             colorScheme = ColorScheme.get(),
             textPaint = P.textPaint,
-        ))    }
+        ))
+    }
 
     private val wideLayout by wideLayoutDelegate
     private val narrowLayout by narrowLayoutDelegate

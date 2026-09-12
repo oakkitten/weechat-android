@@ -2,14 +2,11 @@ package com.ubergeek42.WeechatAndroid.views
 
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.text.LineBreaker
 import android.text.Layout
 import android.text.Spannable
 import android.text.StaticLayout
 import android.text.TextPaint
-import androidx.annotation.FloatRange
 import androidx.core.graphics.withTranslation
-import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.upload.f
 import com.ubergeek42.WeechatAndroid.utils.SHOULD_EMOJIFY
 import com.ubergeek42.weechat.ColorScheme
@@ -23,7 +20,7 @@ class SeaLayout(
     val colorScheme: ColorScheme,
     val textPaint: TextPaint,
 ) {
-    val timeStampPaint: Paint get() = Paint(P.textPaint).apply { //-get
+    val timeStampPaint: Paint get() = Paint(textPaint).apply { //-get
         fontFeatureSettings = "tnum"
         color = colorScheme.chat_time[0] or -0x1000000// bg?
     }
@@ -35,113 +32,106 @@ class SeaLayout(
     val prefixLayout: Layout
     val messageLayout: Layout
 
-    val timeStampWidth: Float
-    val spaceWidth: Float
-
     val height get() = messageLayout.height
 
     init {
+        val spaceWidth = timeStampPaint.measureText(" ")
         val plusWidth = timeStampPaint.measureText("+")
-        spaceWidth = timeStampPaint.measureText(" ")
 
-        if (timeStamp != null) {
-            timeStampWidth = timeStampPaint.measureText(timeStamp)
-        } else {
-            timeStampWidth = 0f
+        val drawingTimestamp = timeStamp != null
+
+        val timeStampAndSpaceWidth = when {
+            drawingTimestamp -> timeStampPaint.measureText(timeStamp) + spaceWidth
+            else -> 0f
         }
 
-        val prefixWidth = timeStampPaint.measureText("a") * 3
-        val prefixWithWithALittleExtra = prefixWidth + 0.33 * spaceWidth
+        val maxPrefixWidth = timeStampPaint.measureText("a") * 3
 
-        val (fittingChars, consumedWidth) = if (SHOULD_EMOJIFY) {
-            cutPrefixUsingLayout(prefixWithWithALittleExtra)
-        } else {
-            cutPrefixUsingPaint(prefixWithWithALittleExtra)
+        val maxPrefixWithWithALittleExtra = when {
+            drawingTimestamp -> maxPrefixWidth + 0.33f * spaceWidth
+            else -> maxPrefixWidth
         }
 
-        prefixOffset = timeStampWidth + spaceWidth + (prefixWidth - consumedWidth)
+        val (fittingPrefixChars, actualPrefixWidth) = if (SHOULD_EMOJIFY) {
+            cutPrefixToFitWidthUsingLayout(maxPrefixWithWithALittleExtra)
+        } else {
+            cutPrefixToFitWidthUsingPaint(maxPrefixWithWithALittleExtra)
+        }
 
-        prefixLayout = StaticLayout.Builder.obtain(prefix, 0, fittingChars, P.textPaint, Int.MAX_VALUE)
+        prefixOffset = timeStampAndSpaceWidth + (maxPrefixWidth - actualPrefixWidth)
+
+        prefixLayout = StaticLayout.Builder.obtain(prefix, 0, fittingPrefixChars, textPaint, Int.MAX_VALUE)
                 .build()
 
-        moreOffset = if (fittingChars < prefix.length) prefixOffset + consumedWidth else -1f
+        moreOffset = if (fittingPrefixChars < prefix.length) prefixOffset + actualPrefixWidth else -1f
 
-        messageOffset = prefixOffset + consumedWidth + plusWidth
+        messageOffset = prefixOffset + actualPrefixWidth + plusWidth
 
-        messageLayout = StaticLayout.Builder.obtain(message, 0, message.length, P.textPaint, width - messageOffset.toInt())
+        messageLayout = StaticLayout.Builder.obtain(message, 0, message.length, textPaint, width - messageOffset.toInt())
                 .setBreakStrategy(Layout.BREAK_STRATEGY_HIGH_QUALITY)
                 .setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_NORMAL)
                 .build()
     }
 
     fun draw(canvas: Canvas) {
-        val fontMetrics = textPaint.fontMetrics
-        val lineHeight = fontMetrics.bottom - fontMetrics.top + fontMetrics.leading
-        println("!!! drawing: $timeStamp ${prefixLayout.text} w=${prefixLayout.width} [pref ofs: $prefixOffset, msg ofs: $messageOffset] $$$$ = ${prefixOffset - timeStampWidth -spaceWidth}")
         if (timeStamp != null) {
-            canvas.drawText(timeStamp, 0f, -fontMetrics.top, timeStampPaint)
+            canvas.drawText(timeStamp, 0f, -timeStampPaint.fontMetrics.top, timeStampPaint)
         }
-        //canvas.drawRect(timeStampWidth, 0f, prefixOffset, 10f, timeStampPaint)
-        //canvas.drawRect(timeStampWidth + spaceWidth, 10f, prefixOffset, 20f, timeStampPaint)
+
         canvas.withTranslation(prefixOffset, 0f) {
             prefixLayout.draw(canvas)
         }
+
         if (moreOffset != -1f) {
-            canvas.withTranslation(moreOffset, 0f) {
-                canvas.drawText("+", 0f, -fontMetrics.top, timeStampPaint)
-            }
+            canvas.drawText("+", moreOffset, -textPaint.fontMetrics.top, timeStampPaint) // TODO paint
         }
+
         canvas.withTranslation(messageOffset, 0f) {
             messageLayout.draw(canvas)
         }
     }
 
-    data class FittingChars(val amount: Int, val width: Float)
+    data class FittingCharsAndWidth(val fittingPrefixChars: Int, val actualPrefixWidth: Float)
 
-    fun cutPrefixUsingPaint(maxWidth: Double): FittingChars {
-        val widths = FloatArray(prefix.length)
+    fun cutPrefixToFitWidthUsingPaint(maxWidth: Float): FittingCharsAndWidth {
+        val charWidths = FloatArray(prefix.length)
 
-        // getTextWidths natively respects Spanned markup, including RelativeSizeSpan,
-        // AbsoluteSizeSpan, and ReplacementSpans (like EmojiSpan / ImageSpan)
-        textPaint.getTextWidths(prefix, 0, prefix.length, widths)
+        textPaint.getTextWidths(prefix, 0, prefix.length, charWidths)
 
         var fittingChars = 0
         var consumedWidth = 0f
 
-        for (charWidth in widths) {
+        for (charWidth in charWidths) {
             if (consumedWidth + charWidth > maxWidth) {
                 break
             } else {
                 consumedWidth += charWidth
-                fittingChars ++
+                fittingChars++
             }
         }
 
-        return FittingChars(fittingChars, consumedWidth)
+        return FittingCharsAndWidth(fittingChars, consumedWidth)
     }
 
-    fun cutPrefixUsingLayout(maxWidth: Double): FittingChars {
-        val tempLayout = StaticLayout.Builder.obtain(prefix, 0, prefix.length, P.textPaint, Int.MAX_VALUE)
+    fun cutPrefixToFitWidthUsingLayout(maxWidth: Float): FittingCharsAndWidth {
+        val tempLayout = StaticLayout.Builder.obtain(prefix, 0, prefix.length, textPaint, Int.MAX_VALUE)
                 .build()
 
         var fittingChars = 0
         var consumedWidth = 0f
+
         for (i in prefix.indices) {
             val offsetForChar = tempLayout.getPrimaryHorizontal(i + 1)
-            println("!!! ${prefix.substring(0, i+1)} -> $offsetForChar}")
 
             if (offsetForChar > maxWidth) {
-                //consumedWidth = offsetForChar;
-                //fittingChars ++
                 break
-
             } else {
-                consumedWidth = offsetForChar;
-                fittingChars ++
+                consumedWidth = offsetForChar
+                fittingChars++
             }
         }
 
-        return FittingChars(fittingChars, consumedWidth)
+        return FittingCharsAndWidth(fittingChars, consumedWidth)
     }
 
     fun getLineForVertical(vertical: Int): Int {
@@ -156,5 +146,3 @@ class SeaLayout(
         return (messageOffset + messageLayout.getParagraphLeft(line).f)..(messageOffset + messageLayout.getLineMax(line))
     }
 }
-
-//        println("   !!! ${prefix} ${message} :: fitting=$fittingChars, consumed=$consumedWidth, prefixWidth=$prefixWidth, plusWidth=$plusWidth spaceWidth=$spaceWidth ")
