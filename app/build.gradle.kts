@@ -45,7 +45,8 @@ dependencies {
     implementation(libs.eventbus)
 
     debugImplementation(libs.aspectj.rt)
-    debugImplementation(libs.leakcanary)
+    //debugImplementation(libs.leakcanary)
+    debugImplementation("androidx.tracing:tracing:2.0.2")
 
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.jupiter.params)

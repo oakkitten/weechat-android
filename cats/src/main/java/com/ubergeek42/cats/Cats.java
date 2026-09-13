@@ -20,9 +20,9 @@ public class Cats {
     final static private Map<Object, CatInfo> cats = Collections.synchronizedMap(new IdentityHashMap<>());
 
     public static void setup(Context ctx) {
-        if (!BuildConfig.DEBUG) throw new RuntimeException("cats should only work in debug mode");
-        prepareExceptionHandler();
-        loadConfiguration(ctx);
+        //if (!BuildConfig.DEBUG) throw new RuntimeException("cats should only work in debug mode");
+        //prepareExceptionHandler();
+        //loadConfiguration(ctx);
     }
 
     private static void prepareExceptionHandler() {
