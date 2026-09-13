@@ -3,14 +3,20 @@ package com.ubergeek42.WeechatAndroid.views
 import android.annotation.SuppressLint
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.text.GetChars
 import android.text.Layout
 import android.text.Spannable
+import android.text.Spanned
 import android.text.StaticLayout
 import android.text.TextPaint
+import android.text.TextUtils
+import android.text.style.ForegroundColorSpan
 import androidx.core.graphics.withTranslation
 import com.ubergeek42.WeechatAndroid.upload.f
 import com.ubergeek42.WeechatAndroid.utils.SHOULD_EMOJIFY
 import com.ubergeek42.weechat.ColorScheme
+import java.util.stream.IntStream
+import java.lang.reflect.Array as JavaArray
 
 // public final static int ALIGN_NONE = 0;
 // public final static int ALIGN_LEFT = 1;
@@ -26,15 +32,17 @@ enum class Alignment {
 
 class SeaLayout(
     val timeStamp: String?,
-    val prefix: Spannable,
-    val message: Spannable,
+    prefix1: Spannable,
+    message1: Spannable,
     val width: Int,
     val colorScheme: ColorScheme,
     val textPaint: TextPaint,
-    val enclosePrefix: Boolean = true,
-    val alignment: Alignment = Alignment.Left,
-
-    ) {
+    val dim: Boolean = false,
+    val enclosePrefix: Boolean = false, // P.encloseNick && displayAs == LineSpec.DisplayAs.Say
+    val alignment: Alignment = Alignment.PrefixRight,
+) {
+    val message = if (dim) DimmedSpannable(message1) else message1
+    val prefix = if (dim) DimmedSpannable(prefix1) else prefix1
     fun getTimestampColor() = colorScheme.chat_time[0] or -0x1000000 // TODO bg
     fun getChatNickPrefixColor() = colorScheme.chat_nick_prefix[0] or -0x1000000 // TODO bg
     fun getChatNickSuffixColor() = colorScheme.chat_nick_prefix[0] or -0x1000000 // TODO bg
@@ -195,5 +203,27 @@ class SeaLayout(
 
     fun getHorizontalTextCoordinatesForLine(line: Int): ClosedFloatingPointRange<Float> {
         return (messageOffset + messageLayout.getParagraphLeft(line).f)..(messageOffset + messageLayout.getLineMax(line))
+    }
+}
+
+
+class DimmedSpannable(val source: Spanned): Spanned by source, GetChars {
+    val span = ForegroundColorSpan(ColorScheme.get().chat_inactive_buffer[0] or -0x1000000)
+    override fun chars(): IntStream = source.chars()
+    override fun codePoints(): IntStream = source.codePoints()
+    override fun getChars(start: Int, end: Int, dest: CharArray, destoff: Int) = TextUtils.getChars(source, start, end, dest, destoff)
+    override fun isEmpty() = source.isEmpty()
+
+    override fun getSpanStart(tag: Any?) = 0
+    override fun getSpanEnd(tag: Any?) = source.length
+    override fun getSpanFlags(tag: Any?) = Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+    override fun nextSpanTransition(start: Int, limit: Int, type: Class<*>?) = if (limit < source.length) limit else source.length
+
+    override fun <T> getSpans(start: Int, end: Int, type: Class<T?>?): Array<out T?>? {
+        if (type == Any::class.java || type?.isInstance(span) == true) {
+            return arrayOf(ForegroundColorSpan(ColorScheme.get().chat_inactive_buffer[0] or -0x1000000)) as Array<out T?>?
+        } else {
+            return JavaArray.newInstance(type, 0) as Array<T>
+        }
     }
 }

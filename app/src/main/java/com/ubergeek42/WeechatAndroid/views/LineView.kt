@@ -113,8 +113,8 @@ class LineView @JvmOverloads constructor(
     private val wideLayoutDelegate = invalidatableLazy {
         AlphaLayout(SeaLayout(
             timeStamp = P.dateFormat?.print(line.timestamp),
-            prefix = line.getPrefixSpannable(),
-            message = line.getMessageSpannable(),
+            prefix1 = line.getPrefixSpannable(),
+            message1 = line.getMessageSpannable(),
             width = wideLayoutWidth,
             colorScheme = ColorScheme.get(),
             textPaint = P.textPaint,
@@ -123,8 +123,8 @@ class LineView @JvmOverloads constructor(
     private val narrowLayoutDelegate = invalidatableLazy {
         AlphaLayout(SeaLayout(
             timeStamp = P.dateFormat?.print(line.timestamp),
-            prefix = line.getPrefixSpannable(),
-            message = line.getMessageSpannable(),
+            prefix1 = line.getPrefixSpannable(),
+            message1 = line.getMessageSpannable(),
             width = narrowLayoutWidth,
             colorScheme = ColorScheme.get(),
             textPaint = P.textPaint,
