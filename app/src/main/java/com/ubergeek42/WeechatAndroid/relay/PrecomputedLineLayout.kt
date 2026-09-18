@@ -1,6 +1,5 @@
 package com.ubergeek42.WeechatAndroid.relay
 
-import android.annotation.SuppressLint
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.text.Layout
@@ -8,7 +7,6 @@ import android.text.Spannable
 import android.text.StaticLayout
 import android.text.TextPaint
 import androidx.core.graphics.withTranslation
-import com.ubergeek42.WeechatAndroid.upload.f
 import com.ubergeek42.WeechatAndroid.utils.SHOULD_EMOJIFY
 import com.ubergeek42.weechat.ColorScheme
 
@@ -42,7 +40,7 @@ class PrecomputedLineLayout(
     fun getMoreColor() = colorScheme.chat_prefix_more[0] or -0x1000000 // TODO bg
 
     val timeStampPaint: Paint
-    val changingTextPaint = Paint(textPaint)
+    val changingTextPaint: Paint
 
     val prefixOffset: Float
     val moreOffset: Float
@@ -61,6 +59,8 @@ class PrecomputedLineLayout(
             fontFeatureSettings = "tnum"
             color = getTimestampColor()
         }
+
+        changingTextPaint = Paint(textPaint)
 
         val spaceWidth = textPaint.measureText(" ")
         val plusWidth = textPaint.measureText("+")
@@ -82,29 +82,29 @@ class PrecomputedLineLayout(
         val nickPrefixWidth = if (enclosePrefix) textPaint.measureText("<") else 0f
         val nickSuffixWidth = if (enclosePrefix) textPaint.measureText(">") else 0f
 
-        val (fittingPrefixChars, actualPrefixWidth) = if (SHOULD_EMOJIFY) {
-            cutPrefixToFitWidthUsingLayout(maxPrefixWithWithALittleExtra - nickPrefixWidth - nickSuffixWidth)
+        val (fittingPrefixChars, consumedPrefixWidth) = if (SHOULD_EMOJIFY) {
+            prefix.cutToFitWidthUsingLayout(textPaint, maxPrefixWithWithALittleExtra - nickPrefixWidth - nickSuffixWidth)
         } else {
-            cutPrefixToFitWidthUsingPaint(maxPrefixWithWithALittleExtra - nickPrefixWidth - nickSuffixWidth)
+            prefix.cutToFitWidthUsingPaint(textPaint, maxPrefixWithWithALittleExtra - nickPrefixWidth - nickSuffixWidth)
         }
 
         prefixOffset = when {
-            alignment == Alignment.PrefixRight -> timeStampAndSpaceWidth + (maxPrefixWidth - actualPrefixWidth) - nickSuffixWidth
+            alignment == Alignment.PrefixRight -> timeStampAndSpaceWidth + (maxPrefixWidth - consumedPrefixWidth) - nickSuffixWidth
             else -> timeStampAndSpaceWidth + nickPrefixWidth
         }
 
         nickPrefixOffset = if (enclosePrefix) prefixOffset - nickPrefixWidth else -1f
-        nickSuffixOffset = if (enclosePrefix) prefixOffset + actualPrefixWidth else -1f
+        nickSuffixOffset = if (enclosePrefix) prefixOffset + consumedPrefixWidth else -1f
 
-        moreOffset = if (fittingPrefixChars < prefix.length) prefixOffset + actualPrefixWidth + nickSuffixWidth else -1f
+        moreOffset = if (fittingPrefixChars < prefix.length) prefixOffset + consumedPrefixWidth + nickSuffixWidth else -1f
 
         messageOffset = when (alignment) {
             Alignment.Left      -> 0f
             Alignment.Timestamp -> timeStampAndSpaceWidth
-            else                -> prefixOffset + actualPrefixWidth + nickSuffixWidth + plusWidth
+            else                -> prefixOffset + consumedPrefixWidth + nickSuffixWidth + plusWidth
         }
 
-        leadingMessageIndent = prefixOffset + actualPrefixWidth + nickSuffixWidth + plusWidth - messageOffset
+        leadingMessageIndent = prefixOffset + consumedPrefixWidth + nickSuffixWidth + plusWidth - messageOffset
 
         prefixLayout = StaticLayout.Builder.obtain(prefix, 0, fittingPrefixChars, textPaint, Int.MAX_VALUE)
                 .build()
@@ -144,58 +144,59 @@ class PrecomputedLineLayout(
         }
     }
 
-    data class FittingCharsAndWidth(val fittingPrefixChars: Int, val actualPrefixWidth: Float)
+    //fun getLineForVertical(vertical: Int): Int {
+    //    return messageLayout.getLineForVertical(vertical)
+    //}
 
-    fun cutPrefixToFitWidthUsingPaint(maxWidth: Float): FittingCharsAndWidth {
-        val charWidths = FloatArray(prefix.length)
+    //fun getOffsetForHorizontal(line: Int, horiz: Float): Int {
+    //    return messageLayout.getOffsetForHorizontal(line, horiz + messageOffset)
+    //}
 
-        textPaint.getTextWidths(prefix, 0, prefix.length, charWidths)
+    //fun getHorizontalTextCoordinatesForLine(line: Int): ClosedFloatingPointRange<Float> {
+    //    return (messageOffset + messageLayout.getParagraphLeft(line).f)..(messageOffset + messageLayout.getLineMax(line))
+    //}
+}
 
-        var fittingChars = 0
-        var consumedWidth = 0f
 
-        for (charWidth in charWidths) {
-            if (consumedWidth + charWidth > maxWidth) {
-                break
-            } else {
-                consumedWidth += charWidth
-                fittingChars++
-            }
+data class FittingCharsAndWidth(val fittingChars: Int, val consumedWidth: Float)
+
+fun Spannable.cutToFitWidthUsingPaint(textPaint: TextPaint, maxWidth: Float): FittingCharsAndWidth {
+    val charWidths = FloatArray(this.length)
+
+    textPaint.getTextWidths(this, 0, this.length, charWidths)
+
+    var fittingChars = 0
+    var consumedWidth = 0f
+
+    for (charWidth in charWidths) {
+        if (consumedWidth + charWidth > maxWidth) {
+            break
+        } else {
+            consumedWidth += charWidth
+            fittingChars++
         }
-
-        return FittingCharsAndWidth(fittingChars, consumedWidth)
     }
 
-    fun cutPrefixToFitWidthUsingLayout(maxWidth: Float): FittingCharsAndWidth {
-        val tempLayout = StaticLayout.Builder.obtain(prefix, 0, prefix.length, textPaint, Int.MAX_VALUE)
-                .build()
+    return FittingCharsAndWidth(fittingChars, consumedWidth)
+}
 
-        var fittingChars = 0
-        var consumedWidth = 0f
+fun Spannable.cutToFitWidthUsingLayout(textPaint: TextPaint, maxWidth: Float): FittingCharsAndWidth {
+    val tempLayout = StaticLayout.Builder.obtain(this, 0, this.length, textPaint, Int.MAX_VALUE)
+            .build()
 
-        for (i in prefix.indices) {
-            val offsetForChar = tempLayout.getPrimaryHorizontal(i + 1)
+    var fittingChars = 0
+    var consumedWidth = 0f
 
-            if (offsetForChar > maxWidth) {
-                break
-            } else {
-                consumedWidth = offsetForChar
-                fittingChars++
-            }
+    for (i in this.indices) {
+        val offsetForChar = tempLayout.getPrimaryHorizontal(i + 1)
+
+        if (offsetForChar > maxWidth) {
+            break
+        } else {
+            consumedWidth = offsetForChar
+            fittingChars++
         }
-
-        return FittingCharsAndWidth(fittingChars, consumedWidth)
     }
 
-    fun getLineForVertical(vertical: Int): Int {
-        return messageLayout.getLineForVertical(vertical)
-    }
-
-    fun getOffsetForHorizontal(line: Int, horiz: Float): Int {
-        return messageLayout.getOffsetForHorizontal(line, horiz + messageOffset)
-    }
-
-    fun getHorizontalTextCoordinatesForLine(line: Int): ClosedFloatingPointRange<Float> {
-        return (messageOffset + messageLayout.getParagraphLeft(line).f)..(messageOffset + messageLayout.getLineMax(line))
-    }
+    return FittingCharsAndWidth(fittingChars, consumedWidth)
 }
