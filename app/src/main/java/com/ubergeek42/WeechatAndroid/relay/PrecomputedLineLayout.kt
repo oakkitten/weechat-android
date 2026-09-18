@@ -26,11 +26,14 @@ enum class Alignment {
 
 
 class PrecomputedLineLayout(private val line: Line) {
+    val textPaint: TextPaint = P.textPaint
+    private val timeStampPaint: Paint
+    private val changingTextPaint: Paint
+
     private val timeStamp: String? = P.dateFormat?.print(line.timestamp)
     private val prefix: Spannable = line.getPrefixSpannable()
     private val message: Spannable = line.getMessageSpannable()
     private val maxPrefixWidthInChars: Int = P.maxWidth
-    private val textPaint: TextPaint = P.textPaint
     private val enclosePrefix: Boolean = P.encloseNick && line.displayAs == LineSpec.DisplayAs.Say
     private val alignment: Alignment = Alignment.PrefixRight
 
@@ -41,8 +44,6 @@ class PrecomputedLineLayout(private val line: Line) {
     private fun getChatNickSuffixColor() = colorScheme.chat_nick_prefix[0] or -0x1000000 // TODO bg
     private fun getMoreColor() = colorScheme.chat_prefix_more[0] or -0x1000000 // TODO bg
 
-    private val timeStampPaint: Paint
-    private val changingTextPaint: Paint
 
     val nickPrefixOffset: Float
     val prefixOffset: Float
@@ -110,11 +111,18 @@ class PrecomputedLineLayout(private val line: Line) {
         prefixLayout = StaticLayout.Builder.obtain(prefix, 0, fittingPrefixChars, textPaint, Int.MAX_VALUE)
                 .build()
 
-        val messagePrecomputedTextParams = PrecomputedTextCompat.Params.Builder(P.textPaint)
+        val messagePrecomputedTextParams = PrecomputedTextCompat.Params.Builder(textPaint)
                 .setBreakStrategy(Layout.BREAK_STRATEGY_HIGH_QUALITY)
                 .setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_NORMAL)
                 .build()
         messagePrecomputedText = PrecomputedTextCompat.create(message, messagePrecomputedTextParams)
+    }
+
+    fun obtainMessageLayout(viewWidth: Int): StaticLayout {
+        return StaticLayout.Builder.obtain(messagePrecomputedText, 0, messagePrecomputedText.length, textPaint, viewWidth - messageOffset.toInt())
+                .setBreakStrategy(Layout.BREAK_STRATEGY_HIGH_QUALITY)
+                .setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_NORMAL)
+                .build()
     }
 
     fun draw(canvas: Canvas) {

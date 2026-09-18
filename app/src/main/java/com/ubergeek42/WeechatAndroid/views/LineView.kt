@@ -38,7 +38,7 @@ import com.ubergeek42.WeechatAndroid.utils.invalidatableLazy
 import com.ubergeek42.weechat.ColorScheme
 
 
-private const val ANIMATION_DURATION = 250L // ms
+private const val ANIMATION_DURATION = 2500L // ms
 
 
 private enum class State(
@@ -63,7 +63,7 @@ class LineView @JvmOverloads constructor(
     private var line: Line = EmptyLine
 
     fun setText(line: Line) {
-        if (this.line == line && currentLayout.usesCurrentPaint()) return
+        if (this.line == line && line.getPrecomputedLayout().textPaint == P.textPaint) return
 
         invalidateInternal()
         setTextInternal(line)
@@ -111,24 +111,10 @@ class LineView @JvmOverloads constructor(
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     private val wideLayoutDelegate = invalidatableLazy {
-        AlphaLayout(SeaLayout(
-            timeStamp = P.dateFormat?.print(line.timestamp),
-            prefix1 = line.getPrefixSpannable(),
-            message1 = line.getMessageSpannable(),
-            width = wideLayoutWidth,
-            colorScheme = ColorScheme.get(),
-            textPaint = P.textPaint,
-        ))
+        LineViewTextLayout(line.getPrecomputedLayout(), wideLayoutWidth)
     }
     private val narrowLayoutDelegate = invalidatableLazy {
-        AlphaLayout(SeaLayout(
-            timeStamp = P.dateFormat?.print(line.timestamp),
-            prefix1 = line.getPrefixSpannable(),
-            message1 = line.getMessageSpannable(),
-            width = narrowLayoutWidth,
-            colorScheme = ColorScheme.get(),
-            textPaint = P.textPaint,
-        ))
+        LineViewTextLayout(line.getPrecomputedLayout(), narrowLayoutWidth)
     }
 
     private val wideLayout by wideLayoutDelegate
@@ -334,8 +320,8 @@ class LineView @JvmOverloads constructor(
 
             it.doOnEnd {
                 state = if (animatingToImage) State.TextWithImage else State.TextOnly
-                wideLayoutDelegate.getValueOrNull()?.clearBitmap()
-                narrowLayoutDelegate.getValueOrNull()?.clearBitmap()
+                wideLayoutDelegate.getValueOrNull() //?.clearBitmap()
+                narrowLayoutDelegate.getValueOrNull() //?.clearBitmap()
                 animator = null
             }
         }
@@ -376,18 +362,18 @@ class LineView @JvmOverloads constructor(
 
                 // see android.text.method.LinkMovementMethod.onTouchEvent
                 override fun onSingleTapUp(event: MotionEvent): Boolean {
-                    val currentLayout = this@LineView.currentLayout
-                    val line = currentLayout.getLineForVertical(event.y.i)
-
-                    if (event.x in currentLayout.getHorizontalTextCoordinatesForLine(line)) {
-                        val offset = currentLayout.getOffsetForHorizontal(line, event.x)
-                        val links = this@LineView.line.getMessageSpannable().getSpans(offset, offset, ClickableSpan::class.java)
-
-                        if (links.isNotEmpty()) {
-                            links.first().onClick(this@LineView)
-                            return true
-                        }
-                    }
+//                    val currentLayout = this@LineView.currentLayout
+//                    val line = currentLayout.getLineForVertical(event.y.i)
+//
+//                    if (event.x in currentLayout.getHorizontalTextCoordinatesForLine(line)) {
+//                        val offset = currentLayout.getOffsetForHorizontal(line, event.x)
+//                        val links = this@LineView.line.getMessageSpannable().getSpans(offset, offset, ClickableSpan::class.java)
+//
+//                        if (links.isNotEmpty()) {
+//                            links.first().onClick(this@LineView)
+//                            return true
+//                        }
+//                    }
 
                     return false
                 }
