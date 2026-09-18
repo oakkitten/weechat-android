@@ -28,6 +28,7 @@ class PrecomputedLineLayout(
     val timeStamp: String?,
     val prefix: Spannable,
     val message: Spannable,
+    val maxPrefixWidthInChars: Float,
     val width: Int,
     val colorScheme: ColorScheme,
     val textPaint: TextPaint,
@@ -40,16 +41,13 @@ class PrecomputedLineLayout(
     fun getChatNickSuffixColor() = colorScheme.chat_nick_prefix[0] or -0x1000000 // TODO bg
     fun getMoreColor() = colorScheme.chat_prefix_more[0] or -0x1000000 // TODO bg
 
-    val timeStampPaint: Paint get() = Paint(textPaint).apply { //-get
-        fontFeatureSettings = "tnum"
-        color = getTimestampColor()
-    }
-
+    val timeStampPaint: Paint
     val changingTextPaint = Paint(textPaint)
 
     val prefixOffset: Float
     val moreOffset: Float
     val messageOffset: Float
+    val leadingMessageIndent: Float
     val nickPrefixOffset: Float
     val nickSuffixOffset: Float
 
@@ -59,6 +57,11 @@ class PrecomputedLineLayout(
     val height get() = messageLayout.height
 
     init {
+        timeStampPaint = Paint(textPaint).apply {
+            fontFeatureSettings = "tnum"
+            color = getTimestampColor()
+        }
+
         val spaceWidth = textPaint.measureText(" ")
         val plusWidth = textPaint.measureText("+")
 
@@ -69,11 +72,11 @@ class PrecomputedLineLayout(
             else -> 0f
         }
 
-        val maxPrefixWidth = textPaint.measureText("a") * 5
+        val maxPrefixWidth = textPaint.measureText("a") * maxPrefixWidthInChars
 
         val maxPrefixWithWithALittleExtra = when {
             alignment == Alignment.PrefixRight && drawingTimestamp -> maxPrefixWidth + 0.33f * spaceWidth
-            else                                                                                                          -> maxPrefixWidth
+            else -> maxPrefixWidth
         }
 
         val nickPrefixWidth = if (enclosePrefix) textPaint.measureText("<") else 0f
@@ -87,31 +90,30 @@ class PrecomputedLineLayout(
 
         prefixOffset = when {
             alignment == Alignment.PrefixRight -> timeStampAndSpaceWidth + (maxPrefixWidth - actualPrefixWidth) - nickSuffixWidth
-            else                                                                                      -> timeStampAndSpaceWidth + nickPrefixWidth
+            else -> timeStampAndSpaceWidth + nickPrefixWidth
         }
 
         nickPrefixOffset = if (enclosePrefix) prefixOffset - nickPrefixWidth else -1f
         nickSuffixOffset = if (enclosePrefix) prefixOffset + actualPrefixWidth else -1f
-
-        prefixLayout = StaticLayout.Builder.obtain(prefix, 0, fittingPrefixChars, textPaint, Int.MAX_VALUE)
-                .build()
 
         moreOffset = if (fittingPrefixChars < prefix.length) prefixOffset + actualPrefixWidth + nickSuffixWidth else -1f
 
         messageOffset = when (alignment) {
             Alignment.Left      -> 0f
             Alignment.Timestamp -> timeStampAndSpaceWidth
-            else                                                                       -> prefixOffset + actualPrefixWidth + nickSuffixWidth + plusWidth
+            else                -> prefixOffset + actualPrefixWidth + nickSuffixWidth + plusWidth
         }
 
-        val leadingMargin = prefixOffset + actualPrefixWidth + nickSuffixWidth + plusWidth - messageOffset
+        leadingMessageIndent = prefixOffset + actualPrefixWidth + nickSuffixWidth + plusWidth - messageOffset
 
-        @SuppressLint("WrongConstant") // Layout.BREAK_STRATEGY_HIGH_QUALITY
+        prefixLayout = StaticLayout.Builder.obtain(prefix, 0, fittingPrefixChars, textPaint, Int.MAX_VALUE)
+                .build()
+
         messageLayout = StaticLayout.Builder.obtain(message, 0, message.length, textPaint, width - messageOffset.toInt())
                 .setBreakStrategy(Layout.BREAK_STRATEGY_HIGH_QUALITY)
                 .setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_NORMAL)
                 .apply {
-                    if (leadingMargin != 0f) setIndents(intArrayOf(leadingMargin.toInt(), 0), null)
+                    if (leadingMessageIndent != 0f) setIndents(intArrayOf(leadingMessageIndent.toInt(), 0), null)
                 }
                 .build()
     }
