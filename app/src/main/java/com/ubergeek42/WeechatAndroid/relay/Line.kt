@@ -48,7 +48,7 @@ open class Line(
         getPrecomputedLayout()
     }
 
-    @AnyThread fun invalidateSpannable() {
+    @AnyThread fun clearEverythingProcessed() {
         precomputedLineLayout = null
         prefixSpannable = null
         messageSpannable = null

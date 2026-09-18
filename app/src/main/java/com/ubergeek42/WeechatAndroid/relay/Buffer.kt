@@ -137,7 +137,7 @@ class Buffer @WorkerThread constructor(
     @Synchronized fun removeOpenKey(key: String) {
         if (openKeys.remove(key) == Keys.Change.BecameEmpty) {
             BufferList.desyncBuffer(this)
-            lines.invalidateSpannables()
+            lines.clearEverythingProcessed()
             if (P.optimizeTraffic) {
                 // request lines & nicks on the next sync
                 // the previous comment here was stupid
@@ -360,7 +360,7 @@ class Buffer @WorkerThread constructor(
     @MainThread fun onGlobalPreferencesChanged(numberChanged: Boolean) {
         synchronized(this) {
             if (!numberChanged) {
-                lines.invalidateSpannables()
+                lines.clearEverythingProcessed()
                 style++
             }
             lines.ensureSpannables()

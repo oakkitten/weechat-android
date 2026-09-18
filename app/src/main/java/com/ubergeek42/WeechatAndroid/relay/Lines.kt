@@ -2,7 +2,6 @@
 // you may not use this file except in compliance with the License.
 package com.ubergeek42.WeechatAndroid.relay
 
-import android.text.Spannable
 import android.text.SpannableString
 import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.utils.Linkify
@@ -187,8 +186,8 @@ class Lines {
         }
     }
 
-    fun invalidateSpannables() {
-        unfiltered.forEach { it.invalidateSpannable() }
+    fun clearEverythingProcessed() {
+        unfiltered.forEach { it.clearEverythingProcessed() }
     }
 
     // process lines that are gre going to be displayed, backwards, on a background thread pool.
