@@ -29,7 +29,7 @@ public class ColorScheme {
 
     // the following are used by Color.java and UI
     public int[] chat_time;
-    int[] chat_highlight;
+    public int[] chat_highlight;
     public int[] chat_nick_prefix;
     public int[] chat_nick_suffix;
     public int[] chat_prefix_more;

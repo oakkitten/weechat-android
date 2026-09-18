@@ -11,10 +11,12 @@ import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
 import androidx.annotation.AnyThread
+import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.utils.Linkify.linkify
 import com.ubergeek42.WeechatAndroid.utils.SHOULD_EMOJIFY
 import com.ubergeek42.WeechatAndroid.utils.emojify
 import com.ubergeek42.weechat.Color
+import com.ubergeek42.weechat.ColorScheme
 import org.joda.time.format.DateTimeFormatter
 
 
@@ -60,7 +62,7 @@ open class Line(
     private var prefixSpannable: Spannable? = null
 
     fun getPrefixSpannable() = prefixSpannable
-            ?: rawPrefix.toSpannableWithWeechatColorsParsed()
+            ?: rawPrefix.toSpannableWithWeechatColorsParsed(isHighlighted, type == LineSpec.Type.Other && P.dimDownNonHumanLines)
                     .also {
                         if (SHOULD_EMOJIFY) emojify(it)
                         prefixSpannable = it
@@ -69,7 +71,7 @@ open class Line(
     private var messageSpannable: Spannable? = null
 
     fun getMessageSpannable() = messageSpannable
-            ?: rawMessage.toSpannableWithWeechatColorsParsed()
+            ?: rawMessage.toSpannableWithWeechatColorsParsed(false, type == LineSpec.Type.Other && P.dimDownNonHumanLines)
                     .also {
                         if (SHOULD_EMOJIFY) emojify(it)
                         linkify(it)
@@ -108,21 +110,35 @@ fun String.toStringWithWeechatColorsStripped(): String {
 
 
 // TODO Parse Weechat colors in a more direct way
-fun String.toSpannableWithWeechatColorsParsed(): Spannable {
+fun String.toSpannableWithWeechatColorsParsed(highlight: Boolean, dim: Boolean): Spannable {
     val color = Color()
     color.parseColors(this)
     val spannable: Spannable = SpannableString(color.out)
 
-    for (span in color.spanList) {
-        val droidSpan = when (span.type) {
-            Color.Span.FGCOLOR -> ForegroundColorSpan(span.color or -0x1000000)
-            Color.Span.BGCOLOR -> BackgroundColorSpan(span.color or -0x1000000)
-            Color.Span.ITALIC -> StyleSpan(Typeface.ITALIC)
-            Color.Span.BOLD -> StyleSpan(Typeface.BOLD)
-            Color.Span.UNDERLINE -> UnderlineSpan()
-            else -> continue
+    if (dim) {
+        val dimColor = ColorScheme.get().chat_inactive_buffer[0] or -0x1000000
+        spannable.setSpan(ForegroundColorSpan(dimColor), 0, spannable.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+    } else if (highlight) {
+        val highlightForegroundColor = ColorScheme.get().chat_highlight[0]
+        val highlightBackgroundColor = ColorScheme.get().chat_highlight[1]
+        if (highlightForegroundColor != -1) {
+            spannable.setSpan(ForegroundColorSpan(highlightForegroundColor or -0x1000000), 0, spannable.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
-        spannable.setSpan(droidSpan, span.start, span.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        if (highlightBackgroundColor != -1) {
+            spannable.setSpan(BackgroundColorSpan(highlightBackgroundColor or -0x1000000), 0, spannable.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+    } else {
+        for (span in color.spanList) {
+            val droidSpan = when (span.type) {
+                Color.Span.FGCOLOR -> ForegroundColorSpan(span.color or -0x1000000)
+                Color.Span.BGCOLOR -> BackgroundColorSpan(span.color or -0x1000000)
+                Color.Span.ITALIC -> StyleSpan(Typeface.ITALIC)
+                Color.Span.BOLD -> StyleSpan(Typeface.BOLD)
+                Color.Span.UNDERLINE -> UnderlineSpan()
+                else -> continue
+            }
+            spannable.setSpan(droidSpan, span.start, span.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
     }
 
     return spannable
