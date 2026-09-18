@@ -7,20 +7,23 @@ import android.text.Spannable
 import android.text.StaticLayout
 import android.text.TextPaint
 import androidx.core.graphics.withTranslation
+import androidx.core.text.PrecomputedTextCompat
+import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.utils.SHOULD_EMOJIFY
 import com.ubergeek42.weechat.ColorScheme
+
 
 // public final static int ALIGN_NONE = 0;
 // public final static int ALIGN_LEFT = 1;
 // public final static int ALIGN_RIGHT = 2;
 // public final static int ALIGN_TIMESTAMP = 3;
-
 enum class Alignment {
     Left,
     Timestamp,
     PrefixLeft,
     PrefixRight,
 }
+
 
 class PrecomputedLineLayout(
     val timeStamp: String?,
@@ -50,9 +53,7 @@ class PrecomputedLineLayout(
     val nickSuffixOffset: Float
 
     val prefixLayout: Layout
-    val messageLayout: Layout
-
-    val height get() = messageLayout.height
+    val messagePrecomputedText: PrecomputedTextCompat
 
     init {
         timeStampPaint = Paint(textPaint).apply {
@@ -109,13 +110,11 @@ class PrecomputedLineLayout(
         prefixLayout = StaticLayout.Builder.obtain(prefix, 0, fittingPrefixChars, textPaint, Int.MAX_VALUE)
                 .build()
 
-        messageLayout = StaticLayout.Builder.obtain(message, 0, message.length, textPaint, width - messageOffset.toInt())
+        val messagePrecomputedTextParams = PrecomputedTextCompat.Params.Builder(P.textPaint)
                 .setBreakStrategy(Layout.BREAK_STRATEGY_HIGH_QUALITY)
                 .setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_NORMAL)
-                .apply {
-                    if (leadingMessageIndent != 0f) setIndents(intArrayOf(leadingMessageIndent.toInt(), 0), null)
-                }
                 .build()
+        messagePrecomputedText = PrecomputedTextCompat.create(message, messagePrecomputedTextParams)
     }
 
     fun draw(canvas: Canvas) {
@@ -138,23 +137,7 @@ class PrecomputedLineLayout(
         if (moreOffset != -1f) {
             canvas.drawText("+", moreOffset, -textPaint.fontMetrics.top, changingTextPaint.apply { color = getMoreColor() }) // TODO paint
         }
-
-        canvas.withTranslation(messageOffset, 0f) {
-            messageLayout.draw(canvas)
-        }
     }
-
-    //fun getLineForVertical(vertical: Int): Int {
-    //    return messageLayout.getLineForVertical(vertical)
-    //}
-
-    //fun getOffsetForHorizontal(line: Int, horiz: Float): Int {
-    //    return messageLayout.getOffsetForHorizontal(line, horiz + messageOffset)
-    //}
-
-    //fun getHorizontalTextCoordinatesForLine(line: Int): ClosedFloatingPointRange<Float> {
-    //    return (messageOffset + messageLayout.getParagraphLeft(line).f)..(messageOffset + messageLayout.getLineMax(line))
-    //}
 }
 
 
