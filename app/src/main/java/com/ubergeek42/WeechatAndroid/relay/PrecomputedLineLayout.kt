@@ -25,32 +25,32 @@ enum class Alignment {
 }
 
 
-class PrecomputedLineLayout(
-    val timeStamp: String?,
-    val prefix: Spannable,
-    val message: Spannable,
-    val maxPrefixWidthInChars: Float,
-    val width: Int,
-    val colorScheme: ColorScheme,
-    val textPaint: TextPaint,
-    val dim: Boolean = false,
-    val enclosePrefix: Boolean = false, // P.encloseNick && displayAs == LineSpec.DisplayAs.Say
-    val alignment: Alignment = Alignment.PrefixRight,
-) {
-    fun getTimestampColor() = colorScheme.chat_time[0] or -0x1000000 // TODO bg
-    fun getChatNickPrefixColor() = colorScheme.chat_nick_prefix[0] or -0x1000000 // TODO bg
-    fun getChatNickSuffixColor() = colorScheme.chat_nick_prefix[0] or -0x1000000 // TODO bg
-    fun getMoreColor() = colorScheme.chat_prefix_more[0] or -0x1000000 // TODO bg
+class PrecomputedLineLayout(private val line: Line) {
+    private val timeStamp: String? = P.dateFormat?.print(line.timestamp)
+    private val prefix: Spannable = line.getPrefixSpannable()
+    private val message: Spannable = line.getMessageSpannable()
+    private val maxPrefixWidthInChars: Int = P.maxWidth
+    private val textPaint: TextPaint = P.textPaint
+    private val enclosePrefix: Boolean = P.encloseNick && line.displayAs == LineSpec.DisplayAs.Say
+    private val alignment: Alignment = Alignment.PrefixRight
 
-    val timeStampPaint: Paint
-    val changingTextPaint: Paint
+    private val colorScheme: ColorScheme = ColorScheme.get()
 
+    private fun getTimestampColor() = colorScheme.chat_time[0] or -0x1000000 // TODO bg
+    private fun getChatNickPrefixColor() = colorScheme.chat_nick_prefix[0] or -0x1000000 // TODO bg
+    private fun getChatNickSuffixColor() = colorScheme.chat_nick_prefix[0] or -0x1000000 // TODO bg
+    private fun getMoreColor() = colorScheme.chat_prefix_more[0] or -0x1000000 // TODO bg
+
+    private val timeStampPaint: Paint
+    private val changingTextPaint: Paint
+
+    val nickPrefixOffset: Float
     val prefixOffset: Float
+    val nickSuffixOffset: Float
     val moreOffset: Float
+
     val messageOffset: Float
     val leadingMessageIndent: Float
-    val nickPrefixOffset: Float
-    val nickSuffixOffset: Float
 
     val prefixLayout: Layout
     val messagePrecomputedText: PrecomputedTextCompat

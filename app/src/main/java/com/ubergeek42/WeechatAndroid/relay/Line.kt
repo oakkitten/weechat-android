@@ -3,7 +3,6 @@
 package com.ubergeek42.WeechatAndroid.relay
 
 import android.graphics.Typeface
-import android.text.Layout
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.Spanned
@@ -12,8 +11,6 @@ import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
 import androidx.annotation.AnyThread
-import androidx.core.text.PrecomputedTextCompat
-import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.utils.Linkify.linkify
 import com.ubergeek42.WeechatAndroid.utils.SHOULD_EMOJIFY
 import com.ubergeek42.WeechatAndroid.utils.emojify
@@ -79,19 +76,16 @@ open class Line(
                         messageSpannable = it
                     }
 
-    fun getPrecomputedLayout() {
-        // message
-        val params = PrecomputedTextCompat.Params.Builder(P.textPaint)
-                .setBreakStrategy(Layout.BREAK_STRATEGY_HIGH_QUALITY)
-                .setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_NORMAL)
-                .build()
-        PrecomputedTextCompat.create(getMessageSpannable(), params)
-    }
+    private var precomputedLineLayout: PrecomputedLineLayout? = null
+
+    fun getPrecomputedLayout() = precomputedLineLayout
+            ?: PrecomputedLineLayout(this)
+                    .also { precomputedLineLayout = it }
 
     // caching this method (for the purpose of speeding up search)
     // yields about 5ms for searches of 4096 lines, despite what the flame chart shows
     fun getIrcLikeString() = if (displayAs == LineSpec.DisplayAs.Say)
-            "<$prefixString> $messageString" else "$prefixString $messageString"
+            "<${getPrefixString()}> ${getMessageString()}" else "${getPrefixString()} ${getMessageString()}"
 
     fun getTimestampedIrcLikeString(dateFormat: DateTimeFormatter?): String =
             dateFormat?.let { "${it.print(timestamp)} ${getIrcLikeString()}" } ?: getIrcLikeString()
