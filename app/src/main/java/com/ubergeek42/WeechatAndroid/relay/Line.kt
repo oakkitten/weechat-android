@@ -15,6 +15,7 @@ import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.utils.Linkify.linkify
 import com.ubergeek42.WeechatAndroid.utils.SHOULD_EMOJIFY
 import com.ubergeek42.WeechatAndroid.utils.emojify
+import com.ubergeek42.WeechatAndroid.views.getOrSet
 import com.ubergeek42.weechat.Color
 import com.ubergeek42.weechat.ColorScheme
 import org.joda.time.format.DateTimeFormatter
@@ -50,6 +51,7 @@ open class Line(
     // spannable wouldn't get reset by P if the buffer's not open.
     private var prefixString: String? = null
 
+    // TODO get or set?
     fun getPrefixString() = prefixString
             ?: rawPrefix.toStringWithWeechatColorsStripped()
                     .also { prefixString = it }
