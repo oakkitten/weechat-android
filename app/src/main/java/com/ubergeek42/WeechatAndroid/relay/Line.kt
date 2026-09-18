@@ -3,6 +3,7 @@
 package com.ubergeek42.WeechatAndroid.relay
 
 import android.graphics.Typeface
+import android.os.Looper
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.Spanned
@@ -15,11 +16,15 @@ import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.utils.Linkify.linkify
 import com.ubergeek42.WeechatAndroid.utils.SHOULD_EMOJIFY
 import com.ubergeek42.WeechatAndroid.utils.emojify
-import com.ubergeek42.WeechatAndroid.views.getOrSet
+import com.ubergeek42.cats.Cat
+import com.ubergeek42.cats.Kitty
+import com.ubergeek42.cats.Root
 import com.ubergeek42.weechat.Color
 import com.ubergeek42.weechat.ColorScheme
 import org.joda.time.format.DateTimeFormatter
 
+
+@Root private val kitty: Kitty = Kitty.make("Line")
 
 open class Line(
     @JvmField val pointer: Long,
@@ -36,6 +41,11 @@ open class Line(
     @AnyThread fun ensureSpannable() {
         if (prefixSpannable == null) prefixString = getPrefixSpannable().toString()
         if (messageSpannable == null) messageString = getMessageSpannable().toString()
+    }
+
+    @AnyThread @Cat fun ensurePrecomputedLayout() {
+        ensureSpannable()
+        getPrecomputedLayout()
     }
 
     @AnyThread fun invalidateSpannable() {
@@ -85,7 +95,12 @@ open class Line(
 
     fun getPrecomputedLayout() = precomputedLineLayout
             ?: PrecomputedLineLayout(this)
-                    .also { precomputedLineLayout = it }
+                    .also {
+                        precomputedLineLayout = it
+                        if (Looper.myLooper() == Looper.getMainLooper()) {
+                            kitty.wtf("!!! made layout for ${getIrcLikeString()}")
+                        }
+                    }
 
     // caching this method (for the purpose of speeding up search)
     // yields about 5ms for searches of 4096 lines, despite what the flame chart shows
