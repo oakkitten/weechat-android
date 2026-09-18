@@ -111,10 +111,10 @@ class LineView @JvmOverloads constructor(
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     private val wideLayoutDelegate = invalidatableLazy {
-        LineViewTextLayout(line.getPrecomputedLayout(), wideLayoutWidth)
+        LineViewTextLayout(line.getPrecomputedLayout(), wideLayoutWidth, this)
     }
     private val narrowLayoutDelegate = invalidatableLazy {
-        LineViewTextLayout(line.getPrecomputedLayout(), narrowLayoutWidth)
+        LineViewTextLayout(line.getPrecomputedLayout(), narrowLayoutWidth, this)
     }
 
     private val wideLayout by wideLayoutDelegate
