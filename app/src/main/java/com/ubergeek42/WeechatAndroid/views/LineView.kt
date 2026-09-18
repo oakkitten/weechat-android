@@ -9,9 +9,8 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
-import android.text.Spannable
 import android.text.SpannableString
-import android.text.style.ClickableSpan
+import android.text.StaticLayout
 import android.text.style.URLSpan
 import android.util.AttributeSet
 import android.view.GestureDetector
@@ -19,6 +18,7 @@ import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
 import android.view.View
 import androidx.core.animation.doOnEnd
+import androidx.core.graphics.withTranslation
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
@@ -35,7 +35,7 @@ import com.ubergeek42.WeechatAndroid.upload.i
 import com.ubergeek42.WeechatAndroid.upload.main
 import com.ubergeek42.WeechatAndroid.utils.applicationContext
 import com.ubergeek42.WeechatAndroid.utils.invalidatableLazy
-import com.ubergeek42.weechat.ColorScheme
+import kotlin.reflect.KMutableProperty0
 
 
 private const val ANIMATION_DURATION = 2500L // ms
@@ -71,8 +71,8 @@ class LineView @JvmOverloads constructor(
     }
 
     private fun invalidateInternal() {
-        wideLayoutDelegate.invalidate()
-        narrowLayoutDelegate.invalidate()
+        wideMessageLayoutDelegate.invalidate()
+        narrowMessageLayoutDelegate.invalidate()
         line = EmptyLine
         image = null
         firstDrawAt = HAVE_NOT_DRAWN
@@ -110,20 +110,15 @@ class LineView @JvmOverloads constructor(
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private val wideLayoutDelegate = invalidatableLazy {
-        LineViewTextLayout(line.getPrecomputedLayout(), wideLayoutWidth, this)
+    private val wideMessageLayoutDelegate = invalidatableLazy {
+        line.getPrecomputedLayout().obtainMessageLayout(wideLayoutWidth)
     }
-    private val narrowLayoutDelegate = invalidatableLazy {
-        LineViewTextLayout(line.getPrecomputedLayout(), narrowLayoutWidth, this)
+    private val narrowMessageLayoutDelegate = invalidatableLazy {
+        line.getPrecomputedLayout().obtainMessageLayout(narrowLayoutWidth)
     }
 
-    private val wideLayout by wideLayoutDelegate
-    private val narrowLayout by narrowLayoutDelegate
-
-    private val currentLayout get() = when (state) {
-        State.TextOnly, State.AnimatingToTextOnly -> wideLayout
-        State.TextWithImage, State.AnimatingToTextWithImage, State.AnimatingOnlyImage -> narrowLayout
-    }
+    private val wideMessageLayout by wideMessageLayoutDelegate
+    private val narrowMessageLayout by narrowMessageLayoutDelegate
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////// image
@@ -196,10 +191,10 @@ class LineView @JvmOverloads constructor(
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     private fun measureViewHeight(): Int {
-        fun getTextOnlyHeight() = if (line === EmptyLine) 0 else wideLayout.height
+        fun getTextOnlyHeight() = if (line === EmptyLine) 0 else wideMessageLayout.height
 
         fun getTextWithImageHeight(): Int {
-            val narrowLayoutHeight = if (line === EmptyLine) 0 else narrowLayout.height
+            val narrowLayoutHeight = if (line === EmptyLine) 0 else narrowMessageLayout.height
             return maxOf(narrowLayoutHeight, Config.thumbnailAreaMinHeight)
         }
 
@@ -215,7 +210,7 @@ class LineView @JvmOverloads constructor(
     }
 
     private fun measureThumbnailHeight(): Int {
-        return (narrowLayout.height - Config.THUMBNAIL_VERTICAL_MARGIN * 2)
+        return (narrowMessageLayout.height - Config.THUMBNAIL_VERTICAL_MARGIN * 2)
                 .coerceAtMost(Config.thumbnailMaxHeight)
                 .coerceAtLeast(Config.thumbnailMinHeight)
                 .coerceAtLeast(1)
@@ -242,33 +237,49 @@ class LineView @JvmOverloads constructor(
 
         if (oldViewWidth != viewWidth) {
             oldViewWidth = viewWidth
-            wideLayoutDelegate.invalidate()
-            narrowLayoutDelegate.invalidate()
+            wideMessageLayoutDelegate.invalidate()
+            narrowMessageLayoutDelegate.invalidate()
             if (state.withImage) lastRequestedUrl?.let { requestThumbnail(it) }
         }
         setMeasuredDimension(viewWidth, measureViewHeight())
     }
 
-    override fun onDraw(canvas: Canvas) {
-        if (state.animatingText) {
-            wideLayout.draw(canvas, 1f - animatedValue)
-            narrowLayout.draw(canvas, animatedValue)
-        } else {
-            currentLayout.draw(canvas)
-        }
+    var wideLayoutAlphaDrawer: AlphaDrawer? = null
+    var narrowLayoutAlphaDrawer: AlphaDrawer? = null
 
+    fun drawText(canvas: Canvas, messageLayout: StaticLayout) {
+        line.getPrecomputedLayout().draw(canvas)
+        canvas.withTranslation(line.getPrecomputedLayout().messageOffset, 0f) { messageLayout.draw(canvas) }
+    }
+
+    fun drawThumbnail(canvas: Canvas) {
         image?.let {
             val left = narrowLayoutWidth + Config.THUMBNAIL_HORIZONTAL_MARGIN.f
             val top = Config.THUMBNAIL_VERTICAL_MARGIN.f
 
             val paint = if (state.animatingImage) {
-                            _paint.apply { alpha = (animatedValue * 255).i }
-                        } else {
-                            null
-                        }
+                _paint.apply { alpha = (animatedValue * 255).i }
+            } else {
+                null
+            }
 
             canvas.drawBitmap(it, left, top, paint)
         }
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        if (state.animatingText) {
+            wideLayoutAlphaDrawer?.drawWithAlpha(canvas, 1f - animatedValue)
+            narrowLayoutAlphaDrawer?.drawWithAlpha(canvas, animatedValue)
+        } else {
+            val currentMessageLayout = when (state) {
+                State.TextOnly, State.AnimatingToTextOnly -> wideMessageLayout
+                State.TextWithImage, State.AnimatingToTextWithImage, State.AnimatingOnlyImage -> narrowMessageLayout
+            }
+            drawText(canvas, currentMessageLayout)
+        }
+
+        drawThumbnail(canvas)
 
         if (firstDrawAt == HAVE_NOT_DRAWN) firstDrawAt = System.currentTimeMillis()
     }
@@ -309,6 +320,9 @@ class LineView @JvmOverloads constructor(
             State.AnimatingToTextOnly
         }
 
+        wideLayoutAlphaDrawer = getAlphaDrawer(wideLayoutWidth, wideMessageLayout.height) { canvas -> drawText(canvas, wideMessageLayout) }
+        narrowLayoutAlphaDrawer = getAlphaDrawer(narrowLayoutWidth, narrowMessageLayout.height)  { canvas -> drawText(canvas, narrowMessageLayout) }
+
         animator = ValueAnimator.ofFloat(from, to).also {
             it.duration = ANIMATION_DURATION
 
@@ -320,8 +334,11 @@ class LineView @JvmOverloads constructor(
 
             it.doOnEnd {
                 state = if (animatingToImage) State.TextWithImage else State.TextOnly
-                wideLayoutDelegate.getValueOrNull() //?.clearBitmap()
-                narrowLayoutDelegate.getValueOrNull() //?.clearBitmap()
+                if (animatingToImage) wideMessageLayoutDelegate.invalidate() else narrowMessageLayoutDelegate.invalidate() // TODO check??
+                wideLayoutAlphaDrawer?.releaseResources()
+                narrowLayoutAlphaDrawer?.releaseResources()
+                wideLayoutAlphaDrawer = null
+                narrowLayoutAlphaDrawer = null
                 animator = null
             }
         }
@@ -397,3 +414,7 @@ fun View.getSafeGlide() = if (isContextValidForGlide(context)) {
                            } else {
                                null
                            }
+
+fun <V : Any> KMutableProperty0<V?>.getOrSet(initializer: () -> V): V {
+    return this.get() ?: initializer().also { this.set(it) }
+}

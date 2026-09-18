@@ -17,6 +17,12 @@ fun View.getAlphaDrawer(): AlphaDrawer =
         AlphaDrawerImpl26()
     }
 
+fun View.getAlphaDrawer(width: Int, height: Int, block: (recordingCanvas: Canvas) -> Unit): AlphaDrawer =
+    if (Build.VERSION.SDK_INT >= 29 && isHardwareAccelerated) {
+        AlphaDrawerImpl29().apply { record(width, height, block) }
+    } else {
+        AlphaDrawerImpl26().apply { record(width, height, block) }
+    }
 
 interface AlphaDrawer {
     fun record(width: Int, height: Int, block: (recordingCanvas: Canvas) -> Unit)
