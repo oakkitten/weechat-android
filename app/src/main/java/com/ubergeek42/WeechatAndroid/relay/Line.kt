@@ -38,6 +38,7 @@ open class Line(
     }
 
     @AnyThread fun invalidateSpannable() {
+        precomputedLineLayout = null
         prefixSpannable = null
         messageSpannable = null
         prefixString = null
