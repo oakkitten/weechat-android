@@ -9,6 +9,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
+import android.text.Spannable
 import android.text.SpannableString
 import android.text.StaticLayout
 import android.text.style.URLSpan
@@ -29,6 +30,7 @@ import com.ubergeek42.WeechatAndroid.media.Strategy
 import com.ubergeek42.WeechatAndroid.media.Utils.isContextValidForGlide
 import com.ubergeek42.WeechatAndroid.relay.EmptyLine
 import com.ubergeek42.WeechatAndroid.relay.Line
+import com.ubergeek42.WeechatAndroid.relay.PrecomputedLineLayout
 import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.upload.f
 import com.ubergeek42.WeechatAndroid.upload.i
@@ -60,10 +62,11 @@ class LineView @JvmOverloads constructor(
 ) : View(context, attrs, defStyle) {
     private val glide = getSafeGlide()
 
-    private var line: Line = EmptyLine
+    private var messageSpannable: Spannable = NoSpannable
+    private var precomputedLayout: PrecomputedLineLayout = NoPrecomputedLayout
 
     fun setText(line: Line) {
-        if (this.line == line && line.getPrecomputedLayout().textPaint == P.textPaint) return
+        if (precomputedLayout == line.getPrecomputedLayout() && precomputedLayout.textPaint == P.textPaint) return
 
         invalidateInternal()
         setTextInternal(line)
@@ -73,7 +76,8 @@ class LineView @JvmOverloads constructor(
     private fun invalidateInternal() {
         wideMessageLayoutDelegate.invalidate()
         narrowMessageLayoutDelegate.invalidate()
-        line = EmptyLine
+        precomputedLayout = NoPrecomputedLayout
+        messageSpannable = NoSpannable
         image = null
         firstDrawAt = HAVE_NOT_DRAWN
         state = State.TextOnly
@@ -86,7 +90,8 @@ class LineView @JvmOverloads constructor(
     }
 
     private fun setTextInternal(line: Line) {
-        this.line = line
+        this.messageSpannable = line.getMessageSpannable()
+        this.precomputedLayout = line.getPrecomputedLayout()
 
         val (url, cacheInfo) = getUrlInfo(line)
         val prettySureWillShowImage = cacheInfo == Cache.Info.FETCHED_RECENTLY
@@ -104,17 +109,17 @@ class LineView @JvmOverloads constructor(
 
     private var state = State.TextOnly
 
-    val urls: Array<URLSpan> get() = line.getMessageSpannable()
+    val urls: Array<URLSpan> get() = messageSpannable
             .let { it.getSpans(0, it.length, URLSpan::class.java) }
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     private val wideMessageLayoutDelegate = invalidatableLazy {
-        line.getPrecomputedLayout().obtainMessageLayout(wideLayoutWidth)
+        precomputedLayout.obtainMessageLayout(wideLayoutWidth)
     }
     private val narrowMessageLayoutDelegate = invalidatableLazy {
-        line.getPrecomputedLayout().obtainMessageLayout(narrowLayoutWidth)
+        precomputedLayout.obtainMessageLayout(narrowLayoutWidth)
     }
 
     private val wideMessageLayout by wideMessageLayoutDelegate
@@ -191,10 +196,10 @@ class LineView @JvmOverloads constructor(
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     private fun measureViewHeight(): Int {
-        fun getTextOnlyHeight() = if (line === EmptyLine) 0 else wideMessageLayout.height
+        fun getTextOnlyHeight() = if (precomputedLayout === NoPrecomputedLayout) 0 else wideMessageLayout.height
 
         fun getTextWithImageHeight(): Int {
-            val narrowLayoutHeight = if (line === EmptyLine) 0 else narrowMessageLayout.height
+            val narrowLayoutHeight = if (precomputedLayout === NoPrecomputedLayout) 0 else narrowMessageLayout.height
             return maxOf(narrowLayoutHeight, Config.thumbnailAreaMinHeight)
         }
 
@@ -248,8 +253,8 @@ class LineView @JvmOverloads constructor(
     var narrowLayoutAlphaDrawer: AlphaDrawer? = null
 
     fun drawText(canvas: Canvas, messageLayout: StaticLayout) {
-        line.getPrecomputedLayout().draw(canvas)
-        canvas.withTranslation(line.getPrecomputedLayout().messageOffset, 0f) { messageLayout.draw(canvas) }
+        precomputedLayout.draw(canvas)
+        canvas.withTranslation(precomputedLayout.messageOffset, 0f) { messageLayout.draw(canvas) }
     }
 
     fun drawThumbnail(canvas: Canvas) {
@@ -406,7 +411,8 @@ class LineView @JvmOverloads constructor(
 
 const val HAVE_NOT_DRAWN = -1L
 
-private val NoText = SpannableString("error")   // just so that we don't need to say !!
+private val NoSpannable = SpannableString("error")   // just so that we don't need to say !!
+private val NoPrecomputedLayout = EmptyLine.getPrecomputedLayout()   // just so that we don't need to say !!
 
 
 fun View.getSafeGlide() = if (isContextValidForGlide(context)) {
