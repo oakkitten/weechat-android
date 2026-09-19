@@ -36,28 +36,28 @@ fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint) {
 }
 
 private fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint, color: Int, start: Int, end: Int) {
-    val lineStart = getLineForOffset(start)
-    val lineEnd = getLineForOffset(end)
+    val startingLineIndex = getLineForOffset(start)
+    val endingLineIndex = getLineForOffset(end)
 
-    val rects = (lineStart..lineEnd).mapNotNull { line ->
-        val left = when (line) {
-            lineStart -> getPrimaryHorizontal(start)
-            else      -> getPrimaryHorizontal(getLineStart(line))
+    val rects = (startingLineIndex..endingLineIndex).mapNotNull { lineIndex ->
+        val left = when (lineIndex) {
+            startingLineIndex -> getPrimaryHorizontal(start)
+            else              -> getPrimaryHorizontal(getLineStart(lineIndex))
         }
 
-        val right = when (line) {
-            lineEnd -> getPrimaryHorizontal(end)
-            else    -> getPrimaryHorizontal(getLineEnd(line) - 1)
+        val right = when (lineIndex) {
+            endingLineIndex -> getPrimaryHorizontal(end)
+            else            -> getPrimaryHorizontal(getLineEnd(lineIndex) - 1)
         }
 
-        val top = when (line) {
-            0    -> getLineTop(line) - topPadding
-            else -> getLineTop(line)
+        val top = when (lineIndex) {
+            0    -> getLineTop(lineIndex) - topPadding // top padding is negative
+            else -> getLineTop(lineIndex)
         }
 
-        val bottom = when (line) {
-            lineCount - 1 -> getLineBottom(line) - bottomPadding
-            else          -> getLineBottom(line)
+        val bottom = when (lineIndex) {
+            lineCount - 1 -> getLineBottom(lineIndex) - bottomPadding
+            else          -> getLineBottom(lineIndex)
         }
 
         when {
@@ -79,7 +79,6 @@ private fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint, col
         paint.pathEffect = CORNER_PATH_EFFECT
         canvas.drawPath(rects.toUnionPath(), paint)
         paint.pathEffect = originalPathEffect
-
     }
 
     paint.color = originalColor
