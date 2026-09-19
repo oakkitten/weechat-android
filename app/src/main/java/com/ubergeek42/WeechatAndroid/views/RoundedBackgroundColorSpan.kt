@@ -16,64 +16,75 @@ class RoundedBackgroundColorSpan(val color: Int) : ParagraphStyle
 
 
 fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint) {
-    val spanned = (text as Spanned)
+    val spanned = text as? Spanned ?: return
 
     val textStart = getLineStart(0)
     val textEnd = getLineEnd(lineCount - 1)
 
-    val spans = spanned.getSpans(textStart, textEnd, RoundedBackgroundColorSpan::class.java)
-
-    spans.forEach { span ->
-        val start = maxOf(textStart, spanned.getSpanStart(span))
-        val end = minOf(textEnd, spanned.getSpanEnd(span))
-
-        val startLine = getLineForOffset(start)
-        val endLine = getLineForOffset(end)
-
-        val rects = mutableListOf<RectF>()
-
-        for (line in startLine..endLine) {
-            val left = when (line) {
-                startLine -> getPrimaryHorizontal(start)
-                else      -> getLineLeft(line)
+    spanned.getSpans(textStart, textEnd, RoundedBackgroundColorSpan::class.java)
+            .forEach { span ->
+                val start = maxOf(textStart, spanned.getSpanStart(span))
+                val end = minOf(textEnd, spanned.getSpanEnd(span))
+                drawRoundedBackground(canvas, paint, span.color, start, end)
             }
-
-            val right = when (line) {
-                endLine -> getPrimaryHorizontal(end)
-                else    -> getLineMax(line)
-            }
-
-            val top = when (line) {
-                startLine -> getLineTop(line) - topPadding
-                else      -> getLineTop(line)
-            }
-
-            val bottom = when (line) {
-                endLine -> getLineBottom(line) - bottomPadding
-                else    -> getLineBottom(line)
-            }
-
-            rects.add(RectF(left, top.f, right, bottom.f))
-        }
-
-        if (rects.isNotEmpty()) {
-            val mergedPath = Path()
-            mergedPath.addRect(rects.first(), Path.Direction.CW)
-            if (rects.size > 1) {
-                for (i in 1 until rects.size) {
-                    mergedPath.op(Path().apply { addRect(rects[i], Path.Direction.CW) }, Path.Op.UNION)
-                }
-            }
-
-            val originalColor = paint.color
-            val originalPathEffect = paint.pathEffect
-            paint.pathEffect = CornerPathEffect(4.dp_to_px.f)
-            paint.color = span.color
-
-            canvas.drawPath(mergedPath, paint)
-
-            paint.color = originalColor
-            paint.pathEffect = originalPathEffect
-        }
-    }
 }
+
+private fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint, color: Int, start: Int, end: Int) {
+    val lineStart = getLineForOffset(start)
+    val lineEnd = getLineForOffset(end)
+
+    val rects = (lineStart..lineEnd).mapNotNull { line ->
+        val left = when (line) {
+            lineStart -> getPrimaryHorizontal(start)
+            else      -> getLineLeft(line) // TODO opposite of getLineMax?
+        }
+
+        val right = when (line) {
+            lineEnd -> getPrimaryHorizontal(end)
+            else    -> getLineMax(line)
+        }
+
+        val top = when (line) {
+            lineStart -> getLineTop(line) - topPadding
+            else      -> getLineTop(line)
+        }
+
+        val bottom = when (line) {
+            lineEnd -> getLineBottom(line) - bottomPadding
+            else    -> getLineBottom(line)
+        }
+
+        if (left == right) null else RectF(left, top.f, right, bottom.f)
+    }
+
+    if (rects.isEmpty()) return
+
+    val originalColor = paint.color
+    paint.color = color
+
+    if (rects.size == 1) {
+        canvas.drawRoundRect(rects.first(), RADIUS, RADIUS, paint)
+    } else {
+        val originalPathEffect = paint.pathEffect
+        paint.pathEffect = CORNER_PATH_EFFECT
+        canvas.drawPath(rects.toUnionPath(), paint)
+        paint.pathEffect = originalPathEffect
+
+    }
+
+    paint.color = originalColor
+}
+
+
+private fun RectF.toPath() = Path().apply { addRect(this@toPath, Path.Direction.CW) }
+
+private fun List<RectF>.toUnionPath() = first().toPath()
+        .also {
+            for (i in 1 until size) {
+                it.op(this[i].toPath(), Path.Op.UNION)
+            }
+        }
+
+
+val RADIUS = 4.dp_to_px.f
+val CORNER_PATH_EFFECT = CornerPathEffect(RADIUS)

@@ -136,7 +136,7 @@ class PrecomputedLineLayout(private val line: Line) {
         }
 
         canvas.withTranslation(prefixOffset, 0f) {
-            messageLayout.drawRoundedBackground(canvas, textPaint)
+            prefixLayout.drawRoundedBackground(canvas, textPaint)
             prefixLayout.draw(canvas)
         }
 
