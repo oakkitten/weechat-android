@@ -61,8 +61,8 @@ private fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint, col
         }
 
         when {
-            left < right -> RectF(left - BLOOM, top.f - BLOOM, right + BLOOM, bottom.f + BLOOM)
-            left > right -> RectF(right - BLOOM, top.f - BLOOM, left + BLOOM, bottom.f + BLOOM)
+            left < right -> RectF(left - BLOOM, top.f - BLOOM, minOf(width.f, right + BLOOM), bottom.f + BLOOM)
+            left > right -> RectF(right - BLOOM, top.f - BLOOM, minOf(width.f, left + BLOOM), bottom.f + BLOOM)
             else -> null
         }
     }
