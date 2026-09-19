@@ -1,57 +1,62 @@
 package com.ubergeek42.WeechatAndroid.views
 
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.CornerPathEffect
 import android.graphics.Paint
 import android.graphics.Path
-import android.graphics.Rect
 import android.graphics.RectF
-import android.text.style.LineBackgroundSpan
-import androidx.core.text.PrecomputedTextCompat
+import android.text.Spanned
+import android.text.StaticLayout
+import android.text.style.ParagraphStyle
 import com.ubergeek42.WeechatAndroid.upload.dp_to_px
 import com.ubergeek42.WeechatAndroid.upload.f
 
-class RoundedBackgroundColorSpan(val start: Int, val end: Int) : LineBackgroundSpan {
-    var previousLeft: Float = -1f
-    var previousRight: Float = -1f
 
-    val rects = mutableListOf<RectF>()
+class RoundedBackgroundColorSpan(val color: Int) : ParagraphStyle
 
-    override fun drawBackground(
-        canvas: Canvas,
-        paint: Paint,
-        lineLeft: Int,
-        lineRight: Int,
-        lineTop: Int,
-        lineBaseline: Int,
-        lineBottom: Int,
-        text: CharSequence,
-        lineStart: Int,
-        lineEnd: Int,
-        lineNumber: Int,
-    ) {
-        val left = if (start >= lineEnd) {
-            return
-        } else if (start <= lineStart) {
-            lineLeft.f
-        } else {
-            lineLeft + (text as PrecomputedTextCompat).precomputedText!!.getWidth(lineStart, start)
+
+fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint) {
+    val spanned = (text as Spanned)
+
+    val textStart = getLineStart(0)
+    val textEnd = getLineEnd(lineCount - 1)
+
+    val spans = spanned.getSpans(textStart, textEnd, RoundedBackgroundColorSpan::class.java)
+
+    spans.forEach { span ->
+        val start = maxOf(textStart, spanned.getSpanStart(span))
+        val end = minOf(textEnd, spanned.getSpanEnd(span))
+
+        val startLine = getLineForOffset(start)
+        val endLine = getLineForOffset(end)
+
+        val rects = mutableListOf<RectF>()
+
+        for (line in startLine..endLine) {
+            val left = when (line) {
+                startLine -> getPrimaryHorizontal(start)
+                else      -> getLineLeft(line)
+            }
+
+            val right = when (line) {
+                endLine -> getPrimaryHorizontal(end)
+                else    -> getLineMax(line)
+            }
+
+            val top = when (line) {
+                startLine -> getLineTop(line) - topPadding
+                else      -> getLineTop(line)
+            }
+
+            val bottom = when (line) {
+                endLine -> getLineBottom(line) - bottomPadding
+                else    -> getLineBottom(line)
+            }
+
+            rects.add(RectF(left, top.f, right, bottom.f))
         }
 
-        val right = if (end <= lineStart) {
-            return
-        } else if (end >= lineEnd) {
-            lineRight.f
-        } else {
-            lineRight - (text as PrecomputedTextCompat).precomputedText!!.getWidth(end, lineEnd)
-        }
-
-        rects.add(RectF(left, lineTop.f, right, lineBottom.f))
-
-        val draw = end <= lineEnd
-
-        if (draw && rects.isNotEmpty()) {
+        if (rects.isNotEmpty()) {
             val mergedPath = Path()
             mergedPath.addRect(rects.first(), Path.Direction.CW)
             if (rects.size > 1) {
@@ -61,34 +66,14 @@ class RoundedBackgroundColorSpan(val start: Int, val end: Int) : LineBackgroundS
             }
 
             val originalColor = paint.color
+            val originalPathEffect = paint.pathEffect
             paint.pathEffect = CornerPathEffect(4.dp_to_px.f)
-            paint.color = Color.RED
+            paint.color = span.color
 
             canvas.drawPath(mergedPath, paint)
 
             paint.color = originalColor
+            paint.pathEffect = originalPathEffect
         }
     }
-
-//    fun foo() {
-//        val originalColor = paint.color
-//        paint.pathEffect = CornerPathEffect(4.dp_to_px.f)
-//        paint.color = Color.RED
-//
-//        if (lineNumber == 0) {
-//            previousLeft = left.f
-//            previousRight = right.f
-//        }
-//
-//        val path = Path().apply {
-//            moveTo(left.f, top.f)
-//            lineTo(left.f, bottom.f)
-//            lineTo(right.f, bottom.f)
-//            lineTo(right.f, top.f)
-//
-//            close() // Connects back to the starting point (creates a triangle)
-//        }
-//
-//        paint.color = originalColor
-//    }
 }

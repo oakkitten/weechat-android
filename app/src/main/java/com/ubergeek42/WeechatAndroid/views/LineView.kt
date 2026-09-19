@@ -253,15 +253,7 @@ class LineView @JvmOverloads constructor(
     var narrowLayoutAlphaDrawer: AlphaDrawer? = null
 
     fun drawText(canvas: Canvas, messageLayout: StaticLayout) {
-        canvas.withTranslation(precomputedLayout.prefixOffset, 0f) {
-            precomputedLayout.prefixLayout.drawNewtBackground(canvas, precomputedLayout.textPaint)
-        }
-        precomputedLayout.draw(canvas)
-        canvas.withTranslation(precomputedLayout.messageOffset, 0f) {
-            messageLayout.drawNewtBackground(canvas, precomputedLayout.textPaint)
-            //messageLayout.drawBackground()
-            messageLayout.draw(canvas)
-        }
+        precomputedLayout.draw(canvas, messageLayout)
     }
 
     fun drawThumbnail(canvas: Canvas) {

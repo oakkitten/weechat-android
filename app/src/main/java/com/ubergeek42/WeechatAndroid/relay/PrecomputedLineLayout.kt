@@ -10,6 +10,7 @@ import androidx.core.graphics.withTranslation
 import androidx.core.text.PrecomputedTextCompat
 import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.utils.SHOULD_EMOJIFY
+import com.ubergeek42.WeechatAndroid.views.drawRoundedBackground
 import com.ubergeek42.weechat.ColorScheme
 
 
@@ -125,7 +126,7 @@ class PrecomputedLineLayout(private val line: Line) {
                 .build()
     }
 
-    fun draw(canvas: Canvas) {
+    fun draw(canvas: Canvas, messageLayout: StaticLayout) {
         if (timeStamp != null) {
             canvas.drawText(timeStamp, 0f, -timeStampPaint.fontMetrics.top, timeStampPaint)
         }
@@ -135,6 +136,7 @@ class PrecomputedLineLayout(private val line: Line) {
         }
 
         canvas.withTranslation(prefixOffset, 0f) {
+            messageLayout.drawRoundedBackground(canvas, textPaint)
             prefixLayout.draw(canvas)
         }
 
@@ -144,6 +146,11 @@ class PrecomputedLineLayout(private val line: Line) {
 
         if (moreOffset != -1f) {
             canvas.drawText("+", moreOffset, -textPaint.fontMetrics.top, changingTextPaint.apply { color = getMoreColor() }) // TODO paint
+        }
+
+        canvas.withTranslation(messageOffset, 0f) {
+            messageLayout.drawRoundedBackground(canvas, textPaint)
+            messageLayout.draw(canvas)
         }
     }
 }
