@@ -53,7 +53,7 @@ class PrecomputedLineLayout(private val line: Line) {
     val messageOffset: Float
     val leadingMessageIndent: Float
 
-    val prefixLayout: Layout
+    val prefixLayout: StaticLayout
     val messagePrecomputedText: PrecomputedTextCompat
 
     init {

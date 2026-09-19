@@ -16,6 +16,8 @@ import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.utils.Linkify.linkify
 import com.ubergeek42.WeechatAndroid.utils.SHOULD_EMOJIFY
 import com.ubergeek42.WeechatAndroid.utils.emojify
+import com.ubergeek42.WeechatAndroid.views.RoundedBackgroundColorSpan
+import com.ubergeek42.WeechatAndroid.views.RoundedNewt
 import com.ubergeek42.cats.Cat
 import com.ubergeek42.cats.Kitty
 import com.ubergeek42.cats.Root
@@ -145,13 +147,13 @@ fun String.toSpannableWithWeechatColorsParsed(highlight: Boolean, dim: Boolean):
             spannable.setSpan(ForegroundColorSpan(highlightForegroundColor or -0x1000000), 0, spannable.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         if (highlightBackgroundColor != -1) {
-            spannable.setSpan(BackgroundColorSpan(highlightBackgroundColor or -0x1000000), 0, spannable.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            spannable.setSpan(RoundedNewt(0, spannable.length, highlightBackgroundColor or -0x1000000), 0, spannable.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
     } else {
         for (span in color.spanList) {
             val droidSpan = when (span.type) {
                 Color.Span.FGCOLOR -> ForegroundColorSpan(span.color or -0x1000000)
-                Color.Span.BGCOLOR -> BackgroundColorSpan(span.color or -0x1000000)
+                Color.Span.BGCOLOR -> RoundedNewt(span.start, span.end, span.color or -0x1000000) //RoundedBackgroundColorSpan(span.start, span.end)
                 Color.Span.ITALIC -> StyleSpan(Typeface.ITALIC)
                 Color.Span.BOLD -> StyleSpan(Typeface.BOLD)
                 Color.Span.UNDERLINE -> UnderlineSpan()
