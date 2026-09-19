@@ -1,12 +1,12 @@
 package com.ubergeek42.WeechatAndroid.relay
 
 import android.graphics.Canvas
-import android.graphics.Paint
 import android.graphics.Rect
 import android.text.Layout
 import android.text.Spannable
 import android.text.StaticLayout
 import android.text.TextPaint
+import androidx.annotation.AnyThread
 import androidx.core.graphics.withTranslation
 import androidx.core.text.PrecomputedTextCompat
 import com.ubergeek42.WeechatAndroid.service.P
@@ -29,12 +29,44 @@ enum class Alignment {
 }
 
 
-class PrecomputedLineLayout(private val line: Line) {
-    val textPaint: TextPaint = P.textPaint
-    private val timeStampPaint: Paint
-    private val changingTextPaint: Paint
+private class Cached private constructor(private val textPaint: TextPaint) {
+    val threadLocalTextPaint: ThreadLocal<TextPaint> = ThreadLocal.withInitial { TextPaint(textPaint) }
+    val threadLocalTimestampPaint: ThreadLocal<TextPaint> = ThreadLocal.withInitial { TextPaint(textPaint).apply { fontFeatureSettings = "tnum" } }
 
-    private val timeStamp: String? = P.dateFormat?.print(line.timestamp)
+    val spaceWidth: Float = textPaint.measureText(" ")
+    val aWidth: Float = textPaint.measureText("+")
+    val lessThanWidth: Float = textPaint.measureText("<")
+    val moreThanWidth: Float = textPaint.measureText(">")
+    val plusWidth: Float
+    val plusShiftForBloom: Float
+
+    init {
+        val plusBounds = Rect()
+        textPaint.getTextBounds("+", 0, 1, plusBounds)
+        val plusAdvanceWidth = textPaint.measureText("+")
+        val plusBearingLeft = plusBounds.left.f
+        val plusBearingRight = plusAdvanceWidth - plusBounds.right
+        plusWidth = maxOf(plusBearingLeft, BLOOM) + maxOf(plusBearingRight, BLOOM) + plusBounds.width()
+        plusShiftForBloom = maxOf(0f, BLOOM - plusBearingLeft)
+    }
+
+    companion object {
+        @Volatile private var cached: Cached? = null
+
+        @AnyThread fun get(textPaint: TextPaint): Cached {
+            cached?.let { if (it.textPaint == textPaint) return it }
+            return Cached(textPaint).also { cached = it }
+        }
+    }
+}
+
+
+class PrecomputedLineLayout(line: Line) {
+    val originalTextPaint: TextPaint = P.textPaint
+    private val timeStampPaint: TextPaint
+    private val textPaint: TextPaint
+
+    private val timestamp: String? = P.dateFormat?.print(line.timestamp)
     private val prefix: Spannable = line.getPrefixSpannable()
     private val message: Spannable = line.getMessageSpannable()
     private val maxPrefixWidthInChars: Int = P.maxWidth
@@ -48,6 +80,7 @@ class PrecomputedLineLayout(private val line: Line) {
     private fun getChatNickSuffixColor() = colorScheme.chat_nick_prefix[0] or -0x1000000 // TODO bg
     private fun getMoreColor() = colorScheme.chat_prefix_more[0] or -0x1000000 // TODO bg
 
+    private val cached = Cached.get(originalTextPaint)
 
     val nickPrefixOffset: Float
     val prefixOffset: Float
@@ -61,39 +94,23 @@ class PrecomputedLineLayout(private val line: Line) {
     val messagePrecomputedText: PrecomputedTextCompat
 
     init {
-        timeStampPaint = Paint(textPaint).apply {
-            fontFeatureSettings = "tnum"
-            color = getTimestampColor()
-        }
-
-        changingTextPaint = Paint(textPaint)
-
-        val spaceWidth = textPaint.measureText(" ")
-
-        val plusBounds = Rect()
-        textPaint.getTextBounds("+", 0, 1, plusBounds)
-        val plusAdvanceWidth = textPaint.measureText("+")
-        val plusBearingLeft = plusBounds.left.f
-        val plusBearingRight = plusAdvanceWidth - plusBounds.right
-        val plusWidth = maxOf(plusBearingLeft, BLOOM) + maxOf(plusBearingRight, BLOOM) + plusBounds.width()
-        val plusShiftForBloom = maxOf(0f, BLOOM - plusBearingLeft)
-
-        val drawingTimestamp = timeStamp != null
+        timeStampPaint = cached.threadLocalTimestampPaint.get() as TextPaint
+        textPaint = cached.threadLocalTextPaint.get() as TextPaint
 
         val timeStampAndSpaceWidth = when {
-            drawingTimestamp -> timeStampPaint.measureText(timeStamp) + spaceWidth
+            timestamp != null -> timeStampPaint.measureText(timestamp) + cached.spaceWidth
             else -> 0f
         }
 
-        val maxPrefixWidth = textPaint.measureText("a") * maxPrefixWidthInChars
+        val maxPrefixWidth = cached.aWidth * maxPrefixWidthInChars
 
         val maxPrefixWithWithALittleExtra = when {
-            alignment == Alignment.PrefixRight && drawingTimestamp -> maxPrefixWidth + 0.33f * spaceWidth
+            alignment == Alignment.PrefixRight && timestamp != null -> maxPrefixWidth + 0.33f * cached.spaceWidth
             else -> maxPrefixWidth
         }
 
-        val nickPrefixWidth = if (enclosePrefix) textPaint.measureText("<") else 0f
-        val nickSuffixWidth = if (enclosePrefix) textPaint.measureText(">") else 0f
+        val nickPrefixWidth = if (enclosePrefix) cached.lessThanWidth else 0f
+        val nickSuffixWidth = if (enclosePrefix) cached.moreThanWidth else 0f
 
         val (fittingPrefixChars, consumedPrefixWidth) = if (SHOULD_EMOJIFY) {
             prefix.cutToFitWidthUsingLayout(textPaint, maxPrefixWithWithALittleExtra - nickPrefixWidth - nickSuffixWidth)
@@ -109,15 +126,15 @@ class PrecomputedLineLayout(private val line: Line) {
         nickPrefixOffset = if (enclosePrefix) prefixOffset - nickPrefixWidth else -1f
         nickSuffixOffset = if (enclosePrefix) prefixOffset + consumedPrefixWidth else -1f
 
-        moreOffset = if (fittingPrefixChars < prefix.length) prefixOffset + consumedPrefixWidth + nickSuffixWidth + plusShiftForBloom else -1f
+        moreOffset = if (fittingPrefixChars < prefix.length) prefixOffset + consumedPrefixWidth + nickSuffixWidth + cached.plusShiftForBloom else -1f
 
         messageOffset = when (alignment) {
             Alignment.Left      -> 0f
             Alignment.Timestamp -> timeStampAndSpaceWidth
-            else                -> prefixOffset + consumedPrefixWidth + nickSuffixWidth + plusWidth
+            else                -> prefixOffset + consumedPrefixWidth + nickSuffixWidth + cached.plusWidth
         }
 
-        leadingMessageIndent = prefixOffset + consumedPrefixWidth + nickSuffixWidth + plusWidth - messageOffset
+        leadingMessageIndent = prefixOffset + consumedPrefixWidth + nickSuffixWidth + cached.plusWidth - messageOffset
 
         prefixLayout = StaticLayout.Builder.obtain(prefix, 0, fittingPrefixChars, textPaint, Int.MAX_VALUE)
                 .build()
@@ -137,12 +154,14 @@ class PrecomputedLineLayout(private val line: Line) {
     }
 
     fun draw(canvas: Canvas, messageLayout: StaticLayout) {
-        if (timeStamp != null) {
-            canvas.drawText(timeStamp, 0f, -timeStampPaint.fontMetrics.top, timeStampPaint)
+        val textY = -timeStampPaint.fontMetrics.top
+
+        if (timestamp != null) {
+            canvas.drawText(timestamp, 0f, textY, timeStampPaint.apply { color = getTimestampColor() })
         }
 
         if (nickPrefixOffset != -1f) {
-            canvas.drawText("<", nickPrefixOffset, -textPaint.fontMetrics.top, changingTextPaint.apply { color = getChatNickPrefixColor() }) // TODO paint
+            canvas.drawText("<", nickPrefixOffset, textY, textPaint.apply { color = getChatNickPrefixColor() }) // TODO paint
         }
 
         canvas.withTranslation(prefixOffset, 0f) {
@@ -151,11 +170,11 @@ class PrecomputedLineLayout(private val line: Line) {
         }
 
         if (nickSuffixOffset != -1f) {
-            canvas.drawText(">", nickSuffixOffset, -textPaint.fontMetrics.top, changingTextPaint.apply { color = getChatNickSuffixColor() }) // TODO paint
+            canvas.drawText(">", nickSuffixOffset, textY, textPaint.apply { color = getChatNickSuffixColor() }) // TODO paint
         }
 
         if (moreOffset != -1f) {
-            canvas.drawText("+", moreOffset, -textPaint.fontMetrics.top, changingTextPaint.apply { color = getMoreColor() }) // TODO paint
+            canvas.drawText("+", moreOffset, textY, textPaint.apply { color = getMoreColor() }) // TODO paint
         }
 
         canvas.withTranslation(messageOffset, 0f) {

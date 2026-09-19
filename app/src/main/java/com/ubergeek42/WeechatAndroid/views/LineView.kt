@@ -19,7 +19,6 @@ import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
 import android.view.View
 import androidx.core.animation.doOnEnd
-import androidx.core.graphics.withTranslation
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
@@ -66,7 +65,7 @@ class LineView @JvmOverloads constructor(
     private var precomputedLayout: PrecomputedLineLayout = NoPrecomputedLayout
 
     fun setText(line: Line) {
-        if (precomputedLayout == line.getPrecomputedLayout() && precomputedLayout.textPaint == P.textPaint) return
+        if (precomputedLayout == line.getPrecomputedLayout() && precomputedLayout.originalTextPaint == P.textPaint) return
 
         invalidateInternal()
         setTextInternal(line)
