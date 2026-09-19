@@ -46,6 +46,10 @@ class Buffer @WorkerThread constructor(
         var notify: Notify? by updatable(::updateNotifyLevel)
     }
 
+    fun clearEverythingProcessed() {
+        lines.clearEverythingProcessed()
+    }
+
     fun update(silently: Boolean = false, block: Updater.() -> Unit) {
         val updater = Updater()
         updater.block()

@@ -99,6 +99,8 @@ open class Line(
                         precomputedLineLayout = it
                         if (Looper.myLooper() == Looper.getMainLooper()) {
                             kitty.wtf("!!! made layout for ${getIrcLikeString()}")
+                        } else {
+                            kitty.debug("!!! made layout for ${getIrcLikeString()}")
                         }
                     }
 
