@@ -7,12 +7,18 @@ import android.graphics.Path
 import android.graphics.RectF
 import android.text.Spanned
 import android.text.StaticLayout
-import android.text.style.ParagraphStyle
+import android.text.style.LineHeightSpan
 import com.ubergeek42.WeechatAndroid.upload.dp_to_px
 import com.ubergeek42.WeechatAndroid.upload.f
+import com.ubergeek42.WeechatAndroid.upload.i
 
 
-class RoundedBackgroundColorSpan(val color: Int) : ParagraphStyle
+class RoundedBackgroundColorSpan(val color: Int) : LineHeightSpan {
+    override fun chooseHeight(text: CharSequence?, start: Int, end: Int, spanstartv: Int, lineHeight: Int, fm: Paint.FontMetricsInt) {
+        fm.top = minOf(fm.top, fm.ascent - BLOOM.i)
+        fm.bottom = maxOf(fm.bottom, fm.descent + BLOOM.i)
+    }
+}
 
 
 fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint) {
@@ -54,7 +60,11 @@ private fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint, col
             else          -> getLineBottom(line)
         }
 
-        if (left == right) null else RectF(left, top.f, right, bottom.f)
+        when {
+            left < right -> RectF(left - BLOOM, top.f - BLOOM, right + BLOOM, bottom.f + BLOOM)
+            left > right -> RectF(right - BLOOM, top.f - BLOOM, left + BLOOM, bottom.f + BLOOM)
+            else -> null
+        }
     }
 
     if (rects.isEmpty()) return
@@ -88,3 +98,4 @@ private fun List<RectF>.toUnionPath() = first().toPath()
 
 val RADIUS = 4.dp_to_px.f
 val CORNER_PATH_EFFECT = CornerPathEffect(RADIUS)
+val BLOOM = 1.dp_to_px.f
