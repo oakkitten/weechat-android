@@ -2,6 +2,7 @@ package com.ubergeek42.WeechatAndroid.relay
 
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Rect
 import android.text.Layout
 import android.text.Spannable
 import android.text.StaticLayout
@@ -9,7 +10,9 @@ import android.text.TextPaint
 import androidx.core.graphics.withTranslation
 import androidx.core.text.PrecomputedTextCompat
 import com.ubergeek42.WeechatAndroid.service.P
+import com.ubergeek42.WeechatAndroid.upload.f
 import com.ubergeek42.WeechatAndroid.utils.SHOULD_EMOJIFY
+import com.ubergeek42.WeechatAndroid.views.BLOOM
 import com.ubergeek42.WeechatAndroid.views.drawRoundedBackground
 import com.ubergeek42.weechat.ColorScheme
 
@@ -66,7 +69,14 @@ class PrecomputedLineLayout(private val line: Line) {
         changingTextPaint = Paint(textPaint)
 
         val spaceWidth = textPaint.measureText(" ")
-        val plusWidth = textPaint.measureText("+")
+
+        val plusBounds = Rect()
+        textPaint.getTextBounds("+", 0, 1, plusBounds)
+        val plusAdvanceWidth = textPaint.measureText("+")
+        val plusBearingLeft = plusBounds.left.f
+        val plusBearingRight = plusAdvanceWidth - plusBounds.right
+        val plusWidth = maxOf(plusBearingLeft, BLOOM) + maxOf(plusBearingRight, BLOOM) + plusBounds.width()
+        val plusShiftForBloom = maxOf(0f, BLOOM - plusBearingLeft)
 
         val drawingTimestamp = timeStamp != null
 
@@ -99,7 +109,7 @@ class PrecomputedLineLayout(private val line: Line) {
         nickPrefixOffset = if (enclosePrefix) prefixOffset - nickPrefixWidth else -1f
         nickSuffixOffset = if (enclosePrefix) prefixOffset + consumedPrefixWidth else -1f
 
-        moreOffset = if (fittingPrefixChars < prefix.length) prefixOffset + consumedPrefixWidth + nickSuffixWidth else -1f
+        moreOffset = if (fittingPrefixChars < prefix.length) prefixOffset + consumedPrefixWidth + nickSuffixWidth + plusShiftForBloom else -1f
 
         messageOffset = when (alignment) {
             Alignment.Left      -> 0f
