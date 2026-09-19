@@ -8,13 +8,13 @@ import android.graphics.RectF
 import android.text.Spanned
 import android.text.StaticLayout
 import android.text.style.LineHeightSpan
-import com.ubergeek42.WeechatAndroid.upload.dp_to_px
+import com.ubergeek42.WeechatAndroid.upload.dp_to_pxf
 import com.ubergeek42.WeechatAndroid.upload.f
 import com.ubergeek42.WeechatAndroid.upload.i
 
 
 class RoundedBackgroundColorSpan(val color: Int) : LineHeightSpan {
-    override fun chooseHeight(text: CharSequence?, start: Int, end: Int, spanstartv: Int, lineHeight: Int, fm: Paint.FontMetricsInt) {
+    override fun chooseHeight(text: CharSequence, start: Int, end: Int, spanstartv: Int, lineHeight: Int, fm: Paint.FontMetricsInt) {
         fm.top = minOf(fm.top, fm.ascent - BLOOM.i)
         fm.bottom = maxOf(fm.bottom, fm.descent + BLOOM.i)
     }
@@ -95,6 +95,7 @@ private fun List<RectF>.toUnionPath() = first().toPath()
         }
 
 
-val RADIUS = 4.dp_to_px.f
+val RADIUS = 4.dp_to_pxf
+val BLOOM = 1.dp_to_pxf
+
 val CORNER_PATH_EFFECT = CornerPathEffect(RADIUS)
-val BLOOM = 1.dp_to_px.f
