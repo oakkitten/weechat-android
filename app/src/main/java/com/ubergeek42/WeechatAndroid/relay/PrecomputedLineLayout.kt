@@ -14,18 +14,20 @@ import com.ubergeek42.WeechatAndroid.upload.f
 import com.ubergeek42.WeechatAndroid.utils.SHOULD_EMOJIFY
 import com.ubergeek42.WeechatAndroid.views.BLOOM
 import com.ubergeek42.WeechatAndroid.views.drawRoundedBackground
+import com.ubergeek42.weechat.Color
 import com.ubergeek42.weechat.ColorScheme
+import com.ubergeek42.weechat.relay.connection.find
 
 
 // public final static int ALIGN_NONE = 0;
 // public final static int ALIGN_LEFT = 1;
 // public final static int ALIGN_RIGHT = 2;
 // public final static int ALIGN_TIMESTAMP = 3;
-enum class Alignment {
-    Left,
-    Timestamp,
-    PrefixLeft,
-    PrefixRight,
+enum class Alignment(val code: Int) {
+    Left(Color.ALIGN_NONE),
+    Timestamp(Color.ALIGN_TIMESTAMP),
+    PrefixLeft(Color.ALIGN_LEFT),
+    PrefixRight(Color.ALIGN_RIGHT),
 }
 
 
@@ -71,7 +73,7 @@ class PrecomputedLineLayout(line: Line) {
     private val message: Spannable = line.getMessageSpannable()
     private val maxPrefixWidthInChars: Int = P.maxWidth
     private val enclosePrefix: Boolean = P.encloseNick && line.displayAs == LineSpec.DisplayAs.Say
-    private val alignment: Alignment = Alignment.Timestamp
+    private val alignment: Alignment = Alignment::code.find(P.align)!!
 
     private val colorScheme: ColorScheme = ColorScheme.get()
 
