@@ -21,7 +21,7 @@ class RoundedBackgroundColorSpan(val color: Int) : LineHeightSpan {
 }
 
 
-fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint) {
+fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint, firstLineIndent: Float) {
     val spanned = text as? Spanned ?: return
 
     val textStart = getLineStart(0)
@@ -31,23 +31,30 @@ fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint) {
             .forEach { span ->
                 val start = maxOf(textStart, spanned.getSpanStart(span))
                 val end = minOf(textEnd, spanned.getSpanEnd(span))
-                drawRoundedBackground(canvas, paint, span.color, start, end)
+                drawRoundedBackground(canvas, paint, span.color, start, end, firstLineIndent)
             }
 }
 
-private fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint, color: Int, start: Int, end: Int) {
+
+private fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint, color: Int, start: Int, end: Int, firstLineIndent: Float) {
     val startingLineIndex = getLineForOffset(start)
     val endingLineIndex = getLineForOffset(end)
 
     val rects = (startingLineIndex..endingLineIndex).mapNotNull { lineIndex ->
-        val left = when (lineIndex) {
-            startingLineIndex -> getPrimaryHorizontal(start)
-            else -> if (getParagraphDirection(lineIndex) > 0) getLineLeft(lineIndex) else getLineRight(lineIndex)
+        val isLtr = getParagraphDirection(lineIndex) > 0
+
+        val left = when {
+            lineIndex == startingLineIndex -> getPrimaryHorizontal(start)
+            isLtr -> getLineLeft(lineIndex)
+            else -> getLineRight(lineIndex)
         }
 
-        val right = when (lineIndex) {
-            endingLineIndex -> getPrimaryHorizontal(end)
-            else ->  if (getParagraphDirection(lineIndex) > 0) getLineRight(lineIndex) else getLineLeft(lineIndex)
+        val right = when {
+            lineIndex == endingLineIndex -> getPrimaryHorizontal(end)
+            lineIndex == 0 && isLtr -> getLineRight(lineIndex) + firstLineIndent
+            lineIndex == 0 -> getLineLeft(lineIndex) //+ firstLineIndent
+            isLtr -> getLineRight(lineIndex)
+            else -> getLineLeft(lineIndex)
         }
 
         val top = when (lineIndex) {

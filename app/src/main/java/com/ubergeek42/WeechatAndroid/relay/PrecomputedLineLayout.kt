@@ -71,7 +71,7 @@ class PrecomputedLineLayout(line: Line) {
     private val message: Spannable = line.getMessageSpannable()
     private val maxPrefixWidthInChars: Int = P.maxWidth
     private val enclosePrefix: Boolean = P.encloseNick && line.displayAs == LineSpec.DisplayAs.Say
-    private val alignment: Alignment = Alignment.PrefixRight
+    private val alignment: Alignment = Alignment.Timestamp
 
     private val colorScheme: ColorScheme = ColorScheme.get()
 
@@ -150,6 +150,7 @@ class PrecomputedLineLayout(line: Line) {
         return StaticLayout.Builder.obtain(messagePrecomputedText, 0, messagePrecomputedText.length, textPaint, viewWidth - messageOffset.toInt())
                 .setBreakStrategy(Layout.BREAK_STRATEGY_HIGH_QUALITY)
                 .setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_NORMAL)
+                .apply { if (leadingMessageIndent > 0) setIndents(intArrayOf(leadingMessageIndent.toInt(), 0), null) }
                 .build()
     }
 
@@ -165,7 +166,7 @@ class PrecomputedLineLayout(line: Line) {
         }
 
         canvas.withTranslation(prefixOffset, 0f) {
-            prefixLayout.drawRoundedBackground(canvas, textPaint)
+            prefixLayout.drawRoundedBackground(canvas, textPaint, 0f)
             prefixLayout.draw(canvas)
         }
 
@@ -178,7 +179,7 @@ class PrecomputedLineLayout(line: Line) {
         }
 
         canvas.withTranslation(messageOffset, 0f) {
-            messageLayout.drawRoundedBackground(canvas, textPaint)
+            messageLayout.drawRoundedBackground(canvas, textPaint, leadingMessageIndent)
             messageLayout.draw(canvas)
         }
     }
