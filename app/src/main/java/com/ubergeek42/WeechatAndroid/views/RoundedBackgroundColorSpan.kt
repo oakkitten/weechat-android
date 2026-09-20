@@ -42,12 +42,12 @@ private fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint, col
     val rects = (startingLineIndex..endingLineIndex).mapNotNull { lineIndex ->
         val left = when (lineIndex) {
             startingLineIndex -> getPrimaryHorizontal(start)
-            else              -> getPrimaryHorizontal(getLineStart(lineIndex))
+            else -> if (getParagraphDirection(lineIndex) > 0) getLineLeft(lineIndex) else getLineRight(lineIndex)
         }
 
         val right = when (lineIndex) {
             endingLineIndex -> getPrimaryHorizontal(end)
-            else            -> getPrimaryHorizontal(getLineEnd(lineIndex) - 1)
+            else ->  if (getParagraphDirection(lineIndex) > 0) getLineRight(lineIndex) else getLineLeft(lineIndex)
         }
 
         val top = when (lineIndex) {
