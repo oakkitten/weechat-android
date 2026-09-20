@@ -12,7 +12,7 @@ import androidx.core.text.PrecomputedTextCompat
 import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.upload.f
 import com.ubergeek42.WeechatAndroid.utils.SHOULD_EMOJIFY
-import com.ubergeek42.WeechatAndroid.views.BLOOM
+import com.ubergeek42.WeechatAndroid.views.H_BLOOM
 import com.ubergeek42.WeechatAndroid.views.drawRoundedBackground
 import com.ubergeek42.weechat.Color
 import com.ubergeek42.weechat.ColorScheme
@@ -48,8 +48,8 @@ private class Cached private constructor(private val textPaint: TextPaint) {
         val plusAdvanceWidth = textPaint.measureText("+")
         val plusBearingLeft = plusBounds.left.f
         val plusBearingRight = plusAdvanceWidth - plusBounds.right
-        plusWidth = maxOf(plusBearingLeft, BLOOM) + maxOf(plusBearingRight, BLOOM) + plusBounds.width()
-        plusShiftForBloom = maxOf(0f, BLOOM - plusBearingLeft)
+        plusWidth = maxOf(plusBearingLeft, H_BLOOM) + maxOf(plusBearingRight, H_BLOOM) + plusBounds.width()
+        plusShiftForBloom = maxOf(0f, H_BLOOM - plusBearingLeft)
     }
 
     companion object {
