@@ -49,23 +49,23 @@ private fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint, col
         if (isLtr) {
             left = when (lineIndex) {
                 startingLineIndex -> getPrimaryHorizontal(start)
-                else              -> getLineLeft(lineIndex)
+                else              -> 0f // = getLineLeft(lineIndex). Can't be the first line
             }
 
             right = when (lineIndex) {
                 endingLineIndex -> getPrimaryHorizontal(end)
-                0               -> getLineRight(lineIndex) + firstLineIndent
-                else            -> getLineRight(lineIndex)
+                0               -> getLineMax(lineIndex) + firstLineIndent
+                else            -> getLineMax(lineIndex) // = getLineRight(lineIndex)
             }
         } else {
-            left = when (lineIndex) {
+            right = when (lineIndex) {
                 startingLineIndex -> getPrimaryHorizontal(start)
-                else              -> getLineRight(lineIndex)
+                else              -> width.f
             }
 
-            right = when (lineIndex) {
+            left = when (lineIndex) {
                 endingLineIndex -> getPrimaryHorizontal(end)
-                else            -> getLineLeft(lineIndex)
+                else            -> width - getLineMax(lineIndex) // = getLineLeft(lineIndex)
             }
         }
 
