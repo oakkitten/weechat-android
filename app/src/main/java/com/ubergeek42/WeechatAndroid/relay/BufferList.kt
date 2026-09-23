@@ -100,7 +100,9 @@ object BufferList {
     // process all open buffers and, if specified, notify them of the change
     // todo make sense of this
     @JvmStatic @MainThread fun onGlobalPreferencesChanged(numberChanged: Boolean) {
-        buffers.filter { it.isOpen }.forEach { it.onGlobalPreferencesChanged(numberChanged) }
+        buffers.filterTo(mutableListOf()) { it.isOpen }
+                .apply { sortBy { it.getPriorityForTheCallToOnGlobalPreferencesChanged() } }
+                .forEach { it.onGlobalPreferencesChanged(numberChanged) }
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////// misc

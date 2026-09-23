@@ -163,7 +163,7 @@ class Buffer @WorkerThread constructor(
     //     nick completion
     @MainThread @Cat @Synchronized fun addBufferEye(bufferEye: BufferEye) {
         bufferEyes = bufferEyes + bufferEye
-        lines.ensurePrecomputedLayouts()
+        lines.ensurePrecomputedLayoutsInBackground()
         if (lines.status == Lines.Status.Init) requestMoreLines()
         if (nicks.status == Nicks.Status.Init) BufferList.requestNicklistForBuffer(pointer)
     }
@@ -361,13 +361,19 @@ class Buffer @WorkerThread constructor(
 
     var style = 0
 
+    fun getPriorityForTheCallToOnGlobalPreferencesChanged() = when {
+        watchedKeys.isNotEmpty() -> 0
+        bufferEyes.isNotEmpty() -> 1
+        else -> 2
+    }
+
     @MainThread fun onGlobalPreferencesChanged(numberChanged: Boolean) {
         synchronized(this) {
             if (!numberChanged) {
                 lines.clearEverythingProcessed()
                 style++
             }
-            lines.ensurePrecomputedLayouts()
+            lines.ensurePrecomputedLayoutsInBackground()
         }
         bufferEyes.forEach { it.onGlobalPreferencesChanged(numberChanged) }
     }

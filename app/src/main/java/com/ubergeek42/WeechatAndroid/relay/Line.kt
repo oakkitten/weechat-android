@@ -87,16 +87,16 @@ open class Line(
                         messageSpannable = it
                     }
 
-    private var precomputedLineLayout: PrecomputedLineLayout? = null
+    @Volatile private var precomputedLineLayout: PrecomputedLineLayout? = null
 
     fun getPrecomputedLayout() = precomputedLineLayout
             ?: PrecomputedLineLayout(this)
                     .also {
                         precomputedLineLayout = it
                         if (Looper.myLooper() == Looper.getMainLooper()) {
-                            kitty.wtf("!!! made layout for ${getIrcLikeString()}")
+                            kitty.wtf("!!!! made layout for ${getIrcLikeString()}")
                         } else {
-                            kitty.debug("!!! made layout for ${getIrcLikeString()}")
+                            //kitty.debug("!!! made layout for ${getIrcLikeString()}")
                         }
                     }
 

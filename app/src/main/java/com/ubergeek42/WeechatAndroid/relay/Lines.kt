@@ -5,12 +5,13 @@ package com.ubergeek42.WeechatAndroid.relay
 import android.text.SpannableString
 import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.utils.Linkify
-import com.ubergeek42.WeechatAndroid.utils.Utils
 import com.ubergeek42.WeechatAndroid.utils.invalidatableLazy
 import com.ubergeek42.WeechatAndroid.utils.removeConsecutiveElementsLeavingFirst
 import com.ubergeek42.WeechatAndroid.utils.replaceFirstWith
 import com.ubergeek42.weechat.Color
 import kotlin.properties.Delegates.observable
+import java.util.concurrent.LinkedBlockingQueue
+import kotlin.concurrent.thread
 
 // this class is supposed to be synchronized by Buffer
 class Lines {
@@ -190,12 +191,9 @@ class Lines {
         unfiltered.forEach { it.clearEverythingProcessed() }
     }
 
-    // process lines that are gre going to be displayed, backwards, on a background thread pool.
-    // this method gets called after line filter change, so it does get to process all needed lines
-    fun ensurePrecomputedLayouts() {
+    fun ensurePrecomputedLayoutsInBackground() {
         val target = if (P.filterLines) filtered else unfiltered
-        val snapshot = target.toTypedArray()
-        Utils.runInBackground { for (i in snapshot.indices.reversed()) snapshot[i].ensurePrecomputedLayout() }
+        BackgroundLinePrecomputedLayoutProcessor.process(target.reversed())
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -293,3 +291,22 @@ class HeaderLine(
 //            if (line.visible) idx_f++;
 //        }
 //    }
+
+
+object BackgroundLinePrecomputedLayoutProcessor {
+    init {
+        for (i in 0 until Runtime.getRuntime().availableProcessors()) {
+            thread(name = "lc-$i", isDaemon = true) {
+                while (true) {
+                    queue.take().ensurePrecomputedLayout()
+                }
+            }
+        }
+    }
+
+    private val queue = LinkedBlockingQueue<Line>()
+
+    fun process(lines: Collection<Line>) {
+        queue.addAll(lines)
+    }
+}
