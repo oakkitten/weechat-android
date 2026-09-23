@@ -12,6 +12,7 @@ import android.graphics.drawable.Drawable
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.StaticLayout
+import android.text.style.ClickableSpan
 import android.text.style.URLSpan
 import android.util.AttributeSet
 import android.view.GestureDetector
@@ -382,18 +383,21 @@ class LineView @JvmOverloads constructor(
 
                 // see android.text.method.LinkMovementMethod.onTouchEvent
                 override fun onSingleTapUp(event: MotionEvent): Boolean {
-//                    val currentLayout = this@LineView.currentLayout
-//                    val line = currentLayout.getLineForVertical(event.y.i)
-//
-//                    if (event.x in currentLayout.getHorizontalTextCoordinatesForLine(line)) {
-//                        val offset = currentLayout.getOffsetForHorizontal(line, event.x)
-//                        val links = this@LineView.line.getMessageSpannable().getSpans(offset, offset, ClickableSpan::class.java)
-//
-//                        if (links.isNotEmpty()) {
-//                            links.first().onClick(this@LineView)
-//                            return true
-//                        }
-//                    }
+                    val currentMessageLayout = when (state) {
+                        State.TextOnly, State.AnimatingToTextOnly -> wideMessageLayout
+                        State.TextWithImage, State.AnimatingToTextWithImage, State.AnimatingOnlyImage -> narrowMessageLayout
+                    }
+                    val line = currentMessageLayout.getLineForVertical(event.y.i)
+
+                    //if (event.x in currentMessageLayout.getHorizontalTextCoordinatesForLine(line)) {
+                        val offset = currentMessageLayout.getOffsetForHorizontal(line, event.x)
+                        val links = messageSpannable.getSpans(offset, offset, ClickableSpan::class.java)
+
+                        if (links.isNotEmpty()) {
+                            links.first().onClick(this@LineView)
+                            return true
+                        }
+                                //}
 
                     return false
                 }
