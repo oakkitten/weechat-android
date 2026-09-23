@@ -24,14 +24,14 @@ class RoundedBackgroundColorSpan(val color: Int) : LineHeightSpan {
     }
 }
 
-
+// todo remove default?
 fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint, firstLineIndent: Float) {
     val spanned = text as? Spanned ?: return
 
     val textStart = getLineStart(0)
     val textEnd = getLineEnd(lineCount - 1)
 
-    val rects = mutableListOf<Pair<List<RectF>, Int>>()
+    val rects = mutableListOf<Pair<MutableList<RectF>, Int>>()
     spanned.getSpans(textStart, textEnd, RoundedBackgroundColorSpan::class.java)
             .forEach { span ->
                 val start = maxOf(textStart, spanned.getSpanStart(span))
@@ -40,7 +40,13 @@ fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint, firstLineIn
                 val r = collectRects(span.color, start, end, firstLineIndent)
                 rects.add(r to span.color)
             }
-    rects.zipWithNext { a, b ->
+    rects.zipWithNextInPlace { a, b ->
+        if (a.second == b.second) {
+            a.first.addAll(b.first)
+            remove()
+        }
+    }
+    rects.zipWithNextInPlace { a, b ->
         val lastRect = a.first.lastOrNull()
         val nextRect = b.first.firstOrNull()
         if (lastRect != null && lastRect.top == nextRect?.top) {
@@ -78,11 +84,11 @@ fun StaticLayout.paintRects(canvas: Canvas, paint: Paint, color: Int, rects: Lis
     paint.color = originalColor
 }
 
-private fun StaticLayout.collectRects(color: Int, start: Int, end: Int, firstLineIndent: Float): List<RectF> {
+private fun StaticLayout.collectRects(color: Int, start: Int, end: Int, firstLineIndent: Float): MutableList<RectF> {
     val startingLineIndex = getLineForOffset(start)
     val endingLineIndex = getLineForOffset(end)
 
-    val rects = (startingLineIndex..endingLineIndex).mapNotNull { lineIndex ->
+    val rects = (startingLineIndex..endingLineIndex).mapNotNullTo(mutableListOf()) { lineIndex ->
         val isLtr = getParagraphDirection(lineIndex) > 0
 
         val left: Float
@@ -215,3 +221,16 @@ val V_BLOOM = 1.dp_to_pxf * 0.5f
 val H_BLOOM = 1.dp_to_pxf * 1.33f
 
 val CORNER_PATH_EFFECT = CornerPathEffect(RADIUS)
+
+
+fun <T> MutableCollection<T>.zipWithNextInPlace(process: MutableIterator<T>.(a: T, b: T) -> Unit) {
+    if (size < 2) return
+    val iterator = iterator()
+
+    var current = iterator.next()
+    while (iterator.hasNext()) {
+        val next = iterator.next()
+        iterator.process(current, next)
+        current = next
+    }
+}
