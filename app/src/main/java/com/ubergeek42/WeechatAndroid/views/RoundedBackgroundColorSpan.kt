@@ -7,18 +7,12 @@ import android.graphics.Path
 import android.graphics.RectF
 import android.text.Spanned
 import android.text.StaticLayout
-import android.text.style.LineHeightSpan
 import com.ubergeek42.WeechatAndroid.upload.dp_to_pxf
 import com.ubergeek42.WeechatAndroid.upload.f
 
 
-class RoundedBackgroundColorSpan(val color: Int) : LineHeightSpan {
-    override fun chooseHeight(text: CharSequence, start: Int, end: Int, spanstartv: Int, lineHeight: Int, fm: Paint.FontMetricsInt) {
-        // TODO This is not needed
-        //fm.top = minOf(fm.top, fm.ascent - V_BLOOM.i - 50)
-        //fm.bottom = maxOf(fm.bottom, fm.descent + V_BLOOM.i)
-    }
-}
+class RoundedBackgroundColorSpan(val color: Int)
+
 
 // todo remove default?
 fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint, firstLineIndent: Float) {
@@ -63,24 +57,6 @@ fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint, firstLineIn
     }
 }
 
-
-fun paintRects(canvas: Canvas, paint: Paint, color: Int, rects: List<RectF>) {
-    if (rects.isEmpty()) return
-
-    val originalColor = paint.color
-    paint.color = color
-
-    if (rects.size == 1) {
-        canvas.drawRoundRect(rects.first(), RADIUS, RADIUS, paint)
-    } else {
-        val originalPathEffect = paint.pathEffect
-        paint.pathEffect = CORNER_PATH_EFFECT
-        canvas.drawPath(rects.toUnionPath(), paint)
-        paint.pathEffect = originalPathEffect
-    }
-
-    paint.color = originalColor
-}
 
 private fun StaticLayout.collectRects(start: Int, end: Int, firstLineIndent: Float): MutableList<RectF> {
     val startingLineIndex = getLineForOffset(start)
@@ -135,6 +111,24 @@ private fun StaticLayout.collectRects(start: Int, end: Int, firstLineIndent: Flo
     return rects
 }
 
+
+fun paintRects(canvas: Canvas, paint: Paint, color: Int, rects: List<RectF>) {
+    if (rects.isEmpty()) return
+
+    val originalColor = paint.color
+    paint.color = color
+
+    if (rects.size == 1) {
+        canvas.drawRoundRect(rects.first(), RADIUS, RADIUS, paint)
+    } else {
+        val originalPathEffect = paint.pathEffect
+        paint.pathEffect = CORNER_PATH_EFFECT
+        canvas.drawPath(rects.toUnionPath(), paint)
+        paint.pathEffect = originalPathEffect
+    }
+
+    paint.color = originalColor
+}
 
 
 private fun RectF.toPath() = Path().apply { addRect(this@toPath, Path.Direction.CW) }
