@@ -6,8 +6,8 @@ import android.graphics.Paint
 import android.graphics.RenderNode
 import android.os.Build
 import android.view.View
-import kotlin.text.toInt
-import kotlin.times
+import androidx.annotation.RequiresApi
+import androidx.core.graphics.createBitmap
 
 
 fun View.getAlphaDrawer(): AlphaDrawer =
@@ -17,12 +17,10 @@ fun View.getAlphaDrawer(): AlphaDrawer =
         AlphaDrawerImpl26()
     }
 
+
 fun View.getAlphaDrawer(width: Int, height: Int, block: (recordingCanvas: Canvas) -> Unit): AlphaDrawer =
-    if (Build.VERSION.SDK_INT >= 29 && isHardwareAccelerated) {
-        AlphaDrawerImpl29().apply { record(width, height, block) }
-    } else {
-        AlphaDrawerImpl26().apply { record(width, height, block) }
-    }
+    getAlphaDrawer().apply { record(width, height, block) }
+
 
 interface AlphaDrawer {
     fun record(width: Int, height: Int, block: (recordingCanvas: Canvas) -> Unit)
@@ -32,7 +30,8 @@ interface AlphaDrawer {
 
 
 // Canvas MUST be hardware accelerated!
-class AlphaDrawerImpl29: AlphaDrawer {
+@RequiresApi(Build.VERSION_CODES.Q)
+private class AlphaDrawerImpl29: AlphaDrawer {
     val renderNode = RenderNode("AlphaDrawerImpl29")
 
     override fun record(width: Int, height: Int, block: (recordingCanvas: Canvas) -> Unit) {
@@ -58,19 +57,17 @@ class AlphaDrawerImpl29: AlphaDrawer {
 }
 
 
-class AlphaDrawerImpl26: AlphaDrawer {
+private class AlphaDrawerImpl26: AlphaDrawer {
     var bitmap: Bitmap? = null
 
-    // Canvas MUST be hardware accelerated!
     override fun record(width: Int, height: Int, block: (recordingCanvas: Canvas) -> Unit) {
-        bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        bitmap = createBitmap(width, height)
         block(Canvas(bitmap!!))
     }
 
     override fun drawWithAlpha(canvas: Canvas, alpha: Float) {
         alphaPaint.alpha = (alpha * 255).toInt()
         canvas.drawBitmap(bitmap!!, 0f, 0f, alphaPaint)
-
     }
 
     override fun releaseResources() {
