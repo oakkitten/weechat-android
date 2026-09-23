@@ -22,11 +22,14 @@ class RoundedBackgroundColorSpan(val color: Int) : LineHeightSpan {
 
 // todo remove default?
 fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint, firstLineIndent: Float) {
+    data class RectsToColor(val rects: MutableList<RectF>, val color: Int)
+
     val spanned = text as? Spanned ?: return
     val textStart = getLineStart(0)
     val textEnd = getLineEnd(lineCount - 1)
 
-    val rectsToColor = spanned.getSpans(textStart, textEnd, RoundedBackgroundColorSpan::class.java)
+    val listOfRectsToColor = spanned.getSpans(textStart, textEnd, RoundedBackgroundColorSpan::class.java)
+            .ifEmpty { return }
             .mapNotNullTo(mutableListOf()) { span ->
                 val start = maxOf(textStart, spanned.getSpanStart(span))
                 val end = minOf(textEnd, spanned.getSpanEnd(span))
@@ -34,30 +37,32 @@ fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint, firstLineIn
                 if (rects.isNotEmpty()) RectsToColor(rects, span.color) else null
             }
 
-    rectsToColor.zipWithNextInPlace { a, b ->
+    val drawingBounds = RectF(canvas.getClipBounds())
+    listOfRectsToColor.forEach { (rects, _) -> rects.forEach { it.addBloom(drawingBounds) } }
+
+    listOfRectsToColor.zipWithNextInPlace { a, b ->
         if (a.color == b.color) {
             a.rects.addAll(b.rects)
             remove()
         }
     }
 
-    rectsToColor.zipWithNextInPlace { a, b ->
+    listOfRectsToColor.zipWithNextInPlace { a, b ->
         val lastRect = a.rects.last()
         val nextRect = b.rects.first()
         if (lastRect.top == nextRect.top) {
-            if (lastRect.right > nextRect.left) {
-                lastRect.right += RADIUS
+            when {
+                lastRect.left < nextRect.left && lastRect.right > nextRect.left -> lastRect.right += RADIUS
+                lastRect.left > nextRect.left && lastRect.left < nextRect.right -> lastRect.left -= RADIUS
             }
         }
     }
 
-    rectsToColor.forEach { (rects, color) ->
+    listOfRectsToColor.forEach { (rects, color) ->
         paintRects(canvas, paint, color, rects)
     }
 }
 
-
-private data class RectsToColor(val rects: MutableList<RectF>, val color: Int)
 
 fun paintRects(canvas: Canvas, paint: Paint, color: Int, rects: List<RectF>) {
     if (rects.isEmpty()) return
@@ -121,14 +126,15 @@ private fun StaticLayout.collectRects(start: Int, end: Int, firstLineIndent: Flo
         }
 
         when {
-            left < right -> RectF(left - H_BLOOM, top.f - V_BLOOM, minOf(width.f, right + H_BLOOM), bottom.f + V_BLOOM)
-            left > right -> RectF(right - H_BLOOM, top.f - V_BLOOM, minOf(width.f, left + H_BLOOM), bottom.f + V_BLOOM)
+            left < right -> RectF(left, top.f, right, bottom.f)
+            left > right -> RectF(right, top.f, left, bottom.f)
             else -> null // there was null! but why? using backticks
         }
     }
 
     return rects
 }
+
 
 
 private fun RectF.toPath() = Path().apply { addRect(this@toPath, Path.Direction.CW) }
@@ -141,11 +147,19 @@ private fun List<RectF>.toUnionPath() = first().toPath()
         }
 
 
-val RADIUS = 5.dp_to_pxf
-val V_BLOOM = 1.dp_to_pxf * 0.5f
+private fun RectF.addBloom(bounds: RectF) {
+    left = maxOf(bounds.left, left - H_BLOOM)
+    top = maxOf(bounds.top, top - V_BLOOM)
+    right = minOf(bounds.right, right + H_BLOOM)
+    bottom = minOf(bounds.bottom, bottom + V_BLOOM)
+}
+
+
+private val V_BLOOM = 1.dp_to_pxf * 0.5f
 val H_BLOOM = 1.dp_to_pxf * 1.33f
 
-val CORNER_PATH_EFFECT = CornerPathEffect(RADIUS)
+private val RADIUS = 5.dp_to_pxf
+private val CORNER_PATH_EFFECT = CornerPathEffect(RADIUS)
 
 
 fun <T> MutableCollection<T>.zipWithNextInPlace(process: MutableIterator<T>.(a: T, b: T) -> Unit) {
