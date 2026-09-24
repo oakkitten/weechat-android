@@ -16,7 +16,6 @@ import com.ubergeek42.WeechatAndroid.utils.Linkify.linkify
 import com.ubergeek42.WeechatAndroid.utils.SHOULD_EMOJIFY
 import com.ubergeek42.WeechatAndroid.utils.emojify
 import com.ubergeek42.WeechatAndroid.views.RoundedBackgroundColorSpan
-import com.ubergeek42.cats.Cat
 import com.ubergeek42.cats.Kitty
 import com.ubergeek42.cats.Root
 import com.ubergeek42.weechat.Color
@@ -38,14 +37,10 @@ open class Line(
     @JvmField val displayAs: LineSpec.DisplayAs,
     @JvmField val notifyLevel: LineSpec.NotifyLevel
 ) {
-    @AnyThread fun ensureSpannable() {
+    @AnyThread fun ensurePrecomputedLayout() {
+        getPrecomputedLayout()
         if (prefixSpannable == null) prefixString = getPrefixSpannable().toString()
         if (messageSpannable == null) messageString = getMessageSpannable().toString()
-    }
-
-    @AnyThread @Cat fun ensurePrecomputedLayout() {
-        ensureSpannable()
-        getPrecomputedLayout()
     }
 
     @AnyThread fun clearEverythingProcessed() {
@@ -59,9 +54,10 @@ open class Line(
     // can't simply do ensureSpannable() here as this can be called for a highlights when there's no
     // activity (after OOM kill). this would parse the spannable using incorrect colors, and this
     // spannable wouldn't get reset by P if the buffer's not open.
+    //
+    // TODO Optimize color stripping and don't store this here at all
     private var prefixString: String? = null
 
-    // TODO get or set?
     fun getPrefixString() = prefixString
             ?: rawPrefix.toStringWithWeechatColorsStripped()
                     .also { prefixString = it }
