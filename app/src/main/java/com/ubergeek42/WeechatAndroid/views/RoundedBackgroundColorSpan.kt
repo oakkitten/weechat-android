@@ -34,10 +34,10 @@ fun StaticLayout.drawRoundedBackground(canvas: Canvas, paint: Paint, firstLineIn
     val drawingBounds = RectF(canvas.getClipBounds())
     listOfRectsToColor.forEach { (rects, _) -> rects.forEach { it.addBloom(drawingBounds) } }
 
-    listOfRectsToColor.zipWithNextInPlace { a, b ->
+    listOfRectsToColor.zipWithNextInPlace { a, b, removeB ->
         if (a.color == b.color) {
             a.rects.addAll(b.rects)
-            remove()
+            removeB()
         }
     }
 
@@ -156,14 +156,33 @@ private val RADIUS = 5.dp_to_pxf
 private val CORNER_PATH_EFFECT = CornerPathEffect(RADIUS)
 
 
-fun <T> MutableCollection<T>.zipWithNextInPlace(process: MutableIterator<T>.(a: T, b: T) -> Unit) {
+fun <T> MutableCollection<T>.zipWithNextInPlace(process: (a: T, b: T) -> Unit) {
     if (size < 2) return
     val iterator = iterator()
 
     var current = iterator.next()
     while (iterator.hasNext()) {
         val next = iterator.next()
-        iterator.process(current, next)
+        process(current, next)
         current = next
+    }
+}
+
+fun <T> MutableCollection<T>.zipWithNextInPlace(process: (a: T, b: T, removeB: () -> Unit) -> Unit) {
+    if (size < 2) return
+    val iterator = iterator()
+
+    var current = iterator.next()
+
+    while (iterator.hasNext()) {
+        val next = iterator.next()
+        var nextRemoved = false
+
+        process(current, next) {
+            iterator.remove()
+            nextRemoved = true
+        }
+
+        if (!nextRemoved) current = next
     }
 }
