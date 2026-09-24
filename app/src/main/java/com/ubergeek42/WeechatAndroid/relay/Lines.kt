@@ -192,14 +192,6 @@ class Lines {
 
     // process lines that are gre going to be displayed, backwards, on a background thread pool.
     // this method gets called after line filter change, so it does get to process all needed lines
-    fun ensureSpannables() {
-        val target = if (P.filterLines) filtered else unfiltered
-        val snapshot = target.toTypedArray()
-        Utils.runInBackground { for (i in snapshot.indices.reversed()) snapshot[i].ensureSpannable() }
-    }
-
-    // process lines that are gre going to be displayed, backwards, on a background thread pool.
-    // this method gets called after line filter change, so it does get to process all needed lines
     fun ensurePrecomputedLayouts() {
         val target = if (P.filterLines) filtered else unfiltered
         val snapshot = target.toTypedArray()

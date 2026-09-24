@@ -367,7 +367,7 @@ class Buffer @WorkerThread constructor(
                 lines.clearEverythingProcessed()
                 style++
             }
-            lines.ensureSpannables()
+            lines.ensurePrecomputedLayouts()
         }
         bufferEyes.forEach { it.onGlobalPreferencesChanged(numberChanged) }
     }
